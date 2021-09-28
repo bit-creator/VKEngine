@@ -1,0 +1,58 @@
+#!/bin/bash
+
+function compile {
+    mkdir -p precompiled
+    mkdir -p .build
+    
+    cd .build
+    
+    cmake ..
+
+    # cmake --build . --target Vk.Getter
+    cmake --build . --target App.Settings
+    cmake --build . --target Vk.Instance
+    cmake --build . --target Vk.WindowSurface
+    cmake --build . --target Vk.PhysicalDevice 
+    cmake --build . --target Vk.LogicalDevice 
+    cmake --build . --target Vk.Queue
+    cmake --build . --target App.Window
+    cmake --build . --target App.RenderDevice
+    cmake --build . --target VKEngine
+
+    cd ..
+} 
+
+function clear {
+    rm -rf precompiled/ 
+    rm -rf .build/
+}
+
+function help {
+    echo "-r  or --run      = run VKEngine"
+    echo "-c  or --clear    = clear all build files"
+    echo "-b  or --build    = build project"
+    echo "-rb or --rebuild  = totaly rebuild all project"
+}
+
+if [[ "$1" == "--clear" || "$1" == "-c" ]]; then
+    clear
+fi
+
+
+if [[ "$1" == "--build" || "$1" == "-b" ]]; then
+    compile
+fi
+
+
+if [[ "$1" == "--rebuild" || "$1" == "-rb" ]]; then
+    clear
+    compile
+fi
+
+if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    help    
+fi
+
+if [[ "$2" == "--run" || "$2" == "-r" || "$1" == "" ]]; then
+    ./.build/VKEngine
+fi
