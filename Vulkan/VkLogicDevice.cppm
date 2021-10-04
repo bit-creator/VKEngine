@@ -9,25 +9,12 @@
  * 
  */
 
-module;
-/**
- * @brief Global Module Fragment - contains preprocesor derectives
- * to support header units, currently compilers dont support 
- * importing header unit 
- *
- */
-#include <vulkan/vulkan_core.h>
-#include <iostream>
-
 export module Vk.LogicalDevice;
 
-/**
- * @brief import dependencies
- * 
- * !!!------------------ATENTION---------------------!!!
- * !!!ALL DEPENDENCIES MUST BE PRECOMPILED EARLY THEN THIS
- * 
- */
+import Vk;
+
+import <vector>;
+
 import Vk.PhysicalDevice;
 
 /**
@@ -55,15 +42,20 @@ public:
     ~LogicalDevice();
 
     /**
+     * @brief all copy/move operation forbidden
+     * 
+     */
+    LogicalDevice(const LogicalDevice&) =delete;
+    LogicalDevice& operator =(const LogicalDevice&) =delete;
+
+    /**
      * @brief provides implicit conversion 
      * to native class very usefull in native context
      * 
      * @return VkDevice 
      */
     operator VkDevice();
-
-    LogicalDevice(const LogicalDevice&) =delete;
-    LogicalDevice& operator =(const LogicalDevice&) =delete;
+    operator VkDevice() const;
 };
 
 
@@ -84,15 +76,19 @@ LogicalDevice::LogicalDevice(PhysicalDevice& device) {
 
     VkPhysicalDeviceFeatures deviceFeatures{};
 
+    const auto ext = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     createInfo.pQueueCreateInfos = &queueCreateInfo;
     createInfo.queueCreateInfoCount = 1;
     createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.enabledExtensionCount = 1;
+    createInfo.ppEnabledExtensionNames = &ext;
 
     if (vkCreateDevice(device, &createInfo, nullptr, &_device) != VK_SUCCESS) {
         // LOG IT
-        std::cout << "LogicDevice Creation Failed" << std::endl;
+        // std::cout << "LogicDevice Creation Failed" << std::endl;
     }
 }
 
@@ -101,5 +97,9 @@ LogicalDevice::~LogicalDevice() {
 }
 
 LogicalDevice::operator VkDevice() {
+    return _device;
+}
+
+LogicalDevice::operator VkDevice() const {
     return _device;
 }

@@ -9,21 +9,27 @@
  * 
  */
 
-module;
+// module;
 /**
  * @brief Global Module Fragment - contains preprocesor derectives
  * to support header units, currently compilers dont support 
  * importing header unit 
  *
  */
-#define VK_VERSION_1_0
-#include <vulkan/vulkan_core.h>
-#include <GLFW/glfw3.h>
-#include <array>
-#include <iostream>
+// #define VK_VERSION_1_0
+// #include <vulkan/vulkan_core.h>
+// #include <GLFW/glfw3.h>
+// #include <array>
+// #include <iostream>
+// #include <vector> 
+// #include "Vulkan/Helpers/VkGetter.cppm"
+// #include "Vulkan/Helpers/VkExtensions.cppm"
 
 export module App.RenderDevice;
-
+import VkGLFW;
+import <array>;
+import <iostream>;
+import <vector>;
 /**
  * @brief import dependencies
  * 
@@ -31,12 +37,16 @@ export module App.RenderDevice;
  * !!!ALL DEPENDENCIES MUST BE PRECOMPILED EARLY THEN THIS
  * 
  */
-import Vk.Instance;
-import Vk.PhysicalDevice;
-import Vk.LogicalDevice;
-import Vk.Queue;
 import App.Window;
 import App.Settings;
+
+import Vk.Instance;
+import Vk.Queue;
+import Vk.Swapchain;
+import Vk.WindowSurface;
+import Vk.LogicalDevice;
+import Vk.PhysicalDevice;
+import Vk.Swapchain;
 
 /**
  * @class RenderDevice
@@ -51,11 +61,12 @@ export class RenderDevice {
 private:
     Window                                  wnd;      
     Instance                                instance; 
-    VkSurfaceKHR                            surface;  
+    WindowSurface                           surface;  
     PhysicalDevice                          physical; 
     LogicalDevice                           logical;  
     // std::array<Queue, NUM_OF_QUEUE>         descriptors;         
-    Queue                                   descriptor; 
+    Queue                                   descriptor;
+    Swapchain                               swapchain;
 
 private:
     /**
@@ -102,26 +113,32 @@ public:
 RenderDevice::RenderDevice() 
     : wnd(name)
     , instance()
+    , surface(instance, wnd)
     , physical(instance)
     , logical(physical)
     // , descriptors({
     //     GraphicQueue(physical, logical)
     // })
     , descriptor(GraphicQueue(physical, logical))
+    , swapchain(physical, logical, surface, wnd)
 { 
-    if (glfwCreateWindowSurface(instance, wnd, nullptr, &surface) != VK_SUCCESS) {
-        // LOGIT
-    }
-    VkBool32 presentSupport = false;
-    uint32_t queueIndex;
-    vkGetPhysicalDeviceSurfaceSupportKHR(physical, queueIndex, surface, &presentSupport);
-    if (queueIndex != physical.getQueueIndex(QueueType::Graphics)) {
-        std::cout << "something went wrong" << std::endl;
-    }
+    // if (glfwCreateWindowSurface(instance, wnd, nullptr, &surface) != VK_SUCCESS) {
+    //     // LOGIT
+    // }
+    // VkBool32 presentSupport = false;
+    // uint32_t queueIndex;
+    // vkGetPhysicalDeviceSurfaceSupportKHR(physical, queueIndex, surface, &presentSupport);
+    // if (queueIndex != physical.getQueueIndex(QueueType::Graphics)) {
+    //     std::cout << "something went wrong" << std::endl;
+    // }
+    // std::vector <VkExtensionProperties> vec;
+    // Extensions::getAllSupported(vec);
+    // for(auto v: vec) {
+    //     std::cout << v.extensionName <<std::endl;
+    // }
 }
 
 RenderDevice::~RenderDevice() {
-    vkDestroySurfaceKHR(instance, surface, nullptr);
 }
 
 RenderDevice& RenderDevice::device() {

@@ -9,24 +9,10 @@
  * 
  */
 
-module;
-/**
- * @brief Global Module Fragment - contains preprocesor derectives
- * to support header units, currently compilers dont support 
- * importing header unit 
- *
- */
-#include <vulkan/vulkan_core.h>
-
 export module Vk.Queue;
 
-/**
- * @brief import dependencies
- * 
- * !!!------------------ATENTION---------------------!!!
- * !!!ALL DEPENDENCIES MUST BE PRECOMPILED EARLY THEN THIS
- * 
- */
+import Vk;
+
 import Vk.PhysicalDevice;
 import Vk.LogicalDevice;
 
@@ -97,7 +83,6 @@ export class GraphicQueue: public Queue {
 public: GraphicQueue(PhysicalDevice& phys, LogicalDevice& log);
 };
 // etc...
-
 
 
 /********************************************/

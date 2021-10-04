@@ -4,18 +4,23 @@ function compile {
     mkdir -p precompiled
     mkdir -p .build
     
+    ./prebuiltVk.sh
+
     cd .build
     
     cmake ..
 
-    # cmake --build . --target Vk.Getter
+    cmake --build . --target Vk.Getter
+    cmake --build . --target Vk.Checker
+    cmake --build . --target Vk.Extensions
     cmake --build . --target App.Settings
-    cmake --build . --target Vk.Instance
-    cmake --build . --target Vk.WindowSurface
-    cmake --build . --target Vk.PhysicalDevice 
-    cmake --build . --target Vk.LogicalDevice 
-    cmake --build . --target Vk.Queue
     cmake --build . --target App.Window
+    cmake --build . --target Vk.Instance
+    cmake --build . --target Vk.PhysicalDevice 
+    cmake --build . --target Vk.WindowSurface
+    cmake --build . --target Vk.LogicalDevice 
+    cmake --build . --target Vk.Swapchain
+    cmake --build . --target Vk.Queue
     cmake --build . --target App.RenderDevice
     cmake --build . --target VKEngine
 

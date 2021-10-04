@@ -9,27 +9,16 @@
  * 
  */
 
-module;
-
-/**
- * @brief Global Module Fragment - contains preprocesor derectives
- * to support header units, currently compilers dont support 
- * importing header unit 
- *
- */
-
-#include <vulkan/vulkan_core.h>
-#include <GLFW/glfw3.h>
-
-#include <vector>
-#include <array>
-#include "VkGetter.cppm"
-
-#include <csignal>
-#include <bitset>
-#include <iostream>
-
 export module Vk.PhysicalDevice;
+
+import VkGLFW;
+
+import <vector>;
+import <bitset>;
+import <array>;
+
+import Vk.Extensions;
+import Vk.Getter;
 
 /**
  * @brief enumeration with a Queue types
@@ -37,14 +26,15 @@ export module Vk.PhysicalDevice;
  * 
  */
 export enum class QueueType {
-    Graphics =0
+    Graphics =0,
+    Present =1
 };
 
 /**
  * @brief Generally NUM_OF_QUEUE shows size of previous enum
  * 
  */
-export inline constexpr uint32_t NUM_OF_QUEUE =1;
+export inline constexpr uint32_t NUM_OF_QUEUE =2;
 
 /**
  * @brief help value for unvalid data
@@ -79,7 +69,10 @@ public:
      */
     ~PhysicalDevice();
 
-
+    /**
+     * @brief all copy/move operation forbidden
+     * 
+     */
     PhysicalDevice(const PhysicalDevice&) =delete;
     PhysicalDevice& operator =(const PhysicalDevice&) =delete;
 
@@ -108,6 +101,7 @@ public:
      * @return VkPhysicalDevice 
      */
     operator VkPhysicalDevice();
+    operator VkPhysicalDevice() const;
 
 private:
     /**
@@ -139,8 +133,6 @@ private:
 };
 
 
-
-
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
@@ -159,6 +151,10 @@ PhysicalDevice::operator VkPhysicalDevice() {
     return _device;
 }
 
+PhysicalDevice::operator VkPhysicalDevice() const {
+    return _device;
+}
+
 void PhysicalDevice::select(std::vector<VkPhysicalDevice>& devices) {
     for (const auto& device : devices) {
         if ( isCorrectProperty(device) &&
@@ -169,7 +165,7 @@ void PhysicalDevice::select(std::vector<VkPhysicalDevice>& devices) {
     }
 
     if (_device == VK_NULL_HANDLE) {
-        std::raise(SIGTERM);
+        // std::raise(SIGTERM);
     }
 }
 
@@ -189,8 +185,7 @@ uint32_t PhysicalDevice::getQueueIndex(QueueType tp) {
         return npos;
     }
 }
-
-
+    
 uint32_t PhysicalDevice::numOfAvailableQueue() {
     return _availableQueues.count();
 }
@@ -217,4 +212,17 @@ void PhysicalDevice::setupQueue() {
 
     findQueueIndex(QueueType::Graphics, VK_QUEUE_GRAPHICS_BIT);
     //...
+
+
+    if(!Extensions<VkPhysicalDevice>(_device).isSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME)) {
+        // std::cout << "swapchain not supported" <<std::endl;
+    }
+
+    // std::cout << _device.deviceName << std::endl;
+
+    std::vector <VkExtensionProperties> vec;
+    Extensions<VkPhysicalDevice>{_device}.getAllSupported(vec);
+    for(auto v: vec) {
+        // std::cout << v.extensionName <<std::endl;
+    }
 }

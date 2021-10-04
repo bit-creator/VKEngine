@@ -9,17 +9,20 @@
  * 
  */
 
-module;
+// module;
 /**
  * @brief Global Module Fragment - contains preprocesor derectives
  * to support header units, currently compilers dont support 
  * importing header unit 
  *
  */
-#include <GLFW/glfw3.h>
-#include <csignal>
+// #include <GLFW/glfw3.h>
+// #include <csignal>
 
 export module App.Window;
+
+import GLFW;
+import <csignal>;
 
 /**
  * @brief import dependencies
@@ -63,6 +66,7 @@ public:
      * @return NativeWindowPtr 
      */
     operator NativeWindowPtr();
+    operator NativeWindowPtr() const;
 }; // Window
 
 
@@ -88,5 +92,9 @@ Window::~Window() {
 }
 
 Window::operator Window::NativeWindowPtr() {
+    return _window;
+}
+
+Window::operator Window::NativeWindowPtr() const {
     return _window;
 }

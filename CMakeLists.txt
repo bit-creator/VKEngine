@@ -9,15 +9,20 @@ set(PRECOMPILED_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/precompiled)
 project(VKEngine)
 
 add_compile_options(-std=c++${CMAKE_CXX_STANDARD})
-add_compile_options(-stdlib=libstdc++)
+add_compile_options(-fmodules)
+add_compile_options(-stdlib=libc++)
+add_compile_options(-fimplicit-modules)
+add_compile_options(-fimplicit-module-maps)
 add_compile_options(-fprebuilt-module-path=${PRECOMPILED_MODULES_DIR})
 
 include(cmakeScripts/precompile.cmake)
 
-
 precompile( App.Settings        AppSettings.cppm  )
 precompile( App.Window          Window.cppm       )
-# precompile( Vk.Getter           VkGetter.cppm     )
+precompile ( Vk.Swapchain         Vulkan/VkSwapchain.cppm )
+precompile (Vk.Extensions       Vulkan/Helpers/VkExtensions.cppm)
+precompile( Vk.Getter           Vulkan/Helpers/VkGetter.cppm     )
+precompile( Vk.Checker          Vulkan/Helpers/VkChecker.cppm     )
 precompile( Vk.Queue            Vulkan/VkQueue.cppm        )
 precompile( Vk.Instance         Vulkan/VkInstance.cppm   )
 precompile( Vk.WindowSurface    Vulkan/VkSurface.cppm   )
@@ -38,6 +43,8 @@ target_link_libraries(VKEngine
     glfw 
     Vulkan::Vulkan
     Vulkan::Headers
+    # stdc++
+    c++
     # dl 
     # pthread 
     # X11 

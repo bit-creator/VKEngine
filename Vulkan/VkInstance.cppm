@@ -9,36 +9,20 @@
  * 
  */
 
-module;
-/**
- * @brief Global Module Fragment - contains preprocesor derectives
- * to support header units, currently compilers dont support 
- * importing header unit 
- *
- */
-#include <vulkan/vulkan_core.h>
-#include <GLFW/glfw3.h>
-
-#include <vector>
-#include <cstring>
-#include "VkGetter.cppm"
-
-#include <csignal>
-
 export module Vk.Instance;
 
-/**
- * @brief import dependencies
- * 
- * !!!------------------ATENTION---------------------!!!
- * !!!ALL DEPENDENCIES MUST BE PRECOMPILED EARLY THEN THIS
- * 
- */
+import VkGLFW;
+
+import <vector>;
+
+import Vk.Getter;
 import App.Settings;
+import Vk.Extensions;
 
 /**
  * @class Instance
  * 
+ * @brief wrap capturing/releasing of Vkinstance object
  */
 export class Instance {
 private:
@@ -71,6 +55,7 @@ public:
      * @return VkInstance 
      */
     operator VkInstance();
+    operator VkInstance() const;
 
 private:
     /**
@@ -131,11 +116,15 @@ void Instance::setup() {
     if (auto res = vkCreateInstance(&instanceData, nullptr, &_instance); res != VK_SUCCESS) {
         // I really need logger
         // Handle(res);
-        std::raise(SIGTERM);
+        // std::raise(SIGTERM);
     }
 }
 
 Instance::operator VkInstance() {
+    return _instance;
+}
+
+Instance::operator VkInstance() const {
     return _instance;
 }
 
@@ -149,19 +138,8 @@ void Instance::checkExtensionSupport(std::vector<const char*>& required) {
     }
     
     if constexpr (buildType == BuildType::Debug) {
-        std::vector<VkExtensionProperties> extensions;
-        VkGet<vkEnumerateInstanceExtensionProperties>(extensions, nullptr);
-
-        for(uint32_t i = 0; i < requiredExtCount; ++i) {
-            bool hasExtension = false;
-            for(const auto& vkExt: extensions) {
-                hasExtension += !strcmp(vkExt.extensionName, required[i]);
-            }
-            if(!hasExtension) {
-                // Handle(ext[i])
-                // std::cout << ext[i] << std::endl;
-                std::raise(SIGTERM);
-            }
+        if(!Extensions<VkInstance>(_instance).isSupported(required)) {
+            // std::raise(SIGTERM);
         }
     } 
 }
@@ -184,7 +162,7 @@ void Instance::checkLayerSupport(std::vector<const char*>& required) {
         }
         if(!hasLayer) {
             // Handle(layer[i])
-            std::raise(SIGTERM);
+            // std::raise(SIGTERM);
         }
     }
 }
