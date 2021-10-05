@@ -17,18 +17,25 @@ add_compile_options(-fprebuilt-module-path=${PRECOMPILED_MODULES_DIR})
 
 include(cmakeScripts/precompile.cmake)
 
-precompile( App.Settings        AppSettings.cppm  )
-precompile( App.Window          Window.cppm       )
-precompile ( Vk.Swapchain         Vulkan/VkSwapchain.cppm )
-precompile (Vk.Extensions       Vulkan/Helpers/VkExtensions.cppm)
-precompile( Vk.Getter           Vulkan/Helpers/VkGetter.cppm     )
-precompile( Vk.Checker          Vulkan/Helpers/VkChecker.cppm     )
-precompile( Vk.Queue            Vulkan/VkQueue.cppm        )
-precompile( Vk.Instance         Vulkan/VkInstance.cppm   )
-precompile( Vk.WindowSurface    Vulkan/VkSurface.cppm   )
-precompile( Vk.PhysicalDevice   Vulkan/VkPhysDevice.cppm )
+# App
+precompile( App.Window          Window.cppm        )
+precompile( App.Settings        AppSettings.cppm   )
+precompile( App.RenderDevice    RenderDevice.cppm  )
+precompile( App.ShaderFactory   ShaderFactory.cppm )
+
+# Vk
+precompile( Vk.Queue            Vulkan/VkQueue.cppm       )
+precompile( Vk.Shader           Vulkan/VkShader.cppm      )
+precompile( Vk.WindowSurface    Vulkan/VkSurface.cppm     )
+precompile( Vk.Instance         Vulkan/VkInstance.cppm    )
+precompile( Vk.Swapchain        Vulkan/VkSwapchain.cppm   )
+precompile( Vk.PhysicalDevice   Vulkan/VkPhysDevice.cppm  )
 precompile( Vk.LogicalDevice    Vulkan/VkLogicDevice.cppm )
-precompile( App.RenderDevice    RenderDevice.cppm )
+
+# Vk Helpers
+precompile( Vk.Getter           Vulkan/Helpers/VkGetter.cppm     )
+precompile( Vk.Checker          Vulkan/Helpers/VkChecker.cppm    )
+precompile( Vk.Extensions       Vulkan/Helpers/VkExtensions.cppm )
 
 find_package(Vulkan REQUIRED)
 find_package(glfw3 3.3 REQUIRED)

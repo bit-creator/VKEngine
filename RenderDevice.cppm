@@ -30,6 +30,7 @@ import VkGLFW;
 import <array>;
 import <iostream>;
 import <vector>;
+import <filesystem>;
 /**
  * @brief import dependencies
  * 
@@ -47,6 +48,7 @@ import Vk.WindowSurface;
 import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
 import Vk.Swapchain;
+import App.ShaderFactory;
 
 /**
  * @class RenderDevice
@@ -67,6 +69,7 @@ private:
     // std::array<Queue, NUM_OF_QUEUE>         descriptors;         
     Queue                                   descriptor;
     Swapchain                               swapchain;
+    ShaderFactory                           factory;
 
 private:
     /**
@@ -121,6 +124,7 @@ RenderDevice::RenderDevice()
     // })
     , descriptor(GraphicQueue(physical, logical))
     , swapchain(physical, logical, surface, wnd)
+    , factory(std::filesystem::current_path().concat(shaderDirectory))
 { 
     // if (glfwCreateWindowSurface(instance, wnd, nullptr, &surface) != VK_SUCCESS) {
     //     // LOGIT
