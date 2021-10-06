@@ -47,6 +47,7 @@ import Vk.WindowSurface;
 import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
 import Vk.Swapchain;
+import Vk.Pipeline;
 
 /**
  * @class RenderDevice
@@ -67,6 +68,7 @@ private:
     // std::array<Queue, NUM_OF_QUEUE>         descriptors;         
     Queue                                   descriptor;
     Swapchain                               swapchain;
+    Pipeline                                pipeline;
 
 private:
     /**
@@ -121,6 +123,7 @@ RenderDevice::RenderDevice()
     // })
     , descriptor(GraphicQueue(physical, logical))
     , swapchain(physical, logical, surface, wnd)
+    , pipeline(swapchain, logical)
 { 
     // if (glfwCreateWindowSurface(instance, wnd, nullptr, &surface) != VK_SUCCESS) {
     //     // LOGIT

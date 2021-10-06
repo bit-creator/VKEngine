@@ -30,6 +30,18 @@ precompile( Vk.PhysicalDevice   Vulkan/VkPhysDevice.cppm )
 precompile( Vk.LogicalDevice    Vulkan/VkLogicDevice.cppm )
 precompile( App.RenderDevice    RenderDevice.cppm )
 
+# Pipeline
+precompile( Vk.DynamicState Vulkan/VkDynamicStates.cppm )
+precompile( Vk.Multisampler Vulkan/VkMultisampling.cppm )
+precompile( Vk.VertexBuffer Vulkan/VkVertexBuffer.cppm  )
+precompile( Vk.ColorBlender Vulkan/VkColorBlender.cppm  )
+precompile( Vk.Rasterizer   Vulkan/VkRasterizer.cppm    )
+precompile( Vk.Assembly     Vulkan/VkAssembly.cppm      )
+precompile( Vk.Viewport     Vulkan/VkViewport.cppm      )
+precompile( Vk.Pipeline     Vulkan/VkPipeline.cppm      )
+precompile( Vk.Layout       Vulkan/VkLayout.cppm        )
+
+
 find_package(Vulkan REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 # find_package(Vulkan COMPONENTS glslangValidator)

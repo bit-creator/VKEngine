@@ -34,3 +34,8 @@
 # build
 .build/
 precompiled/
+
+# FIXED IN SHADERFACTORY BRANCH
+assets/bin
+.vscode/
+VkGLFWModule.hpp

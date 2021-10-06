@@ -10,6 +10,12 @@ function compile {
     
     cmake ..
 
+    cmake --build . --target Vk.Multisampler
+    cmake --build . --target Vk.ColorBlender
+    cmake --build . --target Vk.VertexBuffer
+    cmake --build . --target Vk.Rasterizer
+    cmake --build . --target Vk.Assembly
+    cmake --build . --target Vk.DynamicState
     cmake --build . --target Vk.Getter
     cmake --build . --target Vk.Checker
     cmake --build . --target Vk.Extensions
@@ -20,9 +26,14 @@ function compile {
     cmake --build . --target Vk.WindowSurface
     cmake --build . --target Vk.LogicalDevice 
     cmake --build . --target Vk.Swapchain
+    cmake --build . --target Vk.Viewport
+    cmake --build . --target Vk.Layout
+    cmake --build . --target Vk.Pipeline
     cmake --build . --target Vk.Queue
     cmake --build . --target App.RenderDevice
     cmake --build . --target VKEngine
+
+
 
     cd ..
 } 

@@ -26,11 +26,14 @@ import Vk.PhysicalDevice;
 
 export class Swapchain {
     VkSwapchainKHR                  _swapChain;
+    VkExtent2D                      _extent;
     const LogicalDevice&            _ld;
 
 public:
     Swapchain(const PhysicalDevice& device, const LogicalDevice& ld, const WindowSurface& surface, const Window& window);
     ~Swapchain();
+
+    VkExtent2D getExtent() const;
 
     Swapchain(const Swapchain&) =delete;
     Swapchain(Swapchain&&) =delete;
@@ -42,7 +45,8 @@ private:
     void setup(const PhysicalDevice& device, const WindowSurface& surface, const Window& window);
     VkSurfaceFormatKHR getFormat(const PhysicalDevice& device, const WindowSurface& surface);
     VkPresentModeKHR   getMode(const PhysicalDevice& device, const WindowSurface& surface); 
-    VkExtent2D         getExtent(const Window& window, VkSurfaceCapabilitiesKHR cap);
+
+    void setupExtent(const Window& window, VkSurfaceCapabilitiesKHR cap);
 };
 
 
@@ -61,6 +65,8 @@ Swapchain::~Swapchain() {
 void Swapchain::setup(const PhysicalDevice& device, const WindowSurface& surface, const Window& window) {
     VkSurfaceCapabilitiesKHR capabilities;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities);
+
+    setupExtent(window, capabilities);
 
     uint32_t imageCount;
 
@@ -82,7 +88,7 @@ void Swapchain::setup(const PhysicalDevice& device, const WindowSurface& surface
     createInfo.minImageCount = capabilities.maxImageCount > 0? capabilities.maxImageCount: capabilities.minImageCount + 5;
     createInfo.imageFormat = _format.format;
     createInfo.imageColorSpace = _format.colorSpace;
-    createInfo.imageExtent = getExtent(window, capabilities);
+    createInfo.imageExtent = _extent;
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -132,10 +138,9 @@ VkPresentModeKHR Swapchain::getMode(const PhysicalDevice& device, const WindowSu
 }
 
 
-VkExtent2D Swapchain::getExtent(const Window& window, VkSurfaceCapabilitiesKHR cap) {
-    VkExtent2D extent;
+void Swapchain::setupExtent(const Window& window, VkSurfaceCapabilitiesKHR cap) {
     if (cap.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
-        extent = cap.currentExtent;
+        _extent = cap.currentExtent;
     } else {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
@@ -148,7 +153,10 @@ VkExtent2D Swapchain::getExtent(const Window& window, VkSurfaceCapabilitiesKHR c
         actualExtent.width = std::max(cap.minImageExtent.width, std::min(cap.maxImageExtent.width, actualExtent.width));
         actualExtent.height = std::max(cap.minImageExtent.height, std::min(cap.maxImageExtent.height, actualExtent.height));
 
-        extent = actualExtent;
+        _extent = actualExtent;
     }
-    return extent;
+}
+
+VkExtent2D Swapchain::getExtent() const {
+    return _extent;
 }
