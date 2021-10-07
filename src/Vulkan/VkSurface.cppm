@@ -11,7 +11,8 @@
 
 export module Vk.WindowSurface;
 
-import VkGLFW;
+import Vulkan;
+import GLFW;
 
 import Vk.Instance;
 import Vk.PhysicalDevice;

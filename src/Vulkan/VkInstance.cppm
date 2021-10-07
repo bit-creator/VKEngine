@@ -11,7 +11,8 @@
 
 export module Vk.Instance;
 
-import VkGLFW;
+import Vulkan;
+import GLFW;
 
 import <vector>;
 

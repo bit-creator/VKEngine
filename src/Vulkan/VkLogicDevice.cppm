@@ -11,7 +11,7 @@
 
 export module Vk.LogicalDevice;
 
-import Vk;
+import Vulkan;
 
 import <vector>;
 

@@ -26,7 +26,8 @@
 // #include "Vulkan/Helpers/VkExtensions.cppm"
 
 export module App.RenderDevice;
-import VkGLFW;
+import Vulkan;
+import GLFW;
 import <array>;
 import <iostream>;
 import <vector>;

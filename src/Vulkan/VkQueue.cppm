@@ -11,7 +11,7 @@
 
 export module Vk.Queue;
 
-import Vk;
+import Vulkan;
 
 import Vk.PhysicalDevice;
 import Vk.LogicalDevice;
