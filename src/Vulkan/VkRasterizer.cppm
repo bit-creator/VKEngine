@@ -11,7 +11,7 @@
 
 export module Vk.Rasterizer;
 
-import Vk;
+import Vulkan;
 
 export class Rasterizer {
 public:

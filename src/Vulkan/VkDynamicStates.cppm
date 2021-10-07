@@ -11,7 +11,7 @@
 
 export module Vk.DynamicState;
 
-import Vk;
+import Vulkan;
 
 import <vector>;
 import <concepts>;

@@ -11,7 +11,7 @@
 
 export module Vk.ColorBlender;
 
-import Vk;
+import Vulkan;
 
 export class ColorBlender {
 public:

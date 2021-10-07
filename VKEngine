@@ -1,37 +1,54 @@
 #!/bin/bash
 
 function compile {
-    mkdir -p precompiled
     mkdir -p .build
     
-    ./prebuiltVk.sh
-
     cd .build
     
     cmake ..
 
+#target 3rdparty
+    cmake --build . --target Vulkan
+    cmake --build . --target GLFW
+    
+# first target
     cmake --build . --target Vk.Multisampler
-    cmake --build . --target Vk.ColorBlender
+    cmake --build . --target Vk.DynamicState
+    cmake --build . --target Vk.ColorBlender 
     cmake --build . --target Vk.VertexBuffer
     cmake --build . --target Vk.Rasterizer
-    cmake --build . --target Vk.Assembly
-    cmake --build . --target Vk.DynamicState
-    cmake --build . --target Vk.Getter
-    cmake --build . --target Vk.Checker
-    cmake --build . --target Vk.Extensions
     cmake --build . --target App.Settings
+    cmake --build . --target Vk.Assembly
     cmake --build . --target App.Window
-    cmake --build . --target Vk.Instance
+    cmake --build . --target Vk.Checker
+    cmake --build . --target Vk.Getter
+
+#second target
+    cmake --build . --target Vk.Extensions
+
+# third target
     cmake --build . --target Vk.PhysicalDevice 
+    cmake --build . --target Vk.Instance
+
+# fourth target
     cmake --build . --target Vk.WindowSurface
-    cmake --build . --target Vk.LogicalDevice 
+    cmake --build . --target Vk.LogicalDevice
+
+# fifth target
+    cmake --build . --target Vk.Layout
     cmake --build . --target Vk.Swapchain
     cmake --build . --target Vk.Viewport
-    cmake --build . --target Vk.Layout
-    cmake --build . --target Vk.Pipeline
     cmake --build . --target Vk.Queue
+
+# sixth target
+    cmake --build . --target Vk.Pipeline
+    cmake --build . --target Vk.Viewport
+
+# seventh target
     cmake --build . --target App.RenderDevice
-    cmake --build . --target VKEngine
+
+# main target
+    cmake --build . -j7 --target VKEngine
 
 
 
@@ -39,7 +56,6 @@ function compile {
 } 
 
 function clear {
-    rm -rf precompiled/ 
     rm -rf .build/
 }
 
@@ -70,5 +86,5 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
 fi
 
 if [[ "$2" == "--run" || "$2" == "-r" || "$1" == "" ]]; then
-    ./.build/VKEngine
+    ./.build/src/VKEngine
 fi

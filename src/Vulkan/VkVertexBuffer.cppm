@@ -11,7 +11,7 @@
 
 export module Vk.VertexBuffer;
 
-import Vk;
+import Vulkan;
 
 export class VertexBuffer {
 public:

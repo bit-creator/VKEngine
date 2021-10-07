@@ -11,7 +11,8 @@
 
 export module Vk.PhysicalDevice;
 
-import VkGLFW;
+import Vulkan;
+import GLFW;
 
 import <vector>;
 import <bitset>;

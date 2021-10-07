@@ -11,7 +11,7 @@
 
 export module Vk.Assembly;
 
-import Vk;
+import Vulkan;
 
 export class Assembly {
     public:

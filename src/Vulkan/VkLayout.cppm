@@ -11,7 +11,7 @@
 
 export module Vk.Layout;
 
-import Vk;
+import Vulkan;
 import Vk.LogicalDevice;
 
 import <stdexcept>;

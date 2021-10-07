@@ -11,7 +11,8 @@
 
 export module Vk.Swapchain;
 
-import VkGLFW;
+import Vulkan;
+import GLFW;
 
 import <limits>;
 import <vector>;

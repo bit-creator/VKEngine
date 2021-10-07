@@ -11,7 +11,7 @@
 
 export module Vk.Pipeline;
 
-import Vk;
+import Vulkan;
 
 import <vector>;
 

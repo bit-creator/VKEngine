@@ -11,7 +11,7 @@
 
 export module Vk.Viewport;
 
-import Vk;
+import Vulkan;
 import Vk.Swapchain;
 
 export class Viewport {

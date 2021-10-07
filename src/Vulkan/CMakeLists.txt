@@ -1,0 +1,21 @@
+include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
+
+add_subdirectory(Helpers)
+
+precompile ( Vk.DynamicState    VkDynamicStates.cppm )
+precompile ( Vk.Multisampler    VkMultisampling.cppm )
+precompile ( Vk.VertexBuffer    VkVertexBuffer.cppm  )
+precompile ( Vk.ColorBlender    VkColorBlender.cppm  )
+precompile ( Vk.LogicalDevice   VkLogicDevice.cppm   )
+precompile ( Vk.PhysicalDevice  VkPhysDevice.cppm    )
+precompile ( Vk.Rasterizer      VkRasterizer.cppm    )
+precompile ( Vk.Swapchain       VkSwapchain.cppm     )
+precompile ( Vk.Assembly        VkAssembly.cppm      )
+precompile ( Vk.Pipeline        VkPipeline.cppm      )
+precompile ( Vk.Instance        VkInstance.cppm      )
+precompile ( Vk.Viewport        VkViewport.cppm      )
+precompile ( Vk.WindowSurface   VkSurface.cppm       )
+precompile ( Vk.Queue           VkQueue.cppm         )
+precompile ( Vk.Layout          VkLayout.cppm        )
+
+set(sources ${sources} PARENT_SCOPE)

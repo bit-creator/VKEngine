@@ -11,7 +11,7 @@
 
 export module Vk.Multisampler;
 
-import Vk;
+import Vulkan;
 
 export class Multisampler {
 public:

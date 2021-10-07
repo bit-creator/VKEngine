@@ -9,34 +9,15 @@
  * 
  */
 
-// module;
-/**
- * @brief Global Module Fragment - contains preprocesor derectives
- * to support header units, currently compilers dont support 
- * importing header unit 
- *
- */
-// #define VK_VERSION_1_0
-// #include <vulkan/vulkan_core.h>
-// #include <GLFW/glfw3.h>
-// #include <array>
-// #include <iostream>
-// #include <vector> 
-// #include "Vulkan/Helpers/VkGetter.cppm"
-// #include "Vulkan/Helpers/VkExtensions.cppm"
-
 export module App.RenderDevice;
-import VkGLFW;
+
+import Vulkan;
+import GLFW;
+
 import <array>;
 import <iostream>;
 import <vector>;
-/**
- * @brief import dependencies
- * 
- * !!!------------------ATENTION---------------------!!!
- * !!!ALL DEPENDENCIES MUST BE PRECOMPILED EARLY THEN THIS
- * 
- */
+
 import App.Window;
 import App.Settings;
 

@@ -10,7 +10,7 @@
  */
 export module Vk.Extensions;
 
-import Vk;
+import Vulkan;
 
 import <cstring>;
 import <vector>;

@@ -4,64 +4,12 @@ set(CMAKE_CXX_COMPILER clang++-13)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(PRECOMPILED_MODULES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/precompiled)
+set(BUILD_DIR ${CMAKE_SOURCE_DIR}/.build)
+set(PRECOMPILED_MODULES_DIR ${BUILD_DIR}/precompiled)
+set(3RDPARTY_DIR ${CMAKE_SOURCE_DIR}/3rdparty)
+set(CMAKE_SCRIPTS_DIR ${CMAKE_SOURCE_DIR}/cmakeScripts)
 
 project(VKEngine)
 
-add_compile_options(-std=c++${CMAKE_CXX_STANDARD})
-add_compile_options(-fmodules)
-add_compile_options(-stdlib=libc++)
-add_compile_options(-fimplicit-modules)
-add_compile_options(-fimplicit-module-maps)
-add_compile_options(-fprebuilt-module-path=${PRECOMPILED_MODULES_DIR})
-
-include(cmakeScripts/precompile.cmake)
-
-precompile( App.Settings        AppSettings.cppm  )
-precompile( App.Window          Window.cppm       )
-precompile ( Vk.Swapchain         Vulkan/VkSwapchain.cppm )
-precompile (Vk.Extensions       Vulkan/Helpers/VkExtensions.cppm)
-precompile( Vk.Getter           Vulkan/Helpers/VkGetter.cppm     )
-precompile( Vk.Checker          Vulkan/Helpers/VkChecker.cppm     )
-precompile( Vk.Queue            Vulkan/VkQueue.cppm        )
-precompile( Vk.Instance         Vulkan/VkInstance.cppm   )
-precompile( Vk.WindowSurface    Vulkan/VkSurface.cppm   )
-precompile( Vk.PhysicalDevice   Vulkan/VkPhysDevice.cppm )
-precompile( Vk.LogicalDevice    Vulkan/VkLogicDevice.cppm )
-precompile( App.RenderDevice    RenderDevice.cppm )
-
-# Pipeline
-precompile( Vk.DynamicState Vulkan/VkDynamicStates.cppm )
-precompile( Vk.Multisampler Vulkan/VkMultisampling.cppm )
-precompile( Vk.VertexBuffer Vulkan/VkVertexBuffer.cppm  )
-precompile( Vk.ColorBlender Vulkan/VkColorBlender.cppm  )
-precompile( Vk.Rasterizer   Vulkan/VkRasterizer.cppm    )
-precompile( Vk.Assembly     Vulkan/VkAssembly.cppm      )
-precompile( Vk.Viewport     Vulkan/VkViewport.cppm      )
-precompile( Vk.Pipeline     Vulkan/VkPipeline.cppm      )
-precompile( Vk.Layout       Vulkan/VkLayout.cppm        )
-
-
-find_package(Vulkan REQUIRED)
-find_package(glfw3 3.3 REQUIRED)
-# find_package(Vulkan COMPONENTS glslangValidator)
-
-add_executable(VKEngine
-  main.cpp
-  ${sources}
-)
-
-target_link_libraries(VKEngine
-    glfw 
-    Vulkan::Vulkan
-    Vulkan::Headers
-    # stdc++
-    c++
-    # dl 
-    # pthread 
-    # X11 
-    # Xxf86vm 
-    # Xrandr 
-    # Xi
-    # glslangValidator
-)
+add_subdirectory(3rdparty)
+add_subdirectory(src)

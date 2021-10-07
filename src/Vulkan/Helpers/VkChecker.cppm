@@ -10,7 +10,7 @@
  */
 export module Vk.Checker;
 
-import Vk;
+import Vulkan;
 
 import <memory>;
 
