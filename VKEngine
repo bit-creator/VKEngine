@@ -39,6 +39,8 @@ function compile {
     cmake --build . --target Vk.Swapchain
     cmake --build . --target Vk.Viewport
     cmake --build . --target Vk.Queue
+    cmake --build . --target Vk.ColorAttachment
+    cmake --build . --target Vk.RenderPass
 
 # sixth target
     cmake --build . --target Vk.Pipeline

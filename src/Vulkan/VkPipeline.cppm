@@ -24,6 +24,7 @@ import Vk.Swapchain;
 import Vk.DynamicState;
 import Vk.ColorBlender;
 import Vk.Layout;
+import Vk.RenderPass;
 import Vk.LogicalDevice;
 
 export class Pipeline {
@@ -35,6 +36,7 @@ export class Pipeline {
     DynamicStates               _dynamic;
     ColorBlender                _blender;
     Layout                      _layout;
+    RenderPass                  _pass;
 
 public:
     Pipeline(const Swapchain& swapchain, const LogicalDevice& device);
@@ -51,6 +53,7 @@ Pipeline::Pipeline(const Swapchain& swapchain, const LogicalDevice& device)
     , _dynamic(Dynamic::Viewport, Dynamic::LineWidth)
     , _blender()
     , _layout(device)
+    , _pass(device, swapchain)
 {
 
 }

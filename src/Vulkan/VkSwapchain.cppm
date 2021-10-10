@@ -28,6 +28,7 @@ import Vk.PhysicalDevice;
 export class Swapchain {
     VkSwapchainKHR                  _swapChain;
     VkExtent2D                      _extent;
+    VkSurfaceFormatKHR              _format;
     const LogicalDevice&            _ld;
 
 public:
@@ -35,6 +36,7 @@ public:
     ~Swapchain();
 
     VkExtent2D getExtent() const;
+    VkSurfaceFormatKHR getFormat() const;
 
     Swapchain(const Swapchain&) =delete;
     Swapchain(Swapchain&&) =delete;
@@ -44,7 +46,7 @@ public:
 
 private:
     void setup(const PhysicalDevice& device, const WindowSurface& surface, const Window& window);
-    VkSurfaceFormatKHR getFormat(const PhysicalDevice& device, const WindowSurface& surface);
+    VkSurfaceFormatKHR setupFormat(const PhysicalDevice& device, const WindowSurface& surface);
     VkPresentModeKHR   getMode(const PhysicalDevice& device, const WindowSurface& surface); 
 
     void setupExtent(const Window& window, VkSurfaceCapabilitiesKHR cap);
@@ -81,7 +83,7 @@ void Swapchain::setup(const PhysicalDevice& device, const WindowSurface& surface
 
     // surface.getPresentQueue(device);
 
-    auto _format = getFormat(device, surface);
+    auto _format = setupFormat(device, surface);
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -105,7 +107,7 @@ void Swapchain::setup(const PhysicalDevice& device, const WindowSurface& surface
 }
 
 
-VkSurfaceFormatKHR Swapchain::getFormat(const PhysicalDevice& device, const WindowSurface& surface) {
+VkSurfaceFormatKHR Swapchain::setupFormat(const PhysicalDevice& device, const WindowSurface& surface) {
     VkSurfaceFormatKHR              format;
     std::vector<VkSurfaceFormatKHR> formats;
     
@@ -160,4 +162,9 @@ void Swapchain::setupExtent(const Window& window, VkSurfaceCapabilitiesKHR cap) 
 
 VkExtent2D Swapchain::getExtent() const {
     return _extent;
+}
+
+
+VkSurfaceFormatKHR Swapchain::getFormat() const {
+    return _format;
 }
