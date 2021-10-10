@@ -25,6 +25,9 @@ public:
     Layout(const LogicalDevice& device);
     ~Layout();
 
+    operator VkPipelineLayout() const;
+    operator VkPipelineLayout();
+
     // VkPipelineLayoutCreateInfo
     // getState();
 };
@@ -45,6 +48,15 @@ Layout::Layout(const LogicalDevice& device): _device(device) {
 
 Layout::~Layout() {
     vkDestroyPipelineLayout(_device, _layout, nullptr);
+}
+
+
+Layout::operator VkPipelineLayout() const {
+    return _layout;
+}
+
+Layout::operator VkPipelineLayout() {
+    return _layout;
 }
 
 // VkPipelineLayoutCreateInfo

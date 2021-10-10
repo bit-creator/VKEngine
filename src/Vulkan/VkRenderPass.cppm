@@ -51,6 +51,9 @@ private:
 public:
     RenderPass(const LogicalDevice& device, const Swapchain& swapchain);
 
+    operator VkRenderPass() const;
+    operator VkRenderPass();
+
     ~RenderPass();
 };
 
@@ -106,4 +109,12 @@ RenderPass::RenderPass(const LogicalDevice& device, const Swapchain& swapchain)
 
 RenderPass::~RenderPass() {
     vkDestroyRenderPass(_device, _pass, nullptr);
+}
+
+RenderPass::operator VkRenderPass() const {
+    return _pass;
+}
+
+RenderPass::operator VkRenderPass() {
+    return _pass;
 }

@@ -28,7 +28,7 @@ VertexBuffer::VertexBuffer() {
 VertexBuffer::~VertexBuffer() {
 }
 
-VkPipelineVertexInputStateCreateInfo getState() {
+VkPipelineVertexInputStateCreateInfo VertexBuffer::getState() {
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexBindingDescriptionCount = 0;

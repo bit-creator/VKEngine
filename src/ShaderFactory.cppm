@@ -12,6 +12,9 @@
 
 export module App.ShaderFactory;
 
+import Vk.Shader;
+import Vk.LogicalDevice;
+
 import <unordered_map>;
 import <string_view>;
 import <filesystem>;
@@ -22,6 +25,8 @@ import <string>;
 import <map>;
 
 namespace fs = std::filesystem;
+
+using shaderData = std::pair<ShaderType, std::string>;
 
 export class ShaderFactory {
 private:
@@ -37,24 +42,25 @@ private:
     // using HashedTree   = std::unordered_map<DrawData, Shader>
 
 private:
-    BinaryTree                  _shaderTree; 
+    BinaryTree                  _shaderTree;
+    const LogicalDevice&        _device;
 
 public:
-    ShaderFactory(fs::path path);
+    ShaderFactory(fs::path path, const LogicalDevice& device);
     ~ShaderFactory();
 
-    const BinSource& operator[](const std::string& name) const;
+    Shader operator[](const shaderData& data) const;
 
     /**
      * Be carefully this create a copy of shader buffer
      */
-    BinSource operator[](const std::string& name);
+    Shader operator[](const shaderData& data);
 
 private:
     void loadBinarySource(fs::path path);
 };
 
-ShaderFactory::ShaderFactory(fs::path path) {
+ShaderFactory::ShaderFactory(fs::path path, const LogicalDevice& device) : _device(device) {
     for(const auto& shader: fs::recursive_directory_iterator(path)) {
         if(!shader.is_directory()) {
             loadBinarySource(shader.path());
@@ -81,12 +87,18 @@ void ShaderFactory::loadBinarySource(fs::path path) {
     }
 }
 
-const std::vector < std::byte >& ShaderFactory::operator[](const std::string& name) const {
-    if(_shaderTree.contains(name)) return _shaderTree.at(name);
-    else throw std::runtime_error("Unknown name of shader");
+Shader ShaderFactory::operator[](const shaderData& data) const {
+    if(const auto& [type, name] = data; _shaderTree.contains(name)) {
+        return Shader(type, _device, _shaderTree.at(name));
+    } else {
+        throw std::runtime_error("Unknown name of shader");
+    } 
 }
 
-std::vector < std::byte > ShaderFactory::operator[](const std::string& name) {
-    if(_shaderTree.contains(name)) return _shaderTree[name];
-    else throw std::runtime_error("Unknown name of shader");
+Shader ShaderFactory::operator[](const shaderData& data) {
+    if(const auto& [type, name] = data; _shaderTree.contains(name)) {
+        return Shader(type, _device, _shaderTree[name]);
+    } else {
+        throw std::runtime_error("Unknown name of shader");
+    }
 }

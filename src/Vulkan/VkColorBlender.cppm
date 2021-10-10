@@ -14,11 +14,13 @@ export module Vk.ColorBlender;
 import Vulkan;
 
 export class ColorBlender {
+    VkPipelineColorBlendAttachmentState colorBlendAttachment;
+
 public:
     ColorBlender();
     ~ColorBlender();
 
-    VkPipelineColorBlendAttachmentState
+    VkPipelineColorBlendStateCreateInfo
     getState();
 };
 
@@ -29,9 +31,8 @@ ColorBlender::ColorBlender() {
 ColorBlender::~ColorBlender() {
 }
 
-VkPipelineColorBlendAttachmentState
+VkPipelineColorBlendStateCreateInfo
 ColorBlender::getState() {
-    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
     colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
     colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; 
@@ -40,5 +41,17 @@ ColorBlender::getState() {
     colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
     colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
     colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-    return colorBlendAttachment;
+
+    VkPipelineColorBlendStateCreateInfo colorBlending{};
+    colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    colorBlending.logicOpEnable = VK_FALSE;
+    colorBlending.logicOp = VK_LOGIC_OP_COPY;
+    colorBlending.attachmentCount = 1;
+    colorBlending.pAttachments = &colorBlendAttachment;
+    colorBlending.blendConstants[0] = 0.0f;
+    colorBlending.blendConstants[1] = 0.0f;
+    colorBlending.blendConstants[2] = 0.0f;
+    colorBlending.blendConstants[3] = 0.0f;
+    
+    return colorBlending;
 }

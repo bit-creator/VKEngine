@@ -24,40 +24,41 @@ export enum class ShaderType {
     // etc...
 };
 
+class ShaderFactory;
+
 export class Shader {
 private:
     VkShaderModule                      _shader;
     ShaderType                          _type;
     const LogicalDevice&                _device;
 
-protected:
-    Shader(ShaderType type, const LogicalDevice& device, std::vector<std::byte> source);
 
 public:
+    Shader(ShaderType type, const LogicalDevice& device, const std::vector<std::byte>& source);
     ~Shader();
-    VkPipelineShaderStageCreateInfo getStage();
-
+    VkPipelineShaderStageCreateInfo getStage() const;
 
 private:
-    void setupShader(std::vector<std::byte> source);
+    void setupShader(const std::vector<std::byte>& source);
+
 };
 
 export struct VertexShader: public Shader {
-    VertexShader(const LogicalDevice& device, std::vector<std::byte> source): 
+    VertexShader(const LogicalDevice& device, const std::vector<std::byte>& source): 
     Shader(ShaderType::Vertex, device, source) {  }
 };
 
 export struct FragmentShader: public Shader {
-    FragmentShader(const LogicalDevice& device, std::vector<std::byte> source): 
+    FragmentShader(const LogicalDevice& device, const std::vector<std::byte>& source): 
     Shader(ShaderType::Fragment, device, source) {  }
 };
 
 export struct GeometryShader: public Shader {
-    GeometryShader(const LogicalDevice& device, std::vector<std::byte> source): 
+    GeometryShader(const LogicalDevice& device, const std::vector<std::byte>& source): 
     Shader(ShaderType::Geometry, device, source) {  }
 };
 
-Shader::Shader(ShaderType type, const LogicalDevice& device, std::vector<std::byte> source)
+Shader::Shader(ShaderType type, const LogicalDevice& device, const std::vector<std::byte>& source)
     : _device(device), _type(type) {
     setupShader(source);
 }
@@ -66,7 +67,7 @@ Shader::~Shader() {
     vkDestroyShaderModule(_device, _shader, nullptr);
 }
 
-void Shader::setupShader(std::vector<std::byte> source) {
+void Shader::setupShader(const std::vector<std::byte>& source) {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = source.size();
@@ -78,7 +79,7 @@ void Shader::setupShader(std::vector<std::byte> source) {
 }
 
 
-VkPipelineShaderStageCreateInfo Shader::getStage() {
+VkPipelineShaderStageCreateInfo Shader::getStage() const {
     VkPipelineShaderStageCreateInfo stage{};
     stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     stage.stage = (VkShaderStageFlagBits)_type;

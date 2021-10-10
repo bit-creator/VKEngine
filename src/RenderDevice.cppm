@@ -52,7 +52,7 @@ private:
     Queue                                   descriptor;
     Swapchain                               swapchain;
     Pipeline                                pipeline;
-    ShaderFactory                           factory;
+    // ShaderFactory                           factory;
 
 
 private:
@@ -109,7 +109,7 @@ RenderDevice::RenderDevice()
     , descriptor(GraphicQueue(physical, logical))
     , swapchain(physical, logical, surface, wnd)
     , pipeline(swapchain, logical)
-    , factory(std::filesystem::current_path().concat(shaderDirectory))
+    // , factory(std::filesystem::current_path().concat(shaderDirectory))
 { 
     // if (glfwCreateWindowSurface(instance, wnd, nullptr, &surface) != VK_SUCCESS) {
     //     // LOGIT

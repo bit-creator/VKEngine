@@ -29,7 +29,7 @@ Multisampler::~Multisampler() {
 }
 
 VkPipelineMultisampleStateCreateInfo 
-getState() {
+Multisampler::getState() {
     VkPipelineMultisampleStateCreateInfo multisampling{};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE;
