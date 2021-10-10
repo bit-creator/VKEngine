@@ -17,6 +17,7 @@ function compile {
     cmake --build . --target Vk.ColorBlender 
     cmake --build . --target Vk.VertexBuffer
     cmake --build . --target Vk.Rasterizer
+    cmake --build . --target App.ShaderFactory
     cmake --build . --target App.Settings
     cmake --build . --target Vk.Assembly
     cmake --build . --target App.Window
@@ -36,6 +37,7 @@ function compile {
 
 # fifth target
     cmake --build . --target Vk.Layout
+    cmake --build . --target Vk.Shader  
     cmake --build . --target Vk.Swapchain
     cmake --build . --target Vk.Viewport
     cmake --build . --target Vk.Queue

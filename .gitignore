@@ -33,9 +33,10 @@
 
 # build
 .build/
-precompiled/
+assets/bin/
 
-# FIXED IN SHADERFACTORY BRANCH
-assets/bin
-.vscode/
+# ide
+.vscode
+
+# dont care about it
 VkGLFWModule.hpp
