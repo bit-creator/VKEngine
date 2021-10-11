@@ -28,6 +28,7 @@ import Vk.VertexBuffer;
 import Vk.DynamicState;
 import Vk.ColorBlender;
 import Vk.LogicalDevice;
+import Vk.FramePool;
 
 import App.Settings;
 import App.ShaderFactory;
@@ -42,9 +43,10 @@ export class Pipeline {
     ColorBlender                _blender;
     Layout                      _layout;
     RenderPass                  _pass;
-    VkPipeline                  _pipeline;
-    const LogicalDevice&        _device;
+    FramePool                   _pool;
     ShaderFactory               _factory;
+    const LogicalDevice&        _device;
+    VkPipeline                  _pipeline;
 
 public:
     Pipeline(const Swapchain& swapchain, const LogicalDevice& device);
@@ -63,6 +65,7 @@ Pipeline::Pipeline(const Swapchain& swapchain, const LogicalDevice& device)
     , _blender()
     , _layout(device)
     , _pass(device, swapchain)
+    , _pool(swapchain, device, _pass)
     , _factory(std::filesystem::current_path().concat(shaderDirectory), device)
 {
     const auto& vertShader = _factory[{ShaderType::Vertex, "vert.spv"}];

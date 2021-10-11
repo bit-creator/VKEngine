@@ -48,6 +48,10 @@ public:
     LogicalDevice(const LogicalDevice&) =delete;
     LogicalDevice& operator =(const LogicalDevice&) =delete;
 
+
+    LogicalDevice(LogicalDevice&&) =default;
+    LogicalDevice& operator =(LogicalDevice&&) =default;
+
     /**
      * @brief provides implicit conversion 
      * to native class very usefull in native context

@@ -43,6 +43,9 @@ function compile {
     cmake --build . --target Vk.Queue
     cmake --build . --target Vk.ColorAttachment
     cmake --build . --target Vk.RenderPass
+    cmake --build . --target Vk.Frame
+    cmake --build . --target Vk.FramePool
+    
 
 # sixth target
     cmake --build . --target Vk.Pipeline

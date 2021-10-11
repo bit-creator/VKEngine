@@ -46,7 +46,7 @@ public:
 
 private:
     void setup(const PhysicalDevice& device, const WindowSurface& surface, const Window& window);
-    VkSurfaceFormatKHR setupFormat(const PhysicalDevice& device, const WindowSurface& surface);
+    void setupFormat(const PhysicalDevice& device, const WindowSurface& surface);
     VkPresentModeKHR   getMode(const PhysicalDevice& device, const WindowSurface& surface); 
 
     void setupExtent(const Window& window, VkSurfaceCapabilitiesKHR cap);
@@ -55,7 +55,7 @@ private:
 
 Swapchain::Swapchain(const PhysicalDevice& device, const LogicalDevice& ld, const WindowSurface& surface, const Window& window) : _ld(ld) {
     VkBool32 presentSupport = false;
-    uint32_t queueIndex;
+    uint32_t queueIndex =0;
     vkGetPhysicalDeviceSurfaceSupportKHR(device, queueIndex, surface, &presentSupport);
     if(!presentSupport) throw std::runtime_error("present queue not supported");
     setup(device, surface, window);
@@ -70,6 +70,7 @@ void Swapchain::setup(const PhysicalDevice& device, const WindowSurface& surface
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities);
 
     setupExtent(window, capabilities);
+    setupFormat(device, surface);
 
     uint32_t imageCount;
 
@@ -83,7 +84,6 @@ void Swapchain::setup(const PhysicalDevice& device, const WindowSurface& surface
 
     // surface.getPresentQueue(device);
 
-    auto _format = setupFormat(device, surface);
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -107,7 +107,7 @@ void Swapchain::setup(const PhysicalDevice& device, const WindowSurface& surface
 }
 
 
-VkSurfaceFormatKHR Swapchain::setupFormat(const PhysicalDevice& device, const WindowSurface& surface) {
+void Swapchain::setupFormat(const PhysicalDevice& device, const WindowSurface& surface) {
     VkSurfaceFormatKHR              format;
     std::vector<VkSurfaceFormatKHR> formats;
     
@@ -121,7 +121,7 @@ VkSurfaceFormatKHR Swapchain::setupFormat(const PhysicalDevice& device, const Wi
         }
     }
 
-    return format;
+    _format = format;
 }
 
 VkPresentModeKHR Swapchain::getMode(const PhysicalDevice& device, const WindowSurface& surface) {
@@ -167,4 +167,12 @@ VkExtent2D Swapchain::getExtent() const {
 
 VkSurfaceFormatKHR Swapchain::getFormat() const {
     return _format;
+}
+
+Swapchain::operator VkSwapchainKHR() {
+    return _swapChain;
+}
+
+Swapchain::operator VkSwapchainKHR() const {
+    return _swapChain;
 }
