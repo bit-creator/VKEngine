@@ -11,11 +11,15 @@
 
 export module Vk.LogicalDevice;
 
+export import App.NativeWrapper;
+
 import Vulkan;
 
 import <vector>;
 
 import Vk.PhysicalDevice;
+import Vk.QueuePool;
+import Vk.Checker;
 
 /**
  * @class LogicalDevice
@@ -23,87 +27,64 @@ import Vk.PhysicalDevice;
  * @warning copy/move constructors tagged =delete becouse I actualy 
  * dont know how correct copy LogicDevice
  */
-export class LogicalDevice {
-private:
-    VkDevice                    _device;
+export class LogicalDevice:
+    public NativeWrapper<VkDevice, LogicalDevice> {
 
 public:
     /**
      * @brief capture VkLogicalDevice object
      * 
      * @param device - ref to PhysDevice
+     * @param queues - ref to QueuePool, need for set queues descriptors to pool
+     * 
      */
-    LogicalDevice(PhysicalDevice& device);
+    LogicalDevice(PhysicalDevice::const_pointer device, QueuePool::pointer queues);
 
     /**
      * @brief release capture objects
      * 
      */
     ~LogicalDevice();
-
-    /**
-     * @brief all copy/move operation forbidden
-     * 
-     */
-    LogicalDevice(const LogicalDevice&) =delete;
-    LogicalDevice& operator =(const LogicalDevice&) =delete;
-
-
-    LogicalDevice(LogicalDevice&&) =default;
-    LogicalDevice& operator =(LogicalDevice&&) =default;
-
-    /**
-     * @brief provides implicit conversion 
-     * to native class very usefull in native context
-     * 
-     * @return VkDevice 
-     */
-    operator VkDevice();
-    operator VkDevice() const;
-};
-
-
-
-
-
+}; // LogicalDevice
 
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
-LogicalDevice::LogicalDevice(PhysicalDevice& device) {
+LogicalDevice::LogicalDevice(PhysicalDevice::const_pointer device, QueuePool::pointer queues) {
     float queuePriority = 1.0f;
-    VkDeviceQueueCreateInfo queueCreateInfo{};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = device.getQueueIndex(QueueType::Graphics);
-    queueCreateInfo.queueCount = device.numOfAvailableQueue();
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+    std::vector<VkDeviceQueueCreateInfo> queueInfos;
+    std::vector<uint32_t> avaialableQueue;
+    queues->getAvailaibleIndex(avaialableQueue);
 
-    VkPhysicalDeviceFeatures deviceFeatures{};
+    queueInfos.resize(avaialableQueue.size());
+
+    uint32_t enumerator =0;
+    for(auto& info: queueInfos) {
+        info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        info.queueFamilyIndex = avaialableQueue[enumerator];
+        info.queueCount = 1;
+        info.pQueuePriorities = &queuePriority;
+        ++enumerator;
+    }
+
+    VkPhysicalDeviceFeatures deviceFeatures;
+    vkGetPhysicalDeviceFeatures(device->get(), &deviceFeatures);
 
     const auto ext = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pQueueCreateInfos = &queueCreateInfo;
-    createInfo.queueCreateInfoCount = 1;
+    createInfo.pQueueCreateInfos = queueInfos.data();
+    createInfo.queueCreateInfoCount = (uint32_t)queueInfos.size();
     createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = 1;
     createInfo.ppEnabledExtensionNames = &ext;
 
-    if (vkCreateDevice(device, &createInfo, nullptr, &_device) != VK_SUCCESS) {
-        // LOG IT
-        // std::cout << "LogicDevice Creation Failed" << std::endl;
-    }
+    VkCreate<vkCreateDevice>(device->get(), &createInfo, nullptr, &_native);
+
+    queues->setupDescriptors(_native);
 }
 
 LogicalDevice::~LogicalDevice() {
-    vkDestroyDevice(_device, nullptr);
-}
-
-LogicalDevice::operator VkDevice() {
-    return _device;
-}
-
-LogicalDevice::operator VkDevice() const {
-    return _device;
+    vkDestroyDevice(_native, nullptr);
 }

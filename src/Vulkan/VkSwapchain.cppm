@@ -11,63 +11,89 @@
 
 export module Vk.Swapchain;
 
+export import App.NativeWrapper;
+
 import Vulkan;
 import GLFW;
 
-import <limits>;
 import <vector>;
-import <iostream>;
-import <algorithm>;
 
 import Vk.Getter;
+import Vk.Checker;
 import App.Window;
 import Vk.LogicalDevice;
 import Vk.WindowSurface;
 import Vk.PhysicalDevice;
 
-export class Swapchain {
-    VkSwapchainKHR                  _swapChain;
+/**
+ * @class Swapchain
+ * @brief class provides api for setup 
+ * and manege native swapchain
+ * 
+ */
+export class Swapchain:
+    public NativeWrapper<VkSwapchainKHR, Swapchain> {
+private:
     VkExtent2D                      _extent;
     VkSurfaceFormatKHR              _format;
-    const LogicalDevice&            _ld;
+    LogicalDevice::const_pointer    _ld;
 
 public:
-    Swapchain(const PhysicalDevice& device, const LogicalDevice& ld, const WindowSurface& surface, const Window& window);
+    /**
+     * @brief capture native swapchain handle
+     * 
+     */
+    Swapchain(PhysicalDevice::const_pointer device, 
+              LogicalDevice::const_pointer ld, 
+              WindowSurface::const_pointer surface, 
+              Window::const_pointer window);
+    
+    /**
+     * @brief release handle
+     * 
+     */
     ~Swapchain();
 
+    /**
+     * @brief get swapchain setup infos
+     * 
+     */
     VkExtent2D getExtent() const;
     VkSurfaceFormatKHR getFormat() const;
 
-    Swapchain(const Swapchain&) =delete;
-    Swapchain(Swapchain&&) =delete;
-
-    operator VkSwapchainKHR();
-    operator VkSwapchainKHR() const;
-
 private:
-    void setup(const PhysicalDevice& device, const WindowSurface& surface, const Window& window);
-    void setupFormat(const PhysicalDevice& device, const WindowSurface& surface);
-    VkPresentModeKHR   getMode(const PhysicalDevice& device, const WindowSurface& surface); 
+    /**
+     * @brief helper methods for capturing swapchain
+     * 
+     */
+    void setup(PhysicalDevice::const_pointer device,  
+               WindowSurface::const_pointer surface, 
+               Window::const_pointer window);
 
-    void setupExtent(const Window& window, VkSurfaceCapabilitiesKHR cap);
-};
+    void setupFormat(PhysicalDevice::const_pointer device, WindowSurface::const_pointer surface);
+    VkPresentModeKHR getMode(PhysicalDevice::const_pointer device, WindowSurface::const_pointer surface); 
+
+    void setupExtent(Window::const_pointer window, VkSurfaceCapabilitiesKHR cap);
+}; // Swapchain
 
 
-Swapchain::Swapchain(const PhysicalDevice& device, const LogicalDevice& ld, const WindowSurface& surface, const Window& window) : _ld(ld) {
-    VkBool32 presentSupport = false;
-    uint32_t queueIndex =0;
-    vkGetPhysicalDeviceSurfaceSupportKHR(device, queueIndex, surface, &presentSupport);
-    if(!presentSupport) throw std::runtime_error("present queue not supported");
+/********************************************/
+/***************IMPLIMENTATION***************/
+/********************************************/
+Swapchain::Swapchain(PhysicalDevice::const_pointer device, 
+                     LogicalDevice::const_pointer ld, 
+                     WindowSurface::const_pointer surface, 
+                     Window::const_pointer window) : _ld(ld) {
     setup(device, surface, window);
 }
 
 Swapchain::~Swapchain() {
-    vkDestroySwapchainKHR(_ld, _swapChain, nullptr);
+    vkDestroySwapchainKHR(_ld->get(), _native, nullptr);
 }
 
-void Swapchain::setup(const PhysicalDevice& device, const WindowSurface& surface, const Window& window) {
+void Swapchain::setup(PhysicalDevice::const_pointer device, WindowSurface::const_pointer surface, Window::const_pointer window) {
     VkSurfaceCapabilitiesKHR capabilities;
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device->get(), surface->get(), &capabilities);
 
     setupExtent(window, capabilities);
     setupFormat(device, surface);
@@ -82,12 +108,9 @@ void Swapchain::setup(const PhysicalDevice& device, const WindowSurface& surface
 
     }
 
-    // surface.getPresentQueue(device);
-
-
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = surface;
+    createInfo.surface = surface->get();
     createInfo.minImageCount = capabilities.maxImageCount > 0? capabilities.maxImageCount: capabilities.minImageCount + 5;
     createInfo.imageFormat = _format.format;
     createInfo.imageColorSpace = _format.colorSpace;
@@ -101,22 +124,21 @@ void Swapchain::setup(const PhysicalDevice& device, const WindowSurface& surface
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(_ld, &createInfo, nullptr, &_swapChain) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create swap chain!");
-    }
+    VkCreate<vkCreateSwapchainKHR>(_ld->get(), &createInfo, nullptr, &_native);
 }
 
 
-void Swapchain::setupFormat(const PhysicalDevice& device, const WindowSurface& surface) {
+void Swapchain::setupFormat(PhysicalDevice::const_pointer device, WindowSurface::const_pointer surface) {
     VkSurfaceFormatKHR              format;
     std::vector<VkSurfaceFormatKHR> formats;
     
-    VkGet<vkGetPhysicalDeviceSurfaceFormatsKHR>(formats, (VkPhysicalDevice)device, (VkSurfaceKHR)surface);
+    VkGet<vkGetPhysicalDeviceSurfaceFormatsKHR>(formats, device->get(), surface->get());
 
     format = formats.at(0);
 
     for (const auto& availableFormat : formats) {
-        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB 
+        && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             format = availableFormat;
         }
     }
@@ -124,11 +146,11 @@ void Swapchain::setupFormat(const PhysicalDevice& device, const WindowSurface& s
     _format = format;
 }
 
-VkPresentModeKHR Swapchain::getMode(const PhysicalDevice& device, const WindowSurface& surface) {
+VkPresentModeKHR Swapchain::getMode(PhysicalDevice::const_pointer device, WindowSurface::const_pointer surface) {
     std::vector<VkPresentModeKHR> presentModes;
     VkPresentModeKHR              mode;
 
-    VkGet<vkGetPhysicalDeviceSurfacePresentModesKHR>(presentModes, (VkPhysicalDevice)device, (VkSurfaceKHR)surface);    
+    VkGet<vkGetPhysicalDeviceSurfacePresentModesKHR>(presentModes, device->get(), surface->get());    
     if(std::find(presentModes.begin(), presentModes.end(), VK_PRESENT_MODE_MAILBOX_KHR) != presentModes.end()) {
         mode = VK_PRESENT_MODE_MAILBOX_KHR;
     } else if(std::find(presentModes.begin(), presentModes.end(), VK_PRESENT_MODE_FIFO_RELAXED_KHR) != presentModes.end()) {
@@ -141,12 +163,12 @@ VkPresentModeKHR Swapchain::getMode(const PhysicalDevice& device, const WindowSu
 }
 
 
-void Swapchain::setupExtent(const Window& window, VkSurfaceCapabilitiesKHR cap) {
+void Swapchain::setupExtent(Window::const_pointer window, VkSurfaceCapabilitiesKHR cap) {
     if (cap.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         _extent = cap.currentExtent;
     } else {
         int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
+        glfwGetFramebufferSize(window->get(), &width, &height);
 
         VkExtent2D actualExtent = {
             static_cast<uint32_t>(width),
@@ -167,12 +189,4 @@ VkExtent2D Swapchain::getExtent() const {
 
 VkSurfaceFormatKHR Swapchain::getFormat() const {
     return _format;
-}
-
-Swapchain::operator VkSwapchainKHR() {
-    return _swapChain;
-}
-
-Swapchain::operator VkSwapchainKHR() const {
-    return _swapChain;
 }

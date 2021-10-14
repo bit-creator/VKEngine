@@ -19,35 +19,37 @@ function compile {
     cmake --build . --target Vk.Rasterizer
     cmake --build . --target App.Settings
     cmake --build . --target Vk.Assembly
-    cmake --build . --target App.Window
     cmake --build . --target Vk.Checker
     cmake --build . --target Vk.Getter
+    cmake --build . --target App.NativeWrapper
+    cmake --build . --target App.Window
 
-#second target
+# #second target
     cmake --build . --target Vk.Extensions
 
-# third target
+# # third target
     cmake --build . --target Vk.PhysicalDevice 
     cmake --build . --target Vk.Instance
 
-# fourth target
+# # fourth target
     cmake --build . --target Vk.WindowSurface
+    cmake --build . --target Vk.Queue
+    cmake --build . --target Vk.QueuePool
     cmake --build . --target Vk.LogicalDevice
 
-# fifth target
+# # fifth target
     cmake --build . --target Vk.Layout
     cmake --build . --target Vk.Shader  
     cmake --build . --target App.ShaderFactory
     cmake --build . --target Vk.Swapchain
     cmake --build . --target Vk.Viewport
-    cmake --build . --target Vk.Queue
     cmake --build . --target Vk.ColorAttachment
     cmake --build . --target Vk.RenderPass
     cmake --build . --target Vk.Frame
     cmake --build . --target Vk.FramePool
     
 
-# sixth target
+# # sixth target
     cmake --build . --target Vk.Pipeline
     cmake --build . --target Vk.Viewport
 

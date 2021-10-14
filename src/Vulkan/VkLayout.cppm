@@ -11,22 +11,27 @@
 
 export module Vk.Layout;
 
+export import App.NativeWrapper;
+
 import Vulkan;
 import Vk.LogicalDevice;
+import Vk.Checker;
 
 import <stdexcept>;
+import <memory>;
 
-export class Layout {
+export class Layout: 
+    public NativeWrapper<VkPipelineLayout, Layout> {
 private:
-    VkPipelineLayout                        _layout;
+    // VkPipelineLayout                        _native;
     const LogicalDevice&                    _device;
 
 public:
     Layout(const LogicalDevice& device);
     ~Layout();
 
-    operator VkPipelineLayout() const;
-    operator VkPipelineLayout();
+    // operator VkPipelineLayout() const;
+    // operator VkPipelineLayout();
 
     // VkPipelineLayoutCreateInfo
     // getState();
@@ -41,23 +46,25 @@ Layout::Layout(const LogicalDevice& device): _device(device) {
     pipelineLayoutInfo.pushConstantRangeCount = 0;
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &_layout) != VK_SUCCESS) {
+    // VkCreate<vkCreatePipelineLayout>(device, &pipelineLayoutInfo, nullptr, &_native);
+
+    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &_native) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
 }
 
 Layout::~Layout() {
-    vkDestroyPipelineLayout(_device, _layout, nullptr);
+    vkDestroyPipelineLayout(_device, _native, nullptr);
 }
 
 
-Layout::operator VkPipelineLayout() const {
-    return _layout;
-}
+// Layout::operator VkPipelineLayout() const {
+//     return _native;
+// }
 
-Layout::operator VkPipelineLayout() {
-    return _layout;
-}
+// Layout::operator VkPipelineLayout() {
+//     return _native;
+// }
 
 // VkPipelineLayoutCreateInfo
 // Layout::getState() {

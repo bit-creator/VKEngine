@@ -9,28 +9,14 @@
  * 
  */
 
-// module;
-/**
- * @brief Global Module Fragment - contains preprocesor derectives
- * to support header units, currently compilers dont support 
- * importing header unit 
- *
- */
-// #include <GLFW/glfw3.h>
-// #include <csignal>
-
 export module App.Window;
 
-import GLFW;
-import <csignal>;
+export import App.NativeWrapper;
 
-/**
- * @brief import dependencies
- * 
- * !!!------------------ATENTION---------------------!!!
- * !!!ALL DEPENDENCIES MUST BE PRECOMPILED EARLY THEN THIS
- * 
- */
+import <stdexcept>;
+
+import GLFW;
+
 import App.Settings;
 
 /**
@@ -38,12 +24,8 @@ import App.Settings;
  * @brief Provides simplified api for working with GLFWwindow
  * 
  */
-export class Window {
-private:
-    using NativeWindowPtr = GLFWwindow*;
-    
-    NativeWindowPtr         _window;                // Pointer to Native Window
-
+export class Window:
+    public NativeWrapper < GLFWwindow*, Window > {
 public:
     /**
      * @brief Construct a new GLFWWindow object
@@ -58,15 +40,6 @@ public:
      * 
      */
     ~Window();
-
-    /**
-     * @brief provides implicit conversion 
-     * to native class very usefull in native context
-     * 
-     * @return NativeWindowPtr 
-     */
-    operator NativeWindowPtr();
-    operator NativeWindowPtr() const;
 }; // Window
 
 
@@ -75,26 +48,19 @@ public:
 /********************************************/
 Window::Window(const char* name) {
     if (!glfwInit()) {
-    	std::raise(SIGTERM);
+        throw std::runtime_error("failed to initialize GLFW");
     }
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     
-    _window = glfwCreateWindow(windowWidth, windowHeight, name, nullptr, nullptr);
-    if(_window == nullptr) {
-    	std::raise(SIGTERM);
+    _native = glfwCreateWindow(windowWidth, windowHeight, name, nullptr, nullptr);
+    
+    if(_native == nullptr) {
+        throw std::runtime_error("failed to create GLFW window");
     }
 }
 
 Window::~Window() {
-    glfwDestroyWindow(_window);
+    glfwDestroyWindow(_native);
     glfwTerminate();
-}
-
-Window::operator Window::NativeWindowPtr() {
-    return _window;
-}
-
-Window::operator Window::NativeWindowPtr() const {
-    return _window;
 }

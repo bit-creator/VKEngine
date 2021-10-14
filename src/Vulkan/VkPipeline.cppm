@@ -11,15 +11,19 @@
 
 export module Vk.Pipeline;
 
+export import App.NativeWrapper;
+
 import Vulkan;
 
 import <vector>;
 import <filesystem>;
 
+import Vk.Checker;
 import Vk.Shader;
 import Vk.Layout;
 import Vk.Assembly;
 import Vk.Viewport;
+import Vk.FramePool;
 import Vk.Swapchain;
 import Vk.RenderPass;
 import Vk.Rasterizer;
@@ -28,45 +32,52 @@ import Vk.VertexBuffer;
 import Vk.DynamicState;
 import Vk.ColorBlender;
 import Vk.LogicalDevice;
-import Vk.FramePool;
 
 import App.Settings;
 import App.ShaderFactory;
 
-export class Pipeline {
-    VertexBuffer                _verticies;
-    Assembly                     _assembly;
-    Viewport                    _viewport;
-    Rasterizer                  _rasterizer;
-    Multisampler                _ms;
-    DynamicStates               _dynamic;
-    ColorBlender                _blender;
-    Layout                      _layout;
-    RenderPass                  _pass;
-    FramePool                   _pool;
-    ShaderFactory               _factory;
-    const LogicalDevice&        _device;
-    VkPipeline                  _pipeline;
+/**
+ * @brief simple aggregator for pipeline primitives 
+ * 
+ */
+export class Pipeline:
+    public NativeWrapper <VkPipeline, Pipeline> {
+private:
+    VertexBuffer                        _verticies;
+    Assembly                            _assembly;
+    Viewport                            _viewport;
+    Rasterizer                          _rasterizer;
+    Multisampler                        _ms;
+    DynamicStates                       _dynamic;
+    ColorBlender                        _blender;
+    Layout                              _layout;
+    RenderPass                          _pass;
+    FramePool                           _pool;
+    ShaderFactory                       _factory;
+    LogicalDevice::const_pointer        _device;
 
 public:
-    Pipeline(const Swapchain& swapchain, const LogicalDevice& device);
+    Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device);
     ~Pipeline();
-};
+}; // Pipeline
 
 
-Pipeline::Pipeline(const Swapchain& swapchain, const LogicalDevice& device) 
+/********************************************/
+/***************IMPLIMENTATION***************/
+/********************************************/
+Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device) 
     : _device(device)
     , _verticies()
     , _assembly()
-    , _viewport(swapchain)
+    , _viewport(*swapchain)
     , _rasterizer()
     , _ms()
     , _dynamic(Dynamic::Viewport, Dynamic::LineWidth)
     , _blender()
-    , _layout(device)
-    , _pass(device, swapchain)
-    , _pool(swapchain, device, _pass)
-    , _factory(std::filesystem::current_path().concat(shaderDirectory), device)
+    , _layout(*device)
+    , _pass(*device, *swapchain)
+    , _pool(*swapchain, *device, _pass)
+    , _factory(std::filesystem::current_path().concat(shaderDirectory), *device)
 {
     const auto& vertShader = _factory[{ShaderType::Vertex, "vert.spv"}];
     const auto& fragShader = _factory[{ShaderType::Fragment, "frag.spv"}];
@@ -80,29 +91,6 @@ Pipeline::Pipeline(const Swapchain& swapchain, const LogicalDevice& device)
     auto msInfo = _ms.getState();
     auto dynInfo = _dynamic.getState();
     auto blendInfo = _blender.getState();
-
-
-    //     VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    // colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    // colorBlendAttachment.blendEnable = VK_FALSE;
-    // colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; 
-    // colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-    // colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
-    // colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    // colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    // colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-
-    // VkPipelineColorBlendStateCreateInfo colorBlending{};
-    // colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    // colorBlending.logicOpEnable = VK_FALSE;
-    // colorBlending.logicOp = VK_LOGIC_OP_COPY;
-    // colorBlending.attachmentCount = 1;
-    // colorBlending.pAttachments = &colorBlendAttachment;
-    // colorBlending.blendConstants[0] = 0.0f;
-    // colorBlending.blendConstants[1] = 0.0f;
-    // colorBlending.blendConstants[2] = 0.0f;
-    // colorBlending.blendConstants[3] = 0.0f;
-    
     
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -118,13 +106,12 @@ Pipeline::Pipeline(const Swapchain& swapchain, const LogicalDevice& device)
     pipelineInfo.pDynamicState        = nullptr;
     pipelineInfo.layout               = _layout;
     pipelineInfo.renderPass           = _pass;
-    
 
-    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_pipeline) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create graphics pipeline!");
-    }
+    int magic =1;
+    
+    VkCreate<vkCreateGraphicsPipelines>(device->get(), nullptr, 1, &pipelineInfo, nullptr, &_native);
 }
 
 Pipeline::~Pipeline() {
-    vkDestroyPipeline(_device, _pipeline, nullptr);
+    vkDestroyPipeline(_device->get(), _native, nullptr);
 }

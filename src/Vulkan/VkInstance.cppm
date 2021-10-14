@@ -11,24 +11,28 @@
 
 export module Vk.Instance;
 
+export import App.NativeWrapper;
+
+import <vector>;
+import <string>;
+import <memory>;
+
 import Vulkan;
 import GLFW;
 
-import <vector>;
-
-import Vk.Getter;
 import App.Settings;
+
 import Vk.Extensions;
+import Vk.Checker;
+import Vk.Getter;
 
 /**
  * @class Instance
  * 
  * @brief wrap capturing/releasing of Vkinstance object
  */
-export class Instance {
-private:
-    VkInstance                              _instance;
-
+export class Instance: 
+    public NativeWrapper<VkInstance, Instance> {
 public:
     /**
      * @brief capture VkInstance object
@@ -41,22 +45,6 @@ public:
      * 
      */
     ~Instance();
-
-    /**
-     * @brief all copy/move operation forbidden
-     * 
-     */
-    Instance(const Instance&) =delete;
-    Instance& operator =(const Instance&) =delete;
-
-    /**
-     * @brief provides implicit conversion 
-     * to native class very usefull in native context
-     * 
-     * @return VkInstance 
-     */
-    operator VkInstance();
-    operator VkInstance() const;
 
 private:
     /**
@@ -71,9 +59,7 @@ private:
      */
     void checkExtensionSupport(std::vector<const char*>& required);
     void checkLayerSupport(std::vector<const char*>& required);
-};
-
-
+}; // Instance
 
 /********************************************/
 /***************IMPLIMENTATION***************/
@@ -83,7 +69,7 @@ Instance::Instance() {
 }
 
 Instance::~Instance() {
-    vkDestroyInstance(_instance, nullptr);
+    vkDestroyInstance(_native, nullptr);
 }
 
 void Instance::setup() {
@@ -114,19 +100,7 @@ void Instance::setup() {
     instanceData.enabledExtensionCount   = (uint32_t)requiredExtension.size();
     instanceData.ppEnabledExtensionNames = requiredExtension.data();
 
-    if (auto res = vkCreateInstance(&instanceData, nullptr, &_instance); res != VK_SUCCESS) {
-        // I really need logger
-        // Handle(res);
-        // std::raise(SIGTERM);
-    }
-}
-
-Instance::operator VkInstance() {
-    return _instance;
-}
-
-Instance::operator VkInstance() const {
-    return _instance;
+    VkCreate<vkCreateInstance>(&instanceData, nullptr, &_native);
 }
 
 void Instance::checkExtensionSupport(std::vector<const char*>& required) {
@@ -139,8 +113,8 @@ void Instance::checkExtensionSupport(std::vector<const char*>& required) {
     }
     
     if constexpr (buildType == BuildType::Debug) {
-        if(!Extensions<VkInstance>(_instance).isSupported(required)) {
-            // std::raise(SIGTERM);
+        if(!Extensions<VkInstance>(_native).isSupported(required)) {
+        
         }
     } 
 }
@@ -162,8 +136,6 @@ void Instance::checkLayerSupport(std::vector<const char*>& required) {
             hasLayer += !strcmp(avalibleLayer.layerName, required[i]);
         }
         if(!hasLayer) {
-            // Handle(layer[i])
-            // std::raise(SIGTERM);
         }
     }
 }

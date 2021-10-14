@@ -11,26 +11,25 @@
 
 export module App.RenderDevice;
 
+import <filesystem>;
+import <iostream>;
+import <vector>;
+import <array>;
+
 import Vulkan;
 import GLFW;
 
-import <array>;
-import <iostream>;
-import <vector>;
-import <filesystem>;
-
-import App.Window;
 import App.Settings;
+import App.Window;
 
-import Vk.Instance;
-import Vk.Queue;
-import Vk.Swapchain;
-import Vk.WindowSurface;
-import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
+import Vk.LogicalDevice;
+import Vk.WindowSurface;
 import Vk.Swapchain;
+import Vk.Instance;
 import Vk.Pipeline;
-import App.ShaderFactory;
+import Vk.Queue;
+import Vk.QueuePool;
 
 /**
  * @class RenderDevice
@@ -43,16 +42,14 @@ import App.ShaderFactory;
  */
 export class RenderDevice {
 private:
-    Window                                  wnd;      
-    Instance                                instance; 
-    WindowSurface                           surface;  
-    PhysicalDevice                          physical; 
-    LogicalDevice                           logical;  
-    // std::array<Queue, NUM_OF_QUEUE>         descriptors;         
-    Queue                                   descriptor;
-    Swapchain                               swapchain;
-    Pipeline                                pipeline;
-    // ShaderFactory                           factory;
+    Window::const_pointer                                  wnd;      
+    Instance::const_pointer                                instance; 
+    WindowSurface::const_pointer                           surface;  
+    PhysicalDevice::const_pointer                          physical; 
+    QueuePool::pointer                                     queues;
+    LogicalDevice::const_pointer                           logical;  
+    Swapchain::const_pointer                               swapchain;
+    Pipeline::const_pointer                                pipeline;
 
 
 private:
@@ -98,34 +95,15 @@ public:
 /***************IMPLIMENTATION***************/
 /********************************************/
 RenderDevice::RenderDevice() 
-    : wnd(name)
-    , instance()
-    , surface(instance, wnd)
-    , physical(instance)
-    , logical(physical)
-    // , descriptors({
-    //     GraphicQueue(physical, logical)
-    // })
-    , descriptor(GraphicQueue(physical, logical))
-    , swapchain(physical, logical, surface, wnd)
-    , pipeline(swapchain, logical)
-    // , factory(std::filesystem::current_path().concat(shaderDirectory))
-{ 
-    // if (glfwCreateWindowSurface(instance, wnd, nullptr, &surface) != VK_SUCCESS) {
-    //     // LOGIT
-    // }
-    // VkBool32 presentSupport = false;
-    // uint32_t queueIndex;
-    // vkGetPhysicalDeviceSurfaceSupportKHR(physical, queueIndex, surface, &presentSupport);
-    // if (queueIndex != physical.getQueueIndex(QueueType::Graphics)) {
-    //     std::cout << "something went wrong" << std::endl;
-    // }
-    // std::vector <VkExtensionProperties> vec;
-    // Extensions::getAllSupported(vec);
-    // for(auto v: vec) {
-    //     std::cout << v.extensionName <<std::endl;
-    // }
-}
+    : wnd       (std::make_shared<Window>(name))
+    , instance  (std::make_shared<Instance>())
+    , surface   (std::make_shared<WindowSurface>(instance, wnd))
+    , physical  (std::make_shared<PhysicalDevice>(instance->get()))
+    , queues    (std::make_shared<QueuePool>(physical, surface))
+    , logical   (std::make_shared<LogicalDevice>(physical, queues))
+    , swapchain (std::make_shared<Swapchain>(physical, logical, surface, wnd))
+    , pipeline  (std::make_shared<Pipeline>(swapchain, logical))
+{  }
 
 RenderDevice::~RenderDevice() {
 }
@@ -136,7 +114,7 @@ RenderDevice& RenderDevice::device() {
 }
 
 void RenderDevice::execute() {
-    while(!glfwWindowShouldClose(wnd)) {
+    while(!glfwWindowShouldClose(*wnd)) {
         glfwPollEvents();
     }
 }

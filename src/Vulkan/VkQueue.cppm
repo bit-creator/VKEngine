@@ -11,97 +11,83 @@
 
 export module Vk.Queue;
 
+export import App.NativeWrapper;
+
+import <optional>;
+import <limits>;
+
 import Vulkan;
 
-import Vk.PhysicalDevice;
-import Vk.LogicalDevice;
+export inline constexpr uint32_t npos = std::numeric_limits<uint32_t>::max();
 
 /**
  * @class Queue
- * @brief base abstract class, for construction
- * use a derived class that provides queue 
- * construction with a specific queue type
+ * @brief default constructible/destructible
  * 
  */
-export class Queue {
+export class Queue: 
+    public NativeWrapper<VkQueue, Queue> {
 private:
-    VkQueue                 _queue;
-    QueueType               _type;
-protected:
-    /**
-     * @brief get a descriptor to queue object by type
-     * 
-     * @param tp - type of needed queue
-     * @param phys - ref to physical device
-     * @param log - ref to logical device
-     * 
-     */
-    Queue(QueueType tp, PhysicalDevice& phys, LogicalDevice& log);
+    std::optional<uint32_t> _index;
 
 public:
-    /**
-     * @brief Destroy the Queue object
-     * tagged =default becouse all Queue desriptors
-     * releases with destroying logical device
-     * 
-     */
+    Queue() =default;
     ~Queue() =default;
 
     /**
-     * @brief get a type of queue
+     * @warning actually because Queue default 
+     * constructible/destructible, but be 
+     * sensitive every copying operation 
+     * need external set for descriptor
      * 
-     * @return QueueType 
      */
-    QueueType type();
+    Queue(const Queue& o);
 
     /**
-     * @brief provides implicit conversion 
-     * to native class very usefull in native context
+     * @brief setter/getter for _index;
      * 
-     * @return VkQueue 
      */
-    operator VkQueue();
+    void setIndex(uint32_t index);
+    uint32_t getIndex() const;
 
     /**
-     * @brief only move operation alloved
+     * @brief queue status checkers
      * 
      */
-    Queue(const Queue&) =delete;
-    Queue& operator =(const Queue&) =delete;
+    bool isCompleted() const;
+    bool isSupported() const;
 
-    Queue(Queue&&) =default;
-    Queue& operator =(Queue&&) =default;
-};
-
-/**
- * @class GraphicQueue
- * @brief provides the creation of a queue with
- *  a specific type =QueueType::Graphics
- * 
- */
-export class GraphicQueue: public Queue {
-public: GraphicQueue(PhysicalDevice& phys, LogicalDevice& log);
-};
-// etc...
+    /**
+     * @brief setups descriptor, requires completed
+     * LogicalDevice
+     */
+    void setupDescriptor(const VkDevice& device);
+}; // Queue
 
 
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
-Queue::Queue(QueueType tp, PhysicalDevice& phys, LogicalDevice& log) 
-    : _type(tp)
-{
-    vkGetDeviceQueue(log, phys.getQueueIndex(tp), 0, &_queue);
+Queue::Queue(const Queue& o): _index(o._index) {
+
 }
 
-QueueType Queue::type() {
-    return _type;
+void Queue::setIndex(uint32_t index) {
+    _index = index;
 }
 
-Queue::operator VkQueue() {
-    return _queue;
+bool Queue::isCompleted() const {
+    return _native != VK_NULL_HANDLE;
 }
 
-GraphicQueue::GraphicQueue(PhysicalDevice& phys, LogicalDevice& log)
-    : Queue(QueueType::Graphics, phys, log) 
-{  }
+bool Queue::isSupported() const {
+    return _index.has_value();
+}
+
+uint32_t Queue::getIndex() const {
+    return _index.value_or(npos);
+}
+
+void Queue::setupDescriptor(const VkDevice& device) {
+    if (isSupported()) vkGetDeviceQueue(device, _index.value(), 0, &_native);
+}

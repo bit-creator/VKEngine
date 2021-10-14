@@ -2,9 +2,10 @@ add_subdirectory(Vulkan)
 
 include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
 
+precompile ( App.NativeWrapper   NativeWrapper.cppm )
+precompile ( App.ShaderFactory   ShaderFactory.cppm )
 precompile ( App.RenderDevice    RenderDevice.cppm  )
 precompile ( App.Settings        AppSettings.cppm   )
-precompile ( App.ShaderFactory   ShaderFactory.cppm )
 precompile ( App.Window          Window.cppm        )
 
 find_package(Vulkan REQUIRED)

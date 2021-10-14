@@ -8,6 +8,8 @@ add_custom_command(TARGET ${module}
     -stdlib=libc++
     -fimplicit-modules
     -fimplicit-module-maps
+    # -Wall
+    # -O3
     -fprebuilt-module-path=${PRECOMPILED_MODULES_DIR}
     -c --precompile ${CMAKE_CURRENT_SOURCE_DIR}/${source}
     -o ${PRECOMPILED_MODULES_DIR}/${module}.pcm 
