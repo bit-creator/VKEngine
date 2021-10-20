@@ -98,16 +98,6 @@ void Swapchain::setup(PhysicalDevice::const_pointer device, WindowSurface::const
     setupExtent(window, capabilities);
     setupFormat(device, surface);
 
-    uint32_t imageCount;
-
-    if (capabilities.maxImageCount > 0) {
-        imageCount = capabilities.maxImageCount;
-    }
-    else {
-        imageCount = capabilities.minImageCount + 5;
-
-    }
-
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface = surface->get();
@@ -156,6 +146,8 @@ VkPresentModeKHR Swapchain::getMode(PhysicalDevice::const_pointer device, Window
     } else if(std::find(presentModes.begin(), presentModes.end(), VK_PRESENT_MODE_FIFO_RELAXED_KHR) != presentModes.end()) {
         mode = VK_PRESENT_MODE_FIFO_RELAXED_KHR;
     } else if(std::find(presentModes.begin(), presentModes.end(), VK_PRESENT_MODE_FIFO_KHR) != presentModes.end()) {
+        mode = VK_PRESENT_MODE_FIFO_KHR;
+    } else {
         mode = VK_PRESENT_MODE_FIFO_KHR;
     }
 

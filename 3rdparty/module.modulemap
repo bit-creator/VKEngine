@@ -1,13 +1,11 @@
 
 module GLFW {
-       requires cplusplus17
        header  "/usr/include/vulkan/vulkan_core.h"
        header "/usr/include/GLFW/glfw3.h"
        export *
 }
 
 module Vulkan {
-       requires cplusplus17
        header "/usr/include/vulkan/vulkan_core.h"
        export *
 }

@@ -35,8 +35,7 @@ export class FramePool:
     public NativeWrapper<VkCommandPool, FramePool> {
 private:
     std::vector<Frame>                    _frames;
-    LogicalDevice::const_pointer          _ld;
-    const QueuePool&                      _queues;     
+    LogicalDevice::const_pointer          _ld;  
 
 public:
     FramePool(Swapchain::const_pointer swapchain, 
@@ -55,7 +54,7 @@ public:
 FramePool::FramePool( Swapchain::const_pointer swapchain, 
                      LogicalDevice::const_pointer device, 
                      Pipeline::const_pointer pipe, 
-                     const QueuePool& queues): _ld(device), _queues(queues) {
+                     const QueuePool& queues): _ld(device) {
     std::vector<VkImage>                        images;
     // std::vector<VkCommandBuffer>                buffs;
 

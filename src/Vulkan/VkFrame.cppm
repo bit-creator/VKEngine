@@ -38,7 +38,6 @@ private:
     Framebuffer                             _buffer;
     Commandbuffer                           _command;
     Semaphore                               _renrerEnd;
-    VkSubmitInfo                            submitInfo;
 
 public:
     Frame(VkImage img, VkCommandPool pool, 
@@ -73,7 +72,8 @@ Frame::Frame(VkImage img, VkCommandPool pool,
     renderPassInfo.framebuffer = _buffer;
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = _swapchain->getExtent();
-    VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+    VkClearValue clearColor;
+    clearColor.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
     vkCmdBeginRenderPass(_command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -83,22 +83,6 @@ Frame::Frame(VkImage img, VkCommandPool pool,
     if (vkEndCommandBuffer(_command) != VK_SUCCESS) {
         throw std::runtime_error("failed to record command buffer!");
     }
-
-        // VkSubmitInfo submitInfo{};
-    // submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-    // // VkSemaphore waitSemaphores[] = {imageSync};
-    // VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
-    // submitInfo.waitSemaphoreCount = 1;
-    // // submitInfo.pWaitSemaphores = waitSemaphores;
-    // submitInfo.pWaitDstStageMask = waitStages;
-
-    // submitInfo.commandBufferCount = 1;
-    // submitInfo.pCommandBuffers = &_command.get();
-
-    // VkSemaphore signalSemaphores[] = {_renrerEnd};
-    // submitInfo.signalSemaphoreCount = 1;
-    // submitInfo.pSignalSemaphores = signalSemaphores;
 }
 
 Frame::~Frame() {

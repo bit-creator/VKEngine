@@ -58,7 +58,7 @@ private:
     LogicalDevice::const_pointer        _device;
 
 public:
-    Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device, QueuePool::const_pointer queues);
+    Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device);
     ~Pipeline();
 
     const RenderPass& getRenderPass() const;
@@ -68,9 +68,8 @@ public:
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
-Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device, QueuePool::const_pointer queues) 
-    : _device(device)
-    , _verticies()
+Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device) 
+    : _verticies()
     , _assembly()
     , _viewport(*swapchain)
     , _rasterizer()
@@ -79,8 +78,8 @@ Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_poin
     , _blender()
     , _layout(*device)
     , _pass(*device, *swapchain)
-    // , _pool(*swapchain, *device, _pass, *queues)
     , _factory(std::filesystem::current_path().concat(shaderDirectory), *device)
+    , _device(device)
 {
     const auto& vertShader = _factory[{ShaderType::Vertex, "vert.spv"}];
     const auto& fragShader = _factory[{ShaderType::Fragment, "frag.spv"}];
@@ -92,7 +91,7 @@ Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_poin
     auto viewInfo = _viewport.getState();
     auto rasterInfo= _rasterizer.getState();
     auto msInfo = _ms.getState();
-    auto dynInfo = _dynamic.getState();
+    // auto dynInfo = _dynamic.getState();
     auto blendInfo = _blender.getState();
     
     VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -109,8 +108,6 @@ Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_poin
     pipelineInfo.pDynamicState        = nullptr;
     pipelineInfo.layout               = _layout;
     pipelineInfo.renderPass           = _pass;
-
-    int magic =1;
     
     VkCreate<vkCreateGraphicsPipelines>(device->get(), nullptr, 1, &pipelineInfo, nullptr, &_native);
 }

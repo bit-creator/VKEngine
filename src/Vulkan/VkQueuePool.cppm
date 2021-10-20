@@ -131,7 +131,7 @@ QueuePool::QueuePool(PhysicalDevice::const_pointer phys, WindowSurface::const_po
     }
 
     VkBool32 presentSupport = false;
-    uint32_t queueIndex;
+    uint32_t queueIndex =0;
     vkGetPhysicalDeviceSurfaceSupportKHR(phys->get(), queueIndex, surf->get(), &presentSupport);
     
     if(!presentSupport) throw std::runtime_error("Device doesnt support presentation");

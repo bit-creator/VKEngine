@@ -130,7 +130,7 @@ void Instance::checkLayerSupport(std::vector<const char*>& required) {
     std::vector<VkLayerProperties> availableLayers;
     VkGet<vkEnumerateInstanceLayerProperties>(availableLayers);
 
-    for(auto i =0; i < required.size(); ++i) {
+    for(size_t i =0; i < required.size(); ++i) {
         bool hasLayer =false;
         for(auto avalibleLayer: availableLayers) {
             hasLayer += !strcmp(avalibleLayer.layerName, required[i]);

@@ -108,7 +108,7 @@ RenderDevice::RenderDevice()
     , queues    (std::make_shared<QueuePool>(physical, surface))
     , logical   (std::make_shared<LogicalDevice>(physical, queues))
     , swapchain (std::make_shared<Swapchain>(physical, logical, surface, wnd))
-    , pipeline  (std::make_shared<Pipeline>(swapchain, logical, queues))
+    , pipeline  (std::make_shared<Pipeline>(swapchain, logical))
     , frames    (swapchain, logical, pipeline, *queues)
     , sync      (logical)
 {  }

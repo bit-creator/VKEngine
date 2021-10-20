@@ -17,6 +17,13 @@ add_compile_options(
     -stdlib=libc++
     -fimplicit-modules
     -fimplicit-module-maps
+    -Wall
+    -Wextra
+    -fmath-errno
+    -O3
+    -march=native
+    -ffast-math
+    -fcxx-exceptions 
     -fprebuilt-module-path=${PRECOMPILED_MODULES_DIR}
 )
 

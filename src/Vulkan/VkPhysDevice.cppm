@@ -98,10 +98,10 @@ void PhysicalDevice::select(std::vector<VkPhysicalDevice>& devices) {
     }
 }
 
-bool PhysicalDevice::isCorrectProperty(VkPhysicalDevice device) {
+bool PhysicalDevice::isCorrectProperty( [[maybe_unused]] VkPhysicalDevice device) {
     return true;
 }
 
-bool PhysicalDevice::isCorrercFeatures(VkPhysicalDevice device) {
+bool PhysicalDevice::isCorrercFeatures( [[maybe_unused]] VkPhysicalDevice device) {
     return true;
 }

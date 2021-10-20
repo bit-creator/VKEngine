@@ -29,8 +29,8 @@ class ShaderFactory;
 export class Shader {
 private:
     VkShaderModule                      _shader;
-    ShaderType                          _type;
     const LogicalDevice&                _device;
+    ShaderType                          _type;
 
 
 public:
