@@ -22,13 +22,13 @@ import Vk.WindowSurface;
 import Vk.Getter;
 import Vk.Queue;
 
-enum class QueueType {
-    PresentQueue = 0,
-    GraphicsQueue = 1,
-    ComputeQueue = 2,
-    TransferQueue = 3,
-    SparseBindingQueue = 4,
-    ProtectedQueue = 5,
+export enum class QueueType {
+    Present = 0,
+    Graphics = 1,
+    Compute = 2,
+    Transfer = 3,
+    SparseBinding = 4,
+    Protected = 5,
 };
 
 /**
@@ -107,29 +107,8 @@ public:
     const Queue& operator[](QueueType type) const;
 
 private:
-
-uint32_t typeToBit(QueueType type) {
-    switch (type) {
-        case QueueType::PresentQueue:          return 0; 
-        case QueueType::GraphicsQueue:         return VK_QUEUE_GRAPHICS_BIT;  
-        case QueueType::ComputeQueue:          return VK_QUEUE_COMPUTE_BIT;  
-        case QueueType::TransferQueue:         return VK_QUEUE_TRANSFER_BIT;  
-        case QueueType::SparseBindingQueue:    return VK_QUEUE_SPARSE_BINDING_BIT;  
-        case QueueType::ProtectedQueue:        return VK_QUEUE_PROTECTED_BIT;  
-        default:                               return VK_QUEUE_FLAG_BITS_MAX_ENUM;
-    };
-}; 
-
-QueueType bitToType(uint32_t flag) {
-    if( flag & 0)                             return QueueType::PresentQueue; 
-    if( flag & VK_QUEUE_GRAPHICS_BIT)         return QueueType::GraphicsQueue;  
-    if( flag & VK_QUEUE_COMPUTE_BIT)          return QueueType::ComputeQueue;  
-    if( flag & VK_QUEUE_TRANSFER_BIT)         return QueueType::TransferQueue;  
-    if( flag & VK_QUEUE_SPARSE_BINDING_BIT)   return QueueType::SparseBindingQueue;  
-    if( flag & VK_QUEUE_PROTECTED_BIT)        return QueueType::ProtectedQueue;  
-    throw std::runtime_error("Unknown queue bit");
-}; 
-    
+    uint32_t typeToBit(QueueType type);
+    QueueType bitToType(uint32_t flag);
 }; // QueuePool
 
 /********************************************/
@@ -157,8 +136,8 @@ QueuePool::QueuePool(PhysicalDevice::const_pointer phys, WindowSurface::const_po
     
     if(!presentSupport) throw std::runtime_error("Device doesnt support presentation");
 
-    if (!isQueueAvailable(QueueType::PresentQueue)) {
-        _descriptors[(uint32_t)QueueType::PresentQueue].setIndex(queueIndex);
+    if (!isQueueAvailable(QueueType::Present)) {
+        _descriptors[(uint32_t)QueueType::Present].setIndex(queueIndex);
         ++_numOfQueues;
     }
 
@@ -204,3 +183,25 @@ Queue& QueuePool::operator[](QueueType type) {
 const Queue& QueuePool::operator[](QueueType type) const {
     return _descriptors[(uint32_t)type];
 }
+
+uint32_t QueuePool::typeToBit(QueueType type) {
+    switch (type) {
+        case QueueType::Present:          return 0; 
+        case QueueType::Graphics:         return VK_QUEUE_GRAPHICS_BIT;  
+        case QueueType::Compute:          return VK_QUEUE_COMPUTE_BIT;  
+        case QueueType::Transfer:         return VK_QUEUE_TRANSFER_BIT;  
+        case QueueType::SparseBinding:    return VK_QUEUE_SPARSE_BINDING_BIT;  
+        case QueueType::Protected:        return VK_QUEUE_PROTECTED_BIT;  
+        default:                               return VK_QUEUE_FLAG_BITS_MAX_ENUM;
+    };
+}; 
+
+QueueType QueuePool::bitToType(uint32_t flag) {
+    if( flag & 0)                             return QueueType::Present; 
+    if( flag & VK_QUEUE_GRAPHICS_BIT)         return QueueType::Graphics;  
+    if( flag & VK_QUEUE_COMPUTE_BIT)          return QueueType::Compute;  
+    if( flag & VK_QUEUE_TRANSFER_BIT)         return QueueType::Transfer;  
+    if( flag & VK_QUEUE_SPARSE_BINDING_BIT)   return QueueType::SparseBinding;  
+    if( flag & VK_QUEUE_PROTECTED_BIT)        return QueueType::Protected;  
+    throw std::runtime_error("Unknown queue bit");
+}; 

@@ -11,73 +11,119 @@
 
 export module Vk.Frame;
 
+export import App.NativeWrapper;
+
 import <vector>;
 import <iostream>;
 
 import Vulkan;
 import Vk.Swapchain;
 import Vk.LogicalDevice;
+import Vk.Pipeline;
 import Vk.RenderPass;
+import Vk.ImageView;
+import Vk.Framebuffer;
+import Vk.Commandbuffer;
+import Vk.Semaphore;
+import Vk.QueuePool;
+import Vk.Queue;
 
-export class Frame {
+export class Frame:
+    public NativeWrapper<VkImage, Frame> {
 private:
-    const LogicalDevice*            _device;
-    VkImage                         _image;
-    VkImageView                     _view;
-    VkFramebuffer                   _buffer;
-    // VkCommandBuffer ...
+    LogicalDevice::const_pointer            _device;
+    Swapchain::const_pointer                _swapchain;
+    Pipeline::const_pointer                 _pipe;
+    ImageView                               _view;
+    Framebuffer                             _buffer;
+    Commandbuffer                           _command;
+    Semaphore                               _renrerEnd;
+    VkSubmitInfo                            submitInfo;
 
 public:
-    Frame(VkImage img, const Swapchain& swapchain, const LogicalDevice& device, const RenderPass& pass);
-    ~Frame();
+    Frame(VkImage img, VkCommandPool pool, 
+        Swapchain::const_pointer swapchain, 
+        LogicalDevice::const_pointer  device, 
+        Pipeline::const_pointer  pipe);
 
-    Frame(const Frame&) =delete;
-    Frame& operator =(const Frame&) =delete;
+    ~Frame();
 
     Frame(Frame&&) =default;
     Frame& operator =(Frame&&) =default;
+
+    const Semaphore& submit(const Semaphore& imageSync, const QueuePool& queues) const;
 };
 
-Frame::Frame(VkImage img, const Swapchain& swapchain, const LogicalDevice& device, const RenderPass& pass): 
-        _device(&device), _image(img) {
-    VkImageViewCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    createInfo.image = img;
-    createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    createInfo.format = swapchain.getFormat().format;
-    
-    createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+Frame::Frame(VkImage img, VkCommandPool pool, 
+    Swapchain::const_pointer swapchain, 
+    LogicalDevice::const_pointer  device, 
+    Pipeline::const_pointer  pipe): 
+          _device(device)
+        , _swapchain(swapchain)
+        , _pipe(pipe)
+        , _view(img, swapchain->getFormat().format, device)
+        , _buffer(swapchain->getExtent(), pipe->getRenderPass(), _view, device)
+        , _command(pool, device) 
+        , _renrerEnd(device) {
+    _native = img; 
 
-    createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    createInfo.subresourceRange.baseMipLevel = 0;
-    createInfo.subresourceRange.levelCount = 1;
-    createInfo.subresourceRange.baseArrayLayer = 0;
-    createInfo.subresourceRange.layerCount = 1;
-
-    // std::cout << createInfo.format << std::endl;
-
-    if (vkCreateImageView(device, &createInfo, nullptr, &_view) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create image views!");
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = _pipe->getRenderPass();
+    renderPassInfo.framebuffer = _buffer;
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = _swapchain->getExtent();
+    VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
+    vkCmdBeginRenderPass(_command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBindPipeline(_command, VK_PIPELINE_BIND_POINT_GRAPHICS, *_pipe);
+        vkCmdDraw(_command, 3, 1, 0, 0);
+    vkCmdEndRenderPass(_command);
+    if (vkEndCommandBuffer(_command) != VK_SUCCESS) {
+        throw std::runtime_error("failed to record command buffer!");
     }
 
-    VkFramebufferCreateInfo framebufferInfo{};
-    framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    framebufferInfo.renderPass = pass;
-    framebufferInfo.attachmentCount = 1;
-    framebufferInfo.pAttachments = &_view;
-    framebufferInfo.width = swapchain.getExtent().width;
-    framebufferInfo.height = swapchain.getExtent().height;
-    framebufferInfo.layers = 1;
+        // VkSubmitInfo submitInfo{};
+    // submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &_buffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create framebuffer!");
-    }
+    // // VkSemaphore waitSemaphores[] = {imageSync};
+    // VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+    // submitInfo.waitSemaphoreCount = 1;
+    // // submitInfo.pWaitSemaphores = waitSemaphores;
+    // submitInfo.pWaitDstStageMask = waitStages;
+
+    // submitInfo.commandBufferCount = 1;
+    // submitInfo.pCommandBuffers = &_command.get();
+
+    // VkSemaphore signalSemaphores[] = {_renrerEnd};
+    // submitInfo.signalSemaphoreCount = 1;
+    // submitInfo.pSignalSemaphores = signalSemaphores;
 }
 
 Frame::~Frame() {
-    vkDestroyFramebuffer(*_device, _buffer, nullptr);
-    vkDestroyImageView(*_device, _view, nullptr);
+}
+
+const Semaphore& Frame::submit(const Semaphore& imageSync, const QueuePool& queues) const{
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkSemaphore waitSemaphores[] = {imageSync};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &_command.get();
+
+    VkSemaphore signalSemaphores[] = {_renrerEnd};
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+
+    if (vkQueueSubmit(queues[QueueType::Graphics].get(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+        throw std::runtime_error("failed to submit draw command buffer!");
+    }
+    
+    return _renrerEnd;
 }

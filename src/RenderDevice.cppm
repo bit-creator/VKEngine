@@ -30,6 +30,9 @@ import Vk.Instance;
 import Vk.Pipeline;
 import Vk.Queue;
 import Vk.QueuePool;
+import Vk.FramePool;
+import Vk.Frame;
+import Vk.Semaphore;
 
 /**
  * @class RenderDevice
@@ -50,7 +53,8 @@ private:
     LogicalDevice::const_pointer                           logical;  
     Swapchain::const_pointer                               swapchain;
     Pipeline::const_pointer                                pipeline;
-
+    FramePool                                              frames;
+    Semaphore                                              sync;
 
 private:
     /**
@@ -87,6 +91,8 @@ public:
      * 
      */
     void execute();
+
+    void render();
 }; // RenderDevice
 
 
@@ -102,7 +108,9 @@ RenderDevice::RenderDevice()
     , queues    (std::make_shared<QueuePool>(physical, surface))
     , logical   (std::make_shared<LogicalDevice>(physical, queues))
     , swapchain (std::make_shared<Swapchain>(physical, logical, surface, wnd))
-    , pipeline  (std::make_shared<Pipeline>(swapchain, logical))
+    , pipeline  (std::make_shared<Pipeline>(swapchain, logical, queues))
+    , frames    (swapchain, logical, pipeline, *queues)
+    , sync      (logical)
 {  }
 
 RenderDevice::~RenderDevice() {
@@ -116,5 +124,30 @@ RenderDevice& RenderDevice::device() {
 void RenderDevice::execute() {
     while(!glfwWindowShouldClose(*wnd)) {
         glfwPollEvents();
+        render();
     }
+}
+
+void RenderDevice::render() {
+    uint32_t imageIndex;
+    vkAcquireNextImageKHR(logical->get(), swapchain->get(), UINT64_MAX, sync, VK_NULL_HANDLE, &imageIndex);
+    
+    auto& renderEnd = frames[imageIndex].submit(sync, *queues);
+
+
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &renderEnd.get();
+
+
+    VkSwapchainKHR swapChains[] = {*swapchain};
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
+    presentInfo.pImageIndices = &imageIndex;
+
+    presentInfo.pResults = nullptr; // Optional
+
+    vkQueuePresentKHR((*queues)[QueueType::Present], &presentInfo);
 }

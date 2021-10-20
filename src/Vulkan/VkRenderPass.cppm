@@ -55,6 +55,8 @@ public:
     operator VkRenderPass();
 
     ~RenderPass();
+
+    void start();
 };
 
 
@@ -117,4 +119,8 @@ RenderPass::operator VkRenderPass() const {
 
 RenderPass::operator VkRenderPass() {
     return _pass;
+}
+
+void RenderPass::start() {
+    
 }

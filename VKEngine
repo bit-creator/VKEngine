@@ -38,6 +38,7 @@ function compile {
     cmake --build . --target Vk.LogicalDevice
 
 # # fifth target
+    cmake --build . --target Vk.Semaphore 
     cmake --build . --target Vk.Layout
     cmake --build . --target Vk.Shader  
     cmake --build . --target App.ShaderFactory
@@ -45,12 +46,15 @@ function compile {
     cmake --build . --target Vk.Viewport
     cmake --build . --target Vk.ColorAttachment
     cmake --build . --target Vk.RenderPass
+    cmake --build . --target Vk.ImageView
+    cmake --build . --target Vk.Framebuffer 
+    cmake --build . --target Vk.Commandbuffer 
+    cmake --build . --target Vk.Pipeline
     cmake --build . --target Vk.Frame
     cmake --build . --target Vk.FramePool
     
 
 # # sixth target
-    cmake --build . --target Vk.Pipeline
     cmake --build . --target Vk.Viewport
 
 # seventh target

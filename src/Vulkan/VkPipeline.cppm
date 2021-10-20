@@ -23,8 +23,9 @@ import Vk.Shader;
 import Vk.Layout;
 import Vk.Assembly;
 import Vk.Viewport;
-import Vk.FramePool;
+// import Vk.FramePool;
 import Vk.Swapchain;
+import Vk.QueuePool;
 import Vk.RenderPass;
 import Vk.Rasterizer;
 import Vk.Multisampler;
@@ -52,20 +53,22 @@ private:
     ColorBlender                        _blender;
     Layout                              _layout;
     RenderPass                          _pass;
-    FramePool                           _pool;
+    // FramePool                           _pool;
     ShaderFactory                       _factory;
     LogicalDevice::const_pointer        _device;
 
 public:
-    Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device);
+    Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device, QueuePool::const_pointer queues);
     ~Pipeline();
+
+    const RenderPass& getRenderPass() const;
 }; // Pipeline
 
 
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
-Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device) 
+Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device, QueuePool::const_pointer queues) 
     : _device(device)
     , _verticies()
     , _assembly()
@@ -76,7 +79,7 @@ Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_poin
     , _blender()
     , _layout(*device)
     , _pass(*device, *swapchain)
-    , _pool(*swapchain, *device, _pass)
+    // , _pool(*swapchain, *device, _pass, *queues)
     , _factory(std::filesystem::current_path().concat(shaderDirectory), *device)
 {
     const auto& vertShader = _factory[{ShaderType::Vertex, "vert.spv"}];
@@ -114,4 +117,8 @@ Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_poin
 
 Pipeline::~Pipeline() {
     vkDestroyPipeline(_device->get(), _native, nullptr);
+}
+
+const RenderPass& Pipeline::getRenderPass() const {
+    return _pass;
 }
