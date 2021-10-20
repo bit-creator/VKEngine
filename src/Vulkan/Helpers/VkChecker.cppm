@@ -10,7 +10,9 @@
  */
 export module Vk.Checker;
 
-import Vk;
+export import <string>;
+
+import Vulkan;
 
 import <memory>;
 
@@ -30,6 +32,6 @@ export template <
     switch(res) {
         case VK_SUCCESS: return;
         // case ...
-        // default: throw ...;
+        default: throw std::runtime_error(std::string("failed to create Vulkan object ") + std::to_string((uint64_t)VkFunc));
     };
 }

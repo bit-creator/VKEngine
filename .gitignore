@@ -33,4 +33,10 @@
 
 # build
 .build/
-precompiled/
+assets/bin/
+
+# ide
+.vscode
+
+# dont care about it
+VkGLFWModule.hpp

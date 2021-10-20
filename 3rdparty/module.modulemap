@@ -1,0 +1,11 @@
+
+module GLFW {
+       header  "/usr/include/vulkan/vulkan_core.h"
+       header "/usr/include/GLFW/glfw3.h"
+       export *
+}
+
+module Vulkan {
+       header "/usr/include/vulkan/vulkan_core.h"
+       export *
+}

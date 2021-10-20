@@ -10,6 +10,7 @@
  */
 
 export module App.Settings;
+import <filesystem>;
 
 export enum class BuildType {
     Release,
@@ -22,13 +23,14 @@ export struct Version {
     unsigned path;
 };
 
-export inline constexpr char        versionStr[]    ="1.0.0\0";
-export inline constexpr Version     version         ={1, 0, 0};
-
-export inline constexpr char        name[]          ="VKEngine\0";
-export inline constexpr unsigned    windowHeight    =1080;
-export inline constexpr unsigned    windowWidth     =1920;
-export inline constexpr BuildType   buildType       =BuildType::Debug;
+export inline constexpr char                    versionStr[]      ="1.0.0\0";
+export inline constexpr Version                 version           ={1, 0, 0};
+  
+export inline constexpr char                    name[]            ="VKEngine\0";
+export inline constexpr unsigned                windowHeight      =1080;
+export inline constexpr unsigned                windowWidth       =1920;
+export inline constexpr BuildType               buildType         =BuildType::Debug;
+export inline constexpr char                    shaderDirectory[] ="/assets/bin/";
 
 // export inline constexpr char       validation[][]     ={
 //                                         "VK_LAYER_MESA_device_select\0",

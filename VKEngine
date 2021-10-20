@@ -1,34 +1,74 @@
 #!/bin/bash
 
 function compile {
-    mkdir -p precompiled
     mkdir -p .build
     
-    ./prebuiltVk.sh
-
     cd .build
     
     cmake ..
 
-    cmake --build . --target Vk.Getter
-    cmake --build . --target Vk.Checker
-    cmake --build . --target Vk.Extensions
+#target 3rdparty
+    cmake --build . --target Vulkan
+    cmake --build . --target GLFW
+    
+# first target
+    cmake --build . --target Vk.Multisampler
+    cmake --build . --target Vk.DynamicState
+    cmake --build . --target Vk.ColorBlender 
+    cmake --build . --target Vk.VertexBuffer
+    cmake --build . --target Vk.Rasterizer
     cmake --build . --target App.Settings
+    cmake --build . --target Vk.Assembly
+    cmake --build . --target Vk.Checker
+    cmake --build . --target Vk.Getter
+    cmake --build . --target App.NativeWrapper
     cmake --build . --target App.Window
-    cmake --build . --target Vk.Instance
+
+# #second target
+    cmake --build . --target Vk.Extensions
+
+# # third target
     cmake --build . --target Vk.PhysicalDevice 
+    cmake --build . --target Vk.Instance
+
+# # fourth target
     cmake --build . --target Vk.WindowSurface
-    cmake --build . --target Vk.LogicalDevice 
-    cmake --build . --target Vk.Swapchain
     cmake --build . --target Vk.Queue
+    cmake --build . --target Vk.QueuePool
+    cmake --build . --target Vk.LogicalDevice
+
+# # fifth target
+    cmake --build . --target Vk.Semaphore 
+    cmake --build . --target Vk.Layout
+    cmake --build . --target Vk.Shader  
+    cmake --build . --target App.ShaderFactory
+    cmake --build . --target Vk.Swapchain
+    cmake --build . --target Vk.Viewport
+    cmake --build . --target Vk.ColorAttachment
+    cmake --build . --target Vk.RenderPass
+    cmake --build . --target Vk.ImageView
+    cmake --build . --target Vk.Framebuffer 
+    cmake --build . --target Vk.Commandbuffer 
+    cmake --build . --target Vk.Pipeline
+    cmake --build . --target Vk.Frame
+    cmake --build . --target Vk.FramePool
+    
+
+# # sixth target
+    cmake --build . --target Vk.Viewport
+
+# seventh target
     cmake --build . --target App.RenderDevice
-    cmake --build . --target VKEngine
+
+# main target
+    cmake --build . -j7 --target VKEngine
+
+
 
     cd ..
 } 
 
 function clear {
-    rm -rf precompiled/ 
     rm -rf .build/
 }
 
@@ -59,5 +99,5 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
 fi
 
 if [[ "$2" == "--run" || "$2" == "-r" || "$1" == "" ]]; then
-    ./.build/VKEngine
+    ./.build/src/VKEngine
 fi
