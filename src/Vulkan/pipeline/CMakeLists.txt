@@ -1,0 +1,15 @@
+include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
+
+precompile ( Vk.ColorAttachment VkColorAttachment.cppm )
+precompile ( Vk.DynamicState    VkDynamicStates.cppm   )
+precompile ( Vk.Multisampler    VkMultisampling.cppm   )
+precompile ( Vk.VertexBuffer    VkVertexBuffer.cppm    )
+precompile ( Vk.ColorBlender    VkColorBlender.cppm    )
+precompile ( Vk.RenderPass      VkRenderPass.cppm      )
+precompile ( Vk.Rasterizer      VkRasterizer.cppm      )
+precompile ( Vk.Assembly        VkAssembly.cppm        )
+precompile ( Vk.Pipeline        VkPipeline.cppm        )
+precompile ( Vk.Viewport        VkViewport.cppm        )
+precompile ( Vk.Layout          VkLayout.cppm          )
+
+set(sources ${sources} PARENT_SCOPE)
