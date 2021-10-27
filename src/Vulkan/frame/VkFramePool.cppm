@@ -56,17 +56,15 @@ FramePool::FramePool( Swapchain::const_pointer swapchain,
                      Pipeline::const_pointer pipe, 
                      const QueuePool& queues): _ld(device) {
     std::vector<VkImage>                        images;
-    // std::vector<VkCommandBuffer>                buffs;
-
+   
     VkGet<vkGetSwapchainImagesKHR>(images, device->get(), swapchain->get());
 
     _frames.reserve(images.size());
-    // buffs.resize(images.size());
-
+   
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queues[QueueType::Graphics].getIndex();
-    poolInfo.flags = 0; // Optional
+    poolInfo.flags = 0;
 
     if (vkCreateCommandPool(device->get(), &poolInfo, nullptr, &_native) != VK_SUCCESS) {
         throw std::runtime_error("failed to create command pool!");

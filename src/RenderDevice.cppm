@@ -126,6 +126,8 @@ void RenderDevice::execute() {
         glfwPollEvents();
         render();
     }
+
+    vkDeviceWaitIdle(logical->get());
 }
 
 void RenderDevice::render() {
@@ -150,4 +152,5 @@ void RenderDevice::render() {
     presentInfo.pResults = nullptr; // Optional
 
     vkQueuePresentKHR((*queues)[QueueType::Present], &presentInfo);
+    vkQueueWaitIdle((*queues)[QueueType::Present]);
 }

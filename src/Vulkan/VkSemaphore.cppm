@@ -11,6 +11,8 @@
 
 export module Vk.Semaphore;
 
+import <iostream>;
+
 export import App.NativeWrapper;
 
 import Vulkan;
@@ -23,7 +25,7 @@ private:
 
 public:
     Semaphore(LogicalDevice::const_pointer device);
-    Semaphore();
+    ~Semaphore();
 };
 
 
@@ -37,7 +39,7 @@ Semaphore::Semaphore(LogicalDevice::const_pointer device): _ld(device) {
     }
 }
 
-Semaphore::Semaphore() {
+Semaphore::~Semaphore() {
     vkDestroySemaphore(*_ld, _native, nullptr);
 }
 
