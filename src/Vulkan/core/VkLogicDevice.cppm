@@ -18,57 +18,52 @@ import Vulkan;
 import <vector>;
 
 import Vk.PhysicalDevice;
-import Vk.QueuePool;
+export import Vk.QueuePool;
+import Vk.WindowSurface;
 import Vk.Checker;
 
-/**
- * @class LogicalDevice
- * 
- * @warning copy/move constructors tagged =delete becouse I actualy 
- * dont know how correct copy LogicDevice
- */
-export class LogicalDevice:
-    public NativeWrapper<VkDevice, LogicalDevice> {
-
-public:
+export struct LogicalDevice: public 
+    vk::NativeWrapper < VkDevice > {
     /**
-     * @brief capture VkLogicalDevice object
-     * 
-     * @param device - ref to PhysDevice
      * @param queues - ref to QueuePool, need for set queues descriptors to pool
-     * 
      */
-    LogicalDevice(PhysicalDevice::const_pointer device, QueuePool::pointer queues);
+    LogicalDevice(PhysicalDevice device, WindowSurface surf);
 
-    /**
-     * @brief release capture objects
-     * 
-     */
-    ~LogicalDevice();
+    QueuePool   queues;
 }; // LogicalDevice
 
-/********************************************/
-/***************IMPLIMENTATION***************/
-/********************************************/
-LogicalDevice::LogicalDevice(PhysicalDevice::const_pointer device, QueuePool::pointer queues) {
+LogicalDevice::LogicalDevice(PhysicalDevice device, WindowSurface surf)
+    : Internal([](const value_type& l){ vkDestroyDevice(l, nullptr); })
+    , queues(QueuePool(device, surf)) 
+    {
     float queuePriority = 1.0f;
     std::vector<VkDeviceQueueCreateInfo> queueInfos;
-    std::vector<uint32_t> avaialableQueue;
-    queues->getAvailaibleIndex(avaialableQueue);
+    // std::vector<uint32_t> avaialableQueue;
+    // queues.getAvailaibleIndex(avaialableQueue);
 
-    queueInfos.resize(avaialableQueue.size());
-
-    uint32_t enumerator =0;
-    for(auto& info: queueInfos) {
-        info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        info.queueFamilyIndex = avaialableQueue[enumerator];
-        info.queueCount = 1;
-        info.pQueuePriorities = &queuePriority;
-        ++enumerator;
-    }
+    // queueInfos.resize();
+    queueInfos.push_back({
+                VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+                nullptr, 0, 0, 1, &queuePriority
+            });
+        
+    // for(uint32_t i = 0; i < NUM_OF_QUEUE; ++i) {
+    //     if (auto index = queues[(QueueType)i].getIndex(); index != npos)
+    //         queueInfos.push_back({
+    //             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+    //             nullptr, 0, index, 1, &queuePriority
+    //         });
+        // info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        // info.queueFamilyIndex = avaialableQueue[enumerator];
+        // info.queueCount = 1;
+        // info.pQueuePriorities = &queuePriority;
+        // ++enumerator;
+    // }
+    // std::cout << queueInfos.size() << std::endl;
+    //     
 
     VkPhysicalDeviceFeatures deviceFeatures;
-    vkGetPhysicalDeviceFeatures(device->get(), &deviceFeatures);
+    vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
     const auto ext = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 
@@ -80,11 +75,7 @@ LogicalDevice::LogicalDevice(PhysicalDevice::const_pointer device, QueuePool::po
     createInfo.enabledExtensionCount = 1;
     createInfo.ppEnabledExtensionNames = &ext;
 
-    VkCreate<vkCreateDevice>(device->get(), &createInfo, nullptr, &_native);
+    VkCreate<vkCreateDevice>(device, &createInfo, nullptr, &_native);
 
-    queues->setupDescriptors(_native);
-}
-
-LogicalDevice::~LogicalDevice() {
-    vkDestroyDevice(_native, nullptr);
+    queues.setupDescriptors(_native);
 }

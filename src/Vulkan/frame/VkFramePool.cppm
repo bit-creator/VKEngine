@@ -32,18 +32,12 @@ import Vk.Semaphore;
 import <vector>;
 
 export class FramePool:
-    public NativeWrapper<VkCommandPool, FramePool> {
+    public vk::NativeWrapper<VkCommandPool> {
 private:
     std::vector<Frame>                    _frames;
-    LogicalDevice::const_pointer          _ld;  
 
 public:
-    FramePool(Swapchain::const_pointer swapchain, 
-            LogicalDevice::const_pointer device, 
-            Pipeline::const_pointer pipe, 
-            const QueuePool& queues);
-    
-    ~FramePool();
+    FramePool(Swapchain swapchain, LogicalDevice device, Pipeline& pipe);
 
     const Frame& operator [](int i);
 
@@ -51,32 +45,27 @@ public:
 };
 
 
-FramePool::FramePool( Swapchain::const_pointer swapchain, 
-                     LogicalDevice::const_pointer device, 
-                     Pipeline::const_pointer pipe, 
-                     const QueuePool& queues): _ld(device) {
+FramePool::FramePool( Swapchain swapchain, LogicalDevice device, Pipeline& pipe): 
+    Internal([&](value_type fp){ vkDestroyCommandPool(device, fp, nullptr); }) {
     std::vector<VkImage>                        images;
    
-    VkGet<vkGetSwapchainImagesKHR>(images, device->get(), swapchain->get());
+    VkGet<vkGetSwapchainImagesKHR>(images, device, swapchain);
 
     _frames.reserve(images.size());
    
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.queueFamilyIndex = queues[QueueType::Graphics].getIndex();
+    poolInfo.queueFamilyIndex = device.queues.graphic.getIndex();
+    // poolInfo.queueFamilyIndex = queues[QueueType::Graphics].getIndex();
     poolInfo.flags = 0;
 
-    if (vkCreateCommandPool(device->get(), &poolInfo, nullptr, &_native) != VK_SUCCESS) {
+    if (vkCreateCommandPool(device, &poolInfo, nullptr, &_native) != VK_SUCCESS) {
         throw std::runtime_error("failed to create command pool!");
     }
 
     for(uint32_t i =0; i < images.size(); ++i) {
         _frames.emplace_back(images[i], _native, swapchain, device, pipe);
     }
-}
-
-FramePool::~FramePool() {
-    vkDestroyCommandPool(_ld->get(), _native, nullptr);
 }
 
 const Frame& FramePool::operator [](int i) {

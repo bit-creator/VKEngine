@@ -19,48 +19,21 @@ import GLFW;
 
 import App.Settings;
 
-/**
- * @class Window
- * @brief Provides simplified api for working with GLFWwindow
- * 
- */
-export class Window:
-    public NativeWrapper < GLFWwindow*, Window > {
-public:
-    /**
-     * @brief Construct a new GLFWWindow object
-     * 
-     * @param name of Window
-     */
+export struct Window: public 
+    vk::NativeWrapper < GLFWwindow* > {
     Window(const char* name);
-
-    /**
-     * @brief release GLFWwindow descriptor 
-     * and destroy the Window object
-     * 
-     */
-    ~Window();
 }; // Window
 
-
-/********************************************/
-/***************IMPLIMENTATION***************/
-/********************************************/
-Window::Window(const char* name) {
-    if (!glfwInit()) {
-        throw std::runtime_error("failed to initialize GLFW");
-    }
+Window::Window(const char* name)
+    : Internal([](GLFWwindow* wnd) {
+        glfwDestroyWindow(wnd);
+        glfwTerminate();
+    }) {
+    glfwInit() ?: throw std::runtime_error("failed to initialize GLFW");
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     
-    _native = glfwCreateWindow(windowWidth, windowHeight, name, nullptr, nullptr);
-    
-    if(_native == nullptr) {
-        throw std::runtime_error("failed to create GLFW window");
-    }
-}
+    native(glfwCreateWindow(windowWidth, windowHeight, name, nullptr, nullptr));
 
-Window::~Window() {
-    glfwDestroyWindow(_native);
-    glfwTerminate();
+    native() ?: throw std::runtime_error("failed to create GLFW window");
 }

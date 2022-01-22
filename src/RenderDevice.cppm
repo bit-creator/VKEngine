@@ -45,14 +45,13 @@ import Vk.Semaphore;
  */
 export class RenderDevice {
 private:
-    Window::const_pointer                                  wnd;      
-    Instance::const_pointer                                instance; 
-    WindowSurface::const_pointer                           surface;  
-    PhysicalDevice::const_pointer                          physical; 
-    QueuePool::pointer                                     queues;
-    LogicalDevice::const_pointer                           logical;  
-    Swapchain::const_pointer                               swapchain;
-    Pipeline::const_pointer                                pipeline;
+    Window                                                 wnd;      
+    Instance                                               instance; 
+    WindowSurface                                          surface;  
+    PhysicalDevice                                         physical;
+    LogicalDevice                                          logical;  
+    Swapchain                                              swapchain;
+    Pipeline                                               pipeline;
     FramePool                                              frames;
     Semaphore                                              sync;
 
@@ -69,7 +68,7 @@ private:
      * destroy the Render Device object
      * 
      */
-    ~RenderDevice();
+    ~RenderDevice() =default;
 
     /**
      * @brief all copy/move operation forbidden
@@ -92,29 +91,21 @@ public:
      */
     void execute();
 
+private:
     void render();
 }; // RenderDevice
 
-
-
-/********************************************/
-/***************IMPLIMENTATION***************/
-/********************************************/
 RenderDevice::RenderDevice() 
-    : wnd       (std::make_shared<Window>(name))
-    , instance  (std::make_shared<Instance>())
-    , surface   (std::make_shared<WindowSurface>(instance, wnd))
-    , physical  (std::make_shared<PhysicalDevice>(instance->get()))
-    , queues    (std::make_shared<QueuePool>(physical, surface))
-    , logical   (std::make_shared<LogicalDevice>(physical, queues))
-    , swapchain (std::make_shared<Swapchain>(physical, logical, surface, wnd))
-    , pipeline  (std::make_shared<Pipeline>(swapchain, logical))
-    , frames    (swapchain, logical, pipeline, *queues)
+    : wnd       (name)
+    , instance  ()
+    , surface   (instance, wnd)
+    , physical  (instance)
+    , logical   (physical, surface)
+    , swapchain (physical, logical, surface, wnd)
+    , pipeline  (swapchain, logical)
+    , frames    (swapchain, logical, pipeline)
     , sync      (logical)
 {  }
-
-RenderDevice::~RenderDevice() {
-}
 
 RenderDevice& RenderDevice::device() {
     static RenderDevice device;
@@ -122,35 +113,33 @@ RenderDevice& RenderDevice::device() {
 }
 
 void RenderDevice::execute() {
-    while(!glfwWindowShouldClose(*wnd)) {
+    while(!glfwWindowShouldClose(wnd)) {
         glfwPollEvents();
         render();
     }
 
-    vkDeviceWaitIdle(logical->get());
+    vkDeviceWaitIdle(logical);
 }
 
 void RenderDevice::render() {
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(logical->get(), swapchain->get(), UINT64_MAX, sync, VK_NULL_HANDLE, &imageIndex);
+    vkAcquireNextImageKHR(logical, swapchain, UINT64_MAX, sync, VK_NULL_HANDLE, &imageIndex);
     
-    auto& renderEnd = frames[imageIndex].submit(sync, *queues);
-
+    auto& renderEnd = frames[imageIndex].submit(sync, logical.queues);
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &renderEnd.get();
+    presentInfo.pWaitSemaphores = &renderEnd.native();
 
-
-    VkSwapchainKHR swapChains[] = {*swapchain};
+    VkSwapchainKHR swapChains[] = {swapchain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     presentInfo.pImageIndices = &imageIndex;
 
     presentInfo.pResults = nullptr; // Optional
 
-    vkQueuePresentKHR((*queues)[QueueType::Present], &presentInfo);
-    vkQueueWaitIdle((*queues)[QueueType::Present]);
+    vkQueuePresentKHR(logical.queues.graphic, &presentInfo);
+    vkQueueWaitIdle(logical.queues.graphic);
 }

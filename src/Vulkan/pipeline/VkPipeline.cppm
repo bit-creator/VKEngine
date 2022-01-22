@@ -18,31 +18,30 @@ import Vulkan;
 import <vector>;
 import <filesystem>;
 
-import Vk.Checker;
-import Vk.Shader;
-import Vk.Layout;
-import Vk.Assembly;
-import Vk.Viewport;
-// import Vk.FramePool;
-import Vk.Swapchain;
-import Vk.QueuePool;
-import Vk.RenderPass;
-import Vk.Rasterizer;
-import Vk.Multisampler;
-import Vk.VertexBuffer;
-import Vk.DynamicState;
-import Vk.ColorBlender;
+export import Vk.Checker;
+export import Vk.Shader;
+export import Vk.Layout;
+export import Vk.Assembly;
+export import Vk.Viewport;
+export import Vk.Swapchain;
+export import Vk.QueuePool;
+export import Vk.RenderPass;
+export import Vk.Rasterizer;
+export import Vk.Multisampler;
+export import Vk.VertexBuffer;
+export import Vk.DynamicState;
+export import Vk.ColorBlender;
 import Vk.LogicalDevice;
 
 import App.Settings;
-import App.ShaderFactory;
+export import App.ShaderFactory;
 
 /**
  * @brief simple aggregator for pipeline primitives 
  * 
  */
 export class Pipeline:
-    public NativeWrapper <VkPipeline, Pipeline> {
+    public vk::NativeWrapper <VkPipeline> {
 private:
     VertexBuffer                        _verticies;
     Assembly                            _assembly;
@@ -53,13 +52,10 @@ private:
     ColorBlender                        _blender;
     Layout                              _layout;
     RenderPass                          _pass;
-    // FramePool                           _pool;
     ShaderFactory                       _factory;
-    LogicalDevice::const_pointer        _device;
 
 public:
-    Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device);
-    ~Pipeline();
+    Pipeline(Swapchain swapchain, LogicalDevice device);
 
     const RenderPass& getRenderPass() const;
 }; // Pipeline
@@ -68,18 +64,18 @@ public:
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
-Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_pointer device) 
-    : _verticies()
+Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
+    Internal([&](value_type p){ vkDestroyPipeline(device, p, nullptr); })
+    , _verticies()
     , _assembly()
-    , _viewport(*swapchain)
+    , _viewport(swapchain)
     , _rasterizer()
     , _ms()
     , _dynamic(Dynamic::Viewport, Dynamic::LineWidth)
     , _blender()
-    , _layout(*device)
-    , _pass(*device, *swapchain)
-    , _factory(std::filesystem::current_path().concat(shaderDirectory), *device)
-    , _device(device)
+    , _layout(device)
+    , _pass(device, swapchain)
+    , _factory(std::filesystem::current_path().concat(shaderDirectory), device)
 {
     const auto& vertShader = _factory[{ShaderType::Vertex, "vert.spv"}];
     const auto& fragShader = _factory[{ShaderType::Fragment, "frag.spv"}];
@@ -109,11 +105,7 @@ Pipeline::Pipeline(Swapchain::const_pointer swapchain, LogicalDevice::const_poin
     pipelineInfo.layout               = _layout;
     pipelineInfo.renderPass           = _pass;
     
-    VkCreate<vkCreateGraphicsPipelines>(device->get(), nullptr, 1, &pipelineInfo, nullptr, &_native);
-}
-
-Pipeline::~Pipeline() {
-    vkDestroyPipeline(_device->get(), _native, nullptr);
+    VkCreate<vkCreateGraphicsPipelines>(device, nullptr, 1, &pipelineInfo, nullptr, &_native);
 }
 
 const RenderPass& Pipeline::getRenderPass() const {

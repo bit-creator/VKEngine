@@ -18,28 +18,17 @@ export import App.NativeWrapper;
 import Vulkan;
 import Vk.LogicalDevice;
 
-export class Semaphore:
-    public NativeWrapper<VkSemaphore, Semaphore> {
-private:
-    LogicalDevice::const_pointer                _ld;
-
-public:
-    Semaphore(LogicalDevice::const_pointer device);
-    ~Semaphore();
+export struct Semaphore: public 
+    vk::NativeWrapper<VkSemaphore> {
+    Semaphore(LogicalDevice device);
 };
 
-
-
-Semaphore::Semaphore(LogicalDevice::const_pointer device): _ld(device) {
+Semaphore::Semaphore(LogicalDevice device):
+    Internal([&](value_type s){ vkDestroySemaphore(device, s, nullptr); }) {
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-    if (vkCreateSemaphore(*device, &semaphoreInfo, nullptr, &_native) != VK_SUCCESS) {
+    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &_native) != VK_SUCCESS) {
         throw std::runtime_error("failed to create semaphores!");
     }
 }
-
-Semaphore::~Semaphore() {
-    vkDestroySemaphore(*_ld, _native, nullptr);
-}
-

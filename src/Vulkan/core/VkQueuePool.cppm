@@ -20,16 +20,7 @@ import <memory>;
 import Vk.PhysicalDevice;
 import Vk.WindowSurface;
 import Vk.Getter;
-import Vk.Queue;
-
-export enum class QueueType {
-    Present = 0,
-    Graphics = 1,
-    Compute = 2,
-    Transfer = 3,
-    SparseBinding = 4,
-    Protected = 5,
-};
+export import Vk.Queue;
 
 /**
  * @brief Generally NUM_OF_QUEUE shows size of previous enum
@@ -49,152 +40,138 @@ export inline constexpr uint32_t NUM_OF_QUEUE =6;
  */
 export class QueuePool {
 public:
-    using pointer   = std::shared_ptr<QueuePool>;
-    using reference = std::weak_ptr<QueuePool>;
-    using const_pointer   = std::shared_ptr<const QueuePool>;
-    using const_reference = std::weak_ptr<const QueuePool>;
-    
-private:
-    std::vector<Queue>          _descriptors;
-    uint32_t                    _numOfQueues;
+    PresentQueue                                present;
+    GraphicsQueue                               graphic;
+    ComputeQueue                                compute;
+    TransferQueue                               transfer;
+    SparseBindingQueue                          sparseBinding;
+    ProtectedQueue                              protectedQ;
 
 public:
-    /**
-     * @brief set available all supported Queues, but not sets descriptors for each
-     * 
-     */
-    QueuePool(PhysicalDevice::const_pointer phys, WindowSurface::const_pointer surf);
+    QueuePool(PhysicalDevice phys, WindowSurface surf);
 
-    /**
-     * @param tp - type of queue
-     * @return uint32_t index of queue by type
-     * 
-     */
-    uint32_t getQueueIndex(QueueType type) const;
+    // uint32_t getQueueIndex(QueueType type) const;
 
-    /**
-     * @param type - type of queue
-     * @return true if queue available
-     * @return false if not
-     * 
-     */
-    bool isQueueAvailable(QueueType type) const;
+    // bool isQueueAvailable(QueueType type) const;
 
-    /**
-     * @return uint32_t number of available queues 
-     * 
-     */
-    uint32_t numOfAvailableQueue() const;
+    // uint32_t numOfAvailableQueue() const;
 
-    /**
-     * @brief set to @param indices all available indecies
-     * 
-     */
-    void getAvailaibleIndex(std::vector<uint32_t>& indices) const;
+    // void getAvailaibleIndex(std::vector<uint32_t>& indices) const;
 
-    /**
-     * @brief set descriptors for q ueues 
-     * 
-     */
     void setupDescriptors(const VkDevice& device);
 
-    /**
-     * @brief operator [] by queue type
-     * @param type - type of queue
-     * 
-     */
-    Queue& operator[](QueueType type);  
-    const Queue& operator[](QueueType type) const;
+    Queue& get(QueueType type);
+    Queue& get(uint32_t flag);
 
-private:
-    uint32_t typeToBit(QueueType type);
+    Queue& operator[](QueueType type);  
+    // const Queue& operator[](QueueType type) const;
+    
     QueueType bitToType(uint32_t flag);
 }; // QueuePool
-
-/********************************************/
-/***************IMPLIMENTATION***************/
-/********************************************/
-QueuePool::QueuePool(PhysicalDevice::const_pointer phys, WindowSurface::const_pointer surf) 
-    : _numOfQueues(0) {  
-    _descriptors.resize(NUM_OF_QUEUE);
+// #include <vulkan/vulkan_core.h>
+QueuePool::QueuePool(PhysicalDevice phys, WindowSurface surf) {  
     std::vector<VkQueueFamilyProperties> queueFamilies;
-    VkGet<vkGetPhysicalDeviceQueueFamilyProperties>(queueFamilies, phys->get());
+    VkGet<vkGetPhysicalDeviceQueueFamilyProperties>(queueFamilies, phys);
 
-    uint32_t index =0;
-    for(auto q: queueFamilies) {
-        QueueType type = bitToType(q.queueFlags);
-        if (isQueueAvailable(type)) continue;
-        else {
-            _descriptors[(uint32_t)type].setIndex(index);
-            ++_numOfQueues;
-        }
-    }
+    // uint32_t index =0;
+    // for(auto [ flag, count, tsbits, transferGranularuty ]: queueFamilies) {
+    //     std::cout << queueFamilies.size() << std::endl;
+    //     std::cout << VK_QUEUE_GRAPHICS_BIT << std::endl;
+    //     // if   (get(flag).isSupported()) continue;
+    //     // else 
+    //      get(flag).setIndex(index);
+    //     ++index;
+    // }
+
+    graphic.setIndex(0);
 
     VkBool32 presentSupport = false;
-    uint32_t queueIndex =0;
-    vkGetPhysicalDeviceSurfaceSupportKHR(phys->get(), queueIndex, surf->get(), &presentSupport);
+    // uint32_t queueIndex =0;
+    vkGetPhysicalDeviceSurfaceSupportKHR(phys, graphic.getIndex(), surf, &presentSupport);
     
     if(!presentSupport) throw std::runtime_error("Device doesnt support presentation");
 
-    if (!isQueueAvailable(QueueType::Present)) {
-        _descriptors[(uint32_t)QueueType::Present].setIndex(queueIndex);
-        ++_numOfQueues;
-    }
-
+    present.setIndex(graphic.getIndex());
 }
 
-uint32_t QueuePool::getQueueIndex(QueueType type) const {
-    if(isQueueAvailable(type)) {
-        return _descriptors[(uint32_t)type].getIndex();
-    } else {
-        return npos;
-    }
-}
+// uint32_t QueuePool::getQueueIndex(QueueType type) const {
+//     // if(isQueueAvailable(type)) {
+//     //     return _descriptors[(uint32_t)type].getIndex();
+//     // } else {
+//     //     return npos;
+//     // }
+// }
     
-uint32_t QueuePool::numOfAvailableQueue() const {
-    return _numOfQueues;
-}
+// uint32_t QueuePool::numOfAvailableQueue() const {
+//     // return _numOfQueues;
+// }
 
-bool QueuePool::isQueueAvailable(QueueType type) const {
-    return _descriptors[(uint32_t)type].isSupported();
-}
+// bool QueuePool::isQueueAvailable(QueueType type) const {
+//     // return _descriptors[(uint32_t)type].isSupported();
+// }
 
 void QueuePool::setupDescriptors(const VkDevice& device) {
-    for(auto& descr: _descriptors) {
-        if(descr.isSupported()) descr.setupDescriptor(device);
-    }
+    graphic.setupDescriptor(device);
+    compute.setupDescriptor(device);
+    transfer.setupDescriptor(device);
+    sparseBinding.setupDescriptor(device);
+    protectedQ.setupDescriptor(device);
+    present.setupDescriptor(device);
 }
 
-void QueuePool::getAvailaibleIndex(std::vector<uint32_t>& indices) const {
-    for(const auto& descr: _descriptors) {
-        if(descr.isSupported()) indices.push_back(descr.getIndex());
-    }
-    // its not most effective way to remove a duplicates, but for small arrays thats OK;
-    indices.erase ( 
-        unique(indices.begin(), indices.end()), 
-        indices.end() 
-    );
-}
+// void QueuePool::getAvailaibleIndex(std::vector<uint32_t>& indices) const {
+//     for(const auto& descr: _descriptors) {
+//         if(descr.isSupported()) indices.push_back(descr.getIndex());
+//     }
+//     // its not most effective way to remove a duplicates, but for small arrays thats OK;
+//     indices.erase ( 
+//         unique(indices.begin(), indices.end()), 
+//         indices.end() 
+//     );
+// }
+
 
 Queue& QueuePool::operator[](QueueType type) {
-    return _descriptors[(uint32_t)type];
+    return get(type);
 }
 
-const Queue& QueuePool::operator[](QueueType type) const {
-    return _descriptors[(uint32_t)type];
-}
+// const Queue& QueuePool::operator[](QueueType type) const {
+//     return get(type);
+// }
 
-uint32_t QueuePool::typeToBit(QueueType type) {
+Queue& QueuePool::get(QueueType type) {
     switch (type) {
-        case QueueType::Present:          return 0; 
-        case QueueType::Graphics:         return VK_QUEUE_GRAPHICS_BIT;  
-        case QueueType::Compute:          return VK_QUEUE_COMPUTE_BIT;  
-        case QueueType::Transfer:         return VK_QUEUE_TRANSFER_BIT;  
-        case QueueType::SparseBinding:    return VK_QUEUE_SPARSE_BINDING_BIT;  
-        case QueueType::Protected:        return VK_QUEUE_PROTECTED_BIT;  
-        default:                               return VK_QUEUE_FLAG_BITS_MAX_ENUM;
-    };
-}; 
+        case QueueType::Graphics:         return graphic;  
+        case QueueType::Compute:          return compute;  
+        case QueueType::Transfer:         return transfer;  
+        case QueueType::SparseBinding:    return sparseBinding;  
+        case QueueType::Protected:        return protectedQ;  
+        default:                          return present;
+    }
+}
+
+Queue& QueuePool::get(uint32_t flag) {
+    switch (flag) {
+        case VK_QUEUE_GRAPHICS_BIT:         return graphic;  
+        case VK_QUEUE_COMPUTE_BIT:          return compute;  
+        case VK_QUEUE_TRANSFER_BIT:         return transfer;  
+        case VK_QUEUE_SPARSE_BINDING_BIT:   return sparseBinding;  
+        case VK_QUEUE_PROTECTED_BIT:        return protectedQ;  
+        default:                            return present;
+    }
+}
+
+// uint32_t QueuePool::typeToBit(QueueType type) {
+//     switch (type) {
+//         case QueueType::Present:          return 0; 
+//         case QueueType::Graphics:         return VK_QUEUE_GRAPHICS_BIT;  
+//         case QueueType::Compute:          return VK_QUEUE_COMPUTE_BIT;  
+//         case QueueType::Transfer:         return VK_QUEUE_TRANSFER_BIT;  
+//         case QueueType::SparseBinding:    return VK_QUEUE_SPARSE_BINDING_BIT;  
+//         case QueueType::Protected:        return VK_QUEUE_PROTECTED_BIT;  
+//         default:                               return VK_QUEUE_FLAG_BITS_MAX_ENUM;
+//     };
+// }; 
 
 QueueType QueuePool::bitToType(uint32_t flag) {
     if( flag & 0)                             return QueueType::Present; 

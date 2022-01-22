@@ -14,6 +14,7 @@ find_package(glfw3 3.3 REQUIRED)
 add_compile_options(
     -std=c++${CMAKE_CXX_STANDARD}
     -fmodules
+    # -g3
     -stdlib=libc++
     -fimplicit-modules
     -fimplicit-module-maps
@@ -21,7 +22,7 @@ add_compile_options(
     -Wextra
     -fmath-errno
     -O3
-    -march=native
+    -march=native 
     -ffast-math
     -fcxx-exceptions 
     -fprebuilt-module-path=${PRECOMPILED_MODULES_DIR}

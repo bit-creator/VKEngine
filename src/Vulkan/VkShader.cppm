@@ -16,6 +16,7 @@ import Vulkan;
 import <vector>;
 
 import Vk.LogicalDevice;
+import App.NativeWrapper;
 
 export enum class ShaderType {
     Vertex   =VK_SHADER_STAGE_VERTEX_BIT,
@@ -26,21 +27,12 @@ export enum class ShaderType {
 
 class ShaderFactory;
 
-export class Shader {
-private:
-    VkShaderModule                      _shader;
-    const LogicalDevice&                _device;
-    ShaderType                          _type;
+export struct Shader: public
+    vk::NativeWrapper < VkShaderModule > {
+    const ShaderType                          _type;
 
-
-public:
     Shader(ShaderType type, const LogicalDevice& device, const std::vector<std::byte>& source);
-    ~Shader();
     VkPipelineShaderStageCreateInfo getStage() const;
-
-private:
-    void setupShader(const std::vector<std::byte>& source);
-
 };
 
 export struct VertexShader: public Shader {
@@ -59,31 +51,23 @@ export struct GeometryShader: public Shader {
 };
 
 Shader::Shader(ShaderType type, const LogicalDevice& device, const std::vector<std::byte>& source)
-    : _device(device), _type(type) {
-    setupShader(source);
-}
-
-Shader::~Shader() {
-    vkDestroyShaderModule(_device, _shader, nullptr);
-}
-
-void Shader::setupShader(const std::vector<std::byte>& source) {
+    : Internal([&](value_type sh){ vkDestroyShaderModule(device, sh, nullptr); }) 
+    , _type(type) {    
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = source.size();
     createInfo.pCode = reinterpret_cast<const uint32_t*>(source.data());
 
-    if (vkCreateShaderModule(_device, &createInfo, nullptr, &_shader) != VK_SUCCESS) {
+    if (vkCreateShaderModule(device, &createInfo, nullptr, &_native) != VK_SUCCESS) {
         throw std::runtime_error("failed to create shader module!");
     }
 }
-
 
 VkPipelineShaderStageCreateInfo Shader::getStage() const {
     VkPipelineShaderStageCreateInfo stage{};
     stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     stage.stage = (VkShaderStageFlagBits)_type;
-    stage.module = _shader;
+    stage.module = _native;
     stage.pName = "main";
     return stage;
 }

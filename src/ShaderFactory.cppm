@@ -15,14 +15,14 @@ export module App.ShaderFactory;
 import Vk.Shader;
 import Vk.LogicalDevice;
 
-import <unordered_map>;
-import <string_view>;
-import <filesystem>;
-import <iostream>;
-import <fstream>;
-import <vector>;
-import <string>;
-import <map>;
+export import <unordered_map>;
+export import <string_view>;
+export import <filesystem>;
+export import <iostream>;
+export import <fstream>;
+export import <vector>;
+export import <string>;
+export import <map>;
 
 namespace fs = std::filesystem;
 
@@ -58,6 +58,7 @@ public:
 
 private:
     void loadBinarySource(fs::path path);
+    Shader get(const shaderData& data) const;
 };
 
 ShaderFactory::ShaderFactory(fs::path path, const LogicalDevice& device) : _device(device) {
@@ -67,7 +68,6 @@ ShaderFactory::ShaderFactory(fs::path path, const LogicalDevice& device) : _devi
         }
     }
 }
-
 
 ShaderFactory::~ShaderFactory() {
 }
@@ -87,18 +87,18 @@ void ShaderFactory::loadBinarySource(fs::path path) {
     }
 }
 
-Shader ShaderFactory::operator[](const shaderData& data) const {
+Shader ShaderFactory::get(const shaderData& data) const {
     if(const auto& [type, name] = data; _shaderTree.contains(name)) {
         return Shader(type, _device, _shaderTree.at(name));
     } else {
         throw std::runtime_error("Unknown name of shader");
-    } 
+    }
+}
+
+Shader ShaderFactory::operator[](const shaderData& data) const {
+    return get(data); 
 }
 
 Shader ShaderFactory::operator[](const shaderData& data) {
-    if(const auto& [type, name] = data; _shaderTree.contains(name)) {
-        return Shader(type, _device, _shaderTree[name]);
-    } else {
-        throw std::runtime_error("Unknown name of shader");
-    }
+    return get(data);
 }

@@ -1,6 +1,8 @@
 #!/bin/bash
 
 function compile {
+    clear
+
     mkdir -p .build
     
     cd .build
@@ -68,19 +70,19 @@ function compile {
     cd ..
 } 
 
-function clear {
+function clean {
     rm -rf .build/
 }
 
 function help {
     echo "-r  or --run      = run VKEngine"
-    echo "-c  or --clear    = clear all build files"
+    echo "-c  or --clean    = clean all build files"
     echo "-b  or --build    = build project"
     echo "-rb or --rebuild  = totaly rebuild all project"
 }
 
-if [[ "$1" == "--clear" || "$1" == "-c" ]]; then
-    clear
+if [[ "$1" == "--clean" || "$1" == "-c" ]]; then
+    clean
 fi
 
 
@@ -90,7 +92,7 @@ fi
 
 
 if [[ "$1" == "--rebuild" || "$1" == "-rb" ]]; then
-    clear
+    clean
     compile
 fi
 

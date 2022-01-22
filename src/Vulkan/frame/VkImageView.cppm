@@ -19,21 +19,14 @@ import Vk.LogicalDevice;
 import Vk.Swapchain;
 
 export class ImageView:
-    public NativeWrapper<VkImageView, ImageView> {
-private:
-    LogicalDevice::const_pointer                _ld;
-
+    public vk::NativeWrapper<VkImageView> {
 public:
-    ImageView(VkImage img, VkFormat format, LogicalDevice::const_pointer device);
-    ~ImageView();
-
-    ImageView(ImageView&&) =default;
-    ImageView& operator =(ImageView&&) =default;
+    ImageView(VkImage img, VkFormat format, LogicalDevice device);
 };
 
 
-ImageView::ImageView(VkImage img, VkFormat format, LogicalDevice::const_pointer device)
-    : _ld(device) {
+ImageView::ImageView(VkImage img, VkFormat format, LogicalDevice device):
+    Internal([&](value_type img){ vkDestroyImageView(device, img, nullptr); }) {
     VkImageViewCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     createInfo.image = img;
@@ -51,13 +44,7 @@ ImageView::ImageView(VkImage img, VkFormat format, LogicalDevice::const_pointer 
     createInfo.subresourceRange.baseArrayLayer = 0;
     createInfo.subresourceRange.layerCount = 1;
 
-    // std::cout << createInfo.format << std::endl;
-
-    if (vkCreateImageView(device->get(), &createInfo, nullptr, &_native) != VK_SUCCESS) {
+    if (vkCreateImageView(device, &createInfo, nullptr, &_native) != VK_SUCCESS) {
         throw std::runtime_error("failed to create image views!");
     }
-}
-
-ImageView::~ImageView() {
-    vkDestroyImageView(*_ld, _native, nullptr);
 }

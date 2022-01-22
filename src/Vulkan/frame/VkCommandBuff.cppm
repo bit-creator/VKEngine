@@ -21,24 +21,20 @@ import Vk.ImageView;
 import Vk.RenderPass;
 
 export class Commandbuffer:
-    public NativeWrapper<VkCommandBuffer, Commandbuffer> {
+    public vk::NativeWrapper<VkCommandBuffer> {
 public:
-    Commandbuffer(VkCommandPool pool, LogicalDevice::const_pointer device);
-    ~Commandbuffer();
-
-    Commandbuffer(Commandbuffer&&) =default;
-    Commandbuffer& operator =(Commandbuffer&&) =default;
+    Commandbuffer(VkCommandPool pool, LogicalDevice device);
 };
 
 
-Commandbuffer::Commandbuffer(VkCommandPool pool, LogicalDevice::const_pointer device) {
+Commandbuffer::Commandbuffer(VkCommandPool pool, LogicalDevice device) {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = pool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocInfo.commandBufferCount = 1;
 
-    if (vkAllocateCommandBuffers(*device, &allocInfo, &_native) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(device, &allocInfo, &_native) != VK_SUCCESS) {
         throw std::runtime_error("failed to allocate command buffers!");
     }
 
@@ -50,7 +46,4 @@ Commandbuffer::Commandbuffer(VkCommandPool pool, LogicalDevice::const_pointer de
     if (vkBeginCommandBuffer(_native, &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("failed to begin recording command buffer!");
     }
-}
-
-Commandbuffer::~Commandbuffer() {
 }
