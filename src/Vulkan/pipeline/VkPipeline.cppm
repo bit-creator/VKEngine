@@ -14,6 +14,8 @@ export module Vk.Pipeline;
 export import App.NativeWrapper;
 
 import Vulkan;
+import <array>;
+import Geometry.Triangle;
 
 import <vector>;
 import <filesystem>;
@@ -31,6 +33,7 @@ export import Vk.Multisampler;
 export import Vk.VertexBuffer;
 export import Vk.DynamicState;
 export import Vk.ColorBlender;
+import Vk.PhysicalDevice;
 import Vk.LogicalDevice;
 
 import App.Settings;
@@ -55,8 +58,9 @@ private:
     ShaderFactory                       _factory;
 
 public:
-    Pipeline(Swapchain swapchain, LogicalDevice device);
+    Pipeline(Swapchain swapchain, LogicalDevice device, PhysicalDevice pd);
 
+    const VertexBuffer& getBuffer() const;
     const RenderPass& getRenderPass() const;
 }; // Pipeline
 
@@ -64,9 +68,9 @@ public:
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
-Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
+Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device, PhysicalDevice pd):
     Internal([&](value_type p){ vkDestroyPipeline(device, p, nullptr); })
-    , _verticies()
+    , _verticies(device, pd)
     , _assembly()
     , _viewport(swapchain)
     , _rasterizer()
@@ -82,7 +86,24 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
 
     std::vector stages{vertShader.getStage(), fragShader.getStage()};
 
-    auto vertInfo = _verticies.getState();
+
+
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    
+    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+
+
+
+
+    // auto vertInfo = _verticies.getState();
     auto assemInfo = _assembly.getState();
     auto viewInfo = _viewport.getState();
     auto rasterInfo= _rasterizer.getState();
@@ -94,7 +115,7 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
     pipelineInfo.pStages = stages.data();
-    pipelineInfo.pVertexInputState    = &vertInfo;
+    pipelineInfo.pVertexInputState    = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState  = &assemInfo;
     pipelineInfo.pViewportState       = &viewInfo;
     pipelineInfo.pRasterizationState  = &rasterInfo;
@@ -110,4 +131,8 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
 
 const RenderPass& Pipeline::getRenderPass() const {
     return _pass;
+}
+
+const VertexBuffer& Pipeline::getBuffer() const {
+    return _verticies;
 }

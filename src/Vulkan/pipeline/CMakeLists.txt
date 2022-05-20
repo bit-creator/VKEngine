@@ -11,5 +11,6 @@ precompile ( Vk.Assembly        VkAssembly.cppm        )
 precompile ( Vk.Pipeline        VkPipeline.cppm        )
 precompile ( Vk.Viewport        VkViewport.cppm        )
 precompile ( Vk.Layout          VkLayout.cppm          )
+precompile ( Vk.Memory          VkMemory.cppm          )
 
 set(sources ${sources} PARENT_SCOPE)

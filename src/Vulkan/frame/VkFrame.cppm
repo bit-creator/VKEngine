@@ -66,6 +66,11 @@ Frame::Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice
     renderPassInfo.pClearValues = &clearColor;
     vkCmdBeginRenderPass(_command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(_command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipe);
+
+        VkBuffer vertexBuffers[] = {pipe.getBuffer().native()};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(_command, 0, 1, vertexBuffers, offsets);
+
         vkCmdDraw(_command, 3, 1, 0, 0);
     vkCmdEndRenderPass(_command);
     if (vkEndCommandBuffer(_command) != VK_SUCCESS) {

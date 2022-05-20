@@ -102,7 +102,7 @@ RenderDevice::RenderDevice()
     , physical  (instance)
     , logical   (physical, surface)
     , swapchain (physical, logical, surface, wnd)
-    , pipeline  (swapchain, logical)
+    , pipeline  (swapchain, logical, physical)
     , frames    (swapchain, logical, pipeline)
     , sync      (logical)
 {  }
