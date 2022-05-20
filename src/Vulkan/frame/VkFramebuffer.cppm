@@ -20,35 +20,25 @@ import Vk.ImageView;
 import Vk.RenderPass;
 
 export class Framebuffer:
-    public NativeWrapper<VkFramebuffer, Framebuffer> {
-private:
-    LogicalDevice::const_pointer                _ld;
-
+    public vk::NativeWrapper<VkFramebuffer> {
 public:
-    Framebuffer(VkExtent2D ext, const RenderPass& pass, const ImageView& view, LogicalDevice::const_pointer device);
-    ~Framebuffer();
-
-    Framebuffer(Framebuffer&&) =default;
-    Framebuffer& operator =(Framebuffer&&) =default;
+    Framebuffer(VkExtent2D ext, const RenderPass& pass, const ImageView& view, LogicalDevice device);
 };
 
 
-Framebuffer::Framebuffer(VkExtent2D ext, const RenderPass& pass, const ImageView& view, LogicalDevice::const_pointer device)
-    : _ld(device) {
+Framebuffer::Framebuffer(VkExtent2D ext, const RenderPass& pass, const ImageView& view, LogicalDevice device)
+    : Internal([&](value_type fb){ vkDestroyFramebuffer(device, fb, nullptr); }) 
+    {
     VkFramebufferCreateInfo framebufferInfo{};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebufferInfo.renderPass = pass;
     framebufferInfo.attachmentCount = 1;
-    framebufferInfo.pAttachments = &view.get();
+    framebufferInfo.pAttachments = &(view.native());
     framebufferInfo.width = ext.width;
     framebufferInfo.height =ext.height;
     framebufferInfo.layers = 1;
 
-    if (vkCreateFramebuffer(*device, &framebufferInfo, nullptr, &_native) != VK_SUCCESS) {
+    if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &_native) != VK_SUCCESS) {
         throw std::runtime_error("failed to create framebuffer!");
     }
-}
-
-Framebuffer::~Framebuffer() {
-    vkDestroyFramebuffer(*_ld, _native, nullptr);
 }

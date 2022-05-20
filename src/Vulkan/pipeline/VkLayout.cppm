@@ -1,5 +1,5 @@
 /**
- * @file VkColorBlender.cppm
+ * @file VkLayout.cppm
  * @author Illia.Abernikhin (https://github.com/bit-creator)
  * @brief  the module provides the abstraction on layouts
  * @version 1.0.0
@@ -20,25 +20,15 @@ import Vk.Checker;
 import <stdexcept>;
 import <memory>;
 
-export class Layout: 
-    public NativeWrapper<VkPipelineLayout, Layout> {
-private:
-    // VkPipelineLayout                        _native;
-    const LogicalDevice&                    _device;
-
-public:
+export struct Layout: 
+    public vk::NativeWrapper<VkPipelineLayout> {
     Layout(const LogicalDevice& device);
-    ~Layout();
-
-    // operator VkPipelineLayout() const;
-    // operator VkPipelineLayout();
-
-    // VkPipelineLayoutCreateInfo
-    // getState();
 };
 
 
-Layout::Layout(const LogicalDevice& device): _device(device) {
+Layout::Layout(const LogicalDevice& device)
+    : Internal([&device](const value_type& l)
+        { vkDestroyPipelineLayout(device, l, nullptr); }) {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 0; 
@@ -46,26 +36,7 @@ Layout::Layout(const LogicalDevice& device): _device(device) {
     pipelineLayoutInfo.pushConstantRangeCount = 0;
     pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
-    // VkCreate<vkCreatePipelineLayout>(device, &pipelineLayoutInfo, nullptr, &_native);
-
     if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &_native) != VK_SUCCESS) {
         throw std::runtime_error("failed to create pipeline layout!");
     }
 }
-
-Layout::~Layout() {
-    vkDestroyPipelineLayout(_device, _native, nullptr);
-}
-
-
-// Layout::operator VkPipelineLayout() const {
-//     return _native;
-// }
-
-// Layout::operator VkPipelineLayout() {
-//     return _native;
-// }
-
-// VkPipelineLayoutCreateInfo
-// Layout::getState() {
-// }

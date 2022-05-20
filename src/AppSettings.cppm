@@ -10,7 +10,6 @@
  */
 
 export module App.Settings;
-import <filesystem>;
 
 export enum class BuildType {
     Release,

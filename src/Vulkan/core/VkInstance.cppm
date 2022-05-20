@@ -26,31 +26,11 @@ import Vk.Extensions;
 import Vk.Checker;
 import Vk.Getter;
 
-/**
- * @class Instance
- * 
- * @brief wrap capturing/releasing of Vkinstance object
- */
-export class Instance: 
-    public NativeWrapper<VkInstance, Instance> {
-public:
-    /**
-     * @brief capture VkInstance object
-     * 
-     */
+export struct Instance: public 
+    vk::NativeWrapper < VkInstance > {
     Instance();
 
-    /**
-     * @brief release VkINstance object
-     * 
-     */
-    ~Instance();
-
 private:
-    /**
-     * @brief help method for configuring instance
-     * 
-     */
     void setup();
 
     /**
@@ -61,15 +41,11 @@ private:
     void checkLayerSupport(std::vector<const char*>& required);
 }; // Instance
 
-/********************************************/
-/***************IMPLIMENTATION***************/
-/********************************************/
-Instance::Instance() {
+Instance::Instance():
+    Internal([](value_type i) {
+        vkDestroyInstance(i, nullptr);
+    }) {
     setup();
-}
-
-Instance::~Instance() {
-    vkDestroyInstance(_native, nullptr);
 }
 
 void Instance::setup() {

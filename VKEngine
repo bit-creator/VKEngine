@@ -1,86 +1,185 @@
 #!/bin/bash
 
+#
+# If I try to build project with std-modules and side lib `like a mathon`
+# which used custom std-modules I recieved next error:
+#
+# > fatal error: module '_Builtin_stddef_max_align_t' is defined in both
+#   '/home/user/.cache/clang/ModuleCache/1ZQ7RBKO4A6V0/_Builtin_stddef_max_align_t-1KLR31KNJ6263.pcm' and
+#   '/home/user/.cache/clang/ModuleCache/1VEVSXT4LZMYX/_Builtin_stddef_max_align_t-1KLR31KNJ6263.pcm'
+# 
+# I doesn got reason of it and not find way to solve them
+#
+# UPD:/ I fix error if use same compile opitions in same order. BTW its not work with CMake... magic
+#
+# 
+
+function compile_module {
+    echo "compile module $2"
+    clang++-14\
+    -std=c++20\
+    -stdlib=libc++\
+    -fmodules\
+    -O3\
+    -fPIC\
+    -Wall\
+    -Wextra\
+    -fmath-errno\
+    -march=native\
+    -ffast-math\
+    -fcxx-exceptions\
+    -fprebuilt-module-path=precompiled/\
+    -fprebuilt-module-path=/home/user/Code/C++/Mathon/precompiled/\
+    -c --precompile\
+    $1 -o precompiled/$2.pcm
+}
+
+function compile_source {
+    echo "compile $1"
+    clang++-14\
+    -std=c++20\
+    -stdlib=libc++\
+    -fmodules\
+    -O3\
+    -fPIC\
+    -Wall\
+    -Wextra\
+    -fmath-errno\
+    -march=native\
+    -ffast-math\
+    -fcxx-exceptions\
+    -fmodules-cache-path=/home/user/Code/C++/Mathon/.build/cache\
+    -fprebuilt-module-path=../precompiled/\
+    -fprebuilt-module-path=/home/user/Code/C++/Mathon/precompiled/\
+    $1 -c
+}
+
 function compile {
+    clear
+
     mkdir -p .build
     
-    cd .build
+    compile_module src/Geometry/Triangle.cppm        Geometry.Triangle
     
-    cmake ..
+    cd .build
 
+    cmake ..
 #target 3rdparty
     cmake --build . --target Vulkan
     cmake --build . --target GLFW
+    cd ..
+    # cmake --build . --target Geometry.Triangle
     
 # first target
-    cmake --build . --target Vk.Multisampler
-    cmake --build . --target Vk.DynamicState
-    cmake --build . --target Vk.ColorBlender 
-    cmake --build . --target Vk.VertexBuffer
-    cmake --build . --target Vk.Rasterizer
-    cmake --build . --target App.Settings
-    cmake --build . --target Vk.Assembly
-    cmake --build . --target Vk.Checker
-    cmake --build . --target Vk.Getter
-    cmake --build . --target App.NativeWrapper
-    cmake --build . --target App.Window
+    compile_module src/Vulkan/pipeline/VkMultisampling.cppm         Vk.Multisampler
+    compile_module src/Vulkan/pipeline/VkDynamicStates.cppm         Vk.DynamicState
+    compile_module src/Vulkan/pipeline/VkColorBlender.cppm          Vk.ColorBlender 
+    compile_module src/Vulkan/pipeline/VkMemory.cppm                Vk.Memory
+    compile_module src/Vulkan/pipeline/VkVertexBuffer.cppm          Vk.VertexBuffer 
+    compile_module src/Vulkan/pipeline/VkRasterizer.cppm            Vk.Rasterizer
+    compile_module src/AppSettings.cppm                             App.Settings
+    compile_module src/Vulkan/pipeline/VkAssembly.cppm              Vk.Assembly
+    compile_module src/Vulkan/helpers/VkChecker.cppm                Vk.Checker
+    compile_module src/Vulkan/helpers/VkGetter.cppm                 Vk.Getter
+    compile_module src/NativeWrapper.cppm                           App.NativeWrapper
+    compile_module src/Window.cppm                                  App.Window
+    compile_module src/Vulkan/helpers/VkExtensions.cppm             Vk.Extensions
+    compile_module src/Vulkan/core/VkPhysDevice.cppm                Vk.PhysicalDevice 
+    compile_module src/Vulkan/core/VkInstance.cppm                  Vk.Instance
+    compile_module src/Vulkan/VkSurface.cppm                        Vk.WindowSurface
+    compile_module src/Vulkan/core/VkQueue.cppm                     Vk.Queue
+    compile_module src/Vulkan/core/VkQueuePool.cppm                 Vk.QueuePool
+    compile_module src/Vulkan/core/VkLogicDevice.cppm               Vk.LogicalDevice
+    compile_module src/Vulkan/VkSemaphore.cppm                      Vk.Semaphore 
+    compile_module src/Vulkan/pipeline/VkLayout.cppm                Vk.Layout
+    compile_module src/Vulkan/VkShader.cppm                         Vk.Shader  
+    compile_module src/ShaderFactory.cppm                           App.ShaderFactory
+    compile_module src/Vulkan/VkSwapchain.cppm                      Vk.Swapchain
+    compile_module src/Vulkan/pipeline/VkViewport.cppm              Vk.Viewport
+    compile_module src/Vulkan/pipeline/VkColorAttachment.cppm       Vk.ColorAttachment
+    compile_module src/Vulkan/pipeline/VkRenderPass.cppm            Vk.RenderPass
+    compile_module src/Vulkan/frame/VkImageView.cppm                Vk.ImageView
+    compile_module src/Vulkan/frame/VkFramebuffer.cppm              Vk.Framebuffer 
+    compile_module src/Vulkan/frame/VkCommandBuff.cppm              Vk.Commandbuffer 
+    compile_module src/Vulkan/pipeline/VkPipeline.cppm              Vk.Pipeline
+    compile_module src/Vulkan/frame/VkFrame.cppm                    Vk.Frame
+    compile_module src/Vulkan/frame/VkFramePool.cppm                Vk.FramePool
+    compile_module src/RenderDevice.cppm                            App.RenderDevice
+   
+    
+    
 
-# #second target
-    cmake --build . --target Vk.Extensions
+    cd .build
+    cmake --build . -j7 --target VKEngine
+    cd ..
 
-# # third target
-    cmake --build . --target Vk.PhysicalDevice 
-    cmake --build . --target Vk.Instance
+#     cd .build
+# compile_source ../src/Vulkan/pipeline/VkMultisampling.cppm  
+# compile_source ../src/Vulkan/pipeline/VkDynamicStates.cppm  
+# compile_source ../src/Vulkan/pipeline/VkColorBlender.cppm   
+# compile_source ../src/Vulkan/pipeline/VkVertexBuffer.cppm   
+# compile_source ../src/Vulkan/pipeline/VkRasterizer.cppm     
+# compile_source ../src/AppSettings.cppm                      
+# compile_source ../src/Vulkan/pipeline/VkAssembly.cppm       
+# compile_source ../src/Vulkan/helpers/VkChecker.cppm         
+# compile_source ../src/Vulkan/helpers/VkGetter.cppm          
+# compile_source ../src/NativeWrapper.cppm                    
+# compile_source ../src/Window.cppm                           
+# compile_source ../src/Vulkan/helpers/VkExtensions.cppm      
+# compile_source ../src/Vulkan/core/VkPhysDevice.cppm         
+# compile_source ../src/Vulkan/core/VkInstance.cppm           
+# compile_source ../src/Vulkan/VkSurface.cppm                 
+# compile_source ../src/Vulkan/core/VkQueue.cppm              
+# compile_source ../src/Vulkan/core/VkQueuePool.cppm          
+# compile_source ../src/Vulkan/core/VkLogicDevice.cppm        
+# compile_source ../src/Vulkan/VkSemaphore.cppm               
+# compile_source ../src/Vulkan/pipeline/VkLayout.cppm         
+# compile_source ../src/Vulkan/VkShader.cppm                  
+# compile_source ../src/ShaderFactory.cppm                    
+# compile_source ../src/Vulkan/VkSwapchain.cppm               
+# compile_source ../src/Vulkan/pipeline/VkViewport.cppm       
+# compile_source ../src/Vulkan/pipeline/VkColorAttachment.cppm
+# compile_source ../src/Vulkan/pipeline/VkRenderPass.cppm     
+# compile_source ../src/Vulkan/frame/VkImageView.cppm         
+# compile_source ../src/Vulkan/frame/VkFramebuffer.cppm       
+# compile_source ../src/Vulkan/frame/VkCommandBuff.cppm       
+# compile_source ../src/Vulkan/pipeline/VkPipeline.cppm       
+# compile_source ../src/Vulkan/frame/VkFrame.cppm             
+# compile_source ../src/Vulkan/frame/VkFramePool.cppm         
+# compile_source ../src/RenderDevice.cppm                     
+# cd ..
 
-# # fourth target
-    cmake --build . --target Vk.WindowSurface
-    cmake --build . --target Vk.Queue
-    cmake --build . --target Vk.QueuePool
-    cmake --build . --target Vk.LogicalDevice
 
-# # fifth target
-    cmake --build . --target Vk.Semaphore 
-    cmake --build . --target Vk.Layout
-    cmake --build . --target Vk.Shader  
-    cmake --build . --target App.ShaderFactory
-    cmake --build . --target Vk.Swapchain
-    cmake --build . --target Vk.Viewport
-    cmake --build . --target Vk.ColorAttachment
-    cmake --build . --target Vk.RenderPass
-    cmake --build . --target Vk.ImageView
-    cmake --build . --target Vk.Framebuffer 
-    cmake --build . --target Vk.Commandbuffer 
-    cmake --build . --target Vk.Pipeline
-    cmake --build . --target Vk.Frame
-    cmake --build . --target Vk.FramePool
+
     
 
 # # sixth target
-    cmake --build . --target Vk.Viewport
 
 # seventh target
-    cmake --build . --target App.RenderDevice
 
 # main target
-    cmake --build . -j7 --target VKEngine
+    # cmake --build . --target Geometry.Triangle
 
-
-
-    cd ..
+    # cd ..
+    # mkdir   objects
+    # cd      objects
+        # compile_source src/Geometry/Triangle.cppm
+    # cd ..
 } 
 
-function clear {
+function clean {
     rm -rf .build/
 }
 
 function help {
     echo "-r  or --run      = run VKEngine"
-    echo "-c  or --clear    = clear all build files"
+    echo "-c  or --clean    = clean all build files"
     echo "-b  or --build    = build project"
-    echo "-rb or --rebuild  = totaly rebuild all project"
+       echo "-rb or --rebuild  = totaly rebuild all project"
 }
 
-if [[ "$1" == "--clear" || "$1" == "-c" ]]; then
-    clear
+if [[ "$1" == "--clean" || "$1" == "-c" ]]; then
+    clean
 fi
 
 
@@ -90,7 +189,7 @@ fi
 
 
 if [[ "$1" == "--rebuild" || "$1" == "-rb" ]]; then
-    clear
+    clean
     compile
 fi
 

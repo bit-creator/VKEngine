@@ -29,55 +29,48 @@ import Vk.QueuePool;
 import Vk.Queue;
 
 export class Frame:
-    public NativeWrapper<VkImage, Frame> {
+    public vk::NativeWrapper<VkImage> {
 private:
-    LogicalDevice::const_pointer            _device;
-    Swapchain::const_pointer                _swapchain;
-    Pipeline::const_pointer                 _pipe;
+    LogicalDevice                           _device;
+    Swapchain                               _swapchain;
     ImageView                               _view;
     Framebuffer                             _buffer;
     Commandbuffer                           _command;
-    Semaphore                               _renrerEnd;
+    Semaphore                               _renderEnd;
 
 public:
-    Frame(VkImage img, VkCommandPool pool, 
-        Swapchain::const_pointer swapchain, 
-        LogicalDevice::const_pointer  device, 
-        Pipeline::const_pointer  pipe);
+    Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, Pipeline& pipe);
 
-    ~Frame();
-
-    Frame(Frame&&) =default;
-    Frame& operator =(Frame&&) =default;
-
-    const Semaphore& submit(const Semaphore& imageSync, const QueuePool& queues) const;
+    const Semaphore& submit(const Semaphore& imageSync, QueuePool& queues) const;
 };
 
-Frame::Frame(VkImage img, VkCommandPool pool, 
-    Swapchain::const_pointer swapchain, 
-    LogicalDevice::const_pointer  device, 
-    Pipeline::const_pointer  pipe): 
-          _device(device)
+Frame::Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, Pipeline& pipe):
+        Internal()
+        , _device(device)
         , _swapchain(swapchain)
-        , _pipe(pipe)
-        , _view(img, swapchain->getFormat().format, device)
-        , _buffer(swapchain->getExtent(), pipe->getRenderPass(), _view, device)
+        , _view(img, swapchain.getFormat().format, device)
+        , _buffer(swapchain.getExtent(), pipe.getRenderPass(), _view, device)
         , _command(pool, device) 
-        , _renrerEnd(device) {
+        , _renderEnd(device) {
     _native = img; 
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = _pipe->getRenderPass();
+    renderPassInfo.renderPass = pipe.getRenderPass();
     renderPassInfo.framebuffer = _buffer;
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = _swapchain->getExtent();
+    renderPassInfo.renderArea.extent = _swapchain.getExtent();
     VkClearValue clearColor;
     clearColor.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
     vkCmdBeginRenderPass(_command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(_command, VK_PIPELINE_BIND_POINT_GRAPHICS, *_pipe);
+        vkCmdBindPipeline(_command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipe);
+
+        VkBuffer vertexBuffers[] = {pipe.getBuffer().native()};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(_command, 0, 1, vertexBuffers, offsets);
+
         vkCmdDraw(_command, 3, 1, 0, 0);
     vkCmdEndRenderPass(_command);
     if (vkEndCommandBuffer(_command) != VK_SUCCESS) {
@@ -85,29 +78,24 @@ Frame::Frame(VkImage img, VkCommandPool pool,
     }
 }
 
-Frame::~Frame() {
-}
-
-const Semaphore& Frame::submit(const Semaphore& imageSync, const QueuePool& queues) const{
+const Semaphore& Frame::submit(const Semaphore& imageSync, QueuePool& queues) const{
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {imageSync};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
     submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitSemaphores = &imageSync.native();
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &_command.get();
+    submitInfo.pCommandBuffers = &_command.native();
 
-    VkSemaphore signalSemaphores[] = {_renrerEnd};
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+    submitInfo.pSignalSemaphores = &_renderEnd.native();
 
-    if (vkQueueSubmit(queues[QueueType::Graphics].get(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    if (vkQueueSubmit(queues[QueueType::Graphics], 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
     
-    return _renrerEnd;
+    return _renderEnd;
 }

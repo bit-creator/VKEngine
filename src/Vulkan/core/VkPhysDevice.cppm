@@ -14,6 +14,7 @@ export module Vk.PhysicalDevice;
 export import App.NativeWrapper;
 
 import <vector>;
+import <iostream>;
 
 import Vulkan;
 import GLFW;
@@ -28,20 +29,10 @@ import Vk.Getter;
  * 
  */
 export class PhysicalDevice:
-    public NativeWrapper<VkPhysicalDevice, PhysicalDevice> {
+    public vk::NativeWrapper < VkPhysicalDevice > {
 public:
-    /**
-     * @brief capture VkPhysicalDevice
-     * 
-     * @param instance 
-     */
     PhysicalDevice(VkInstance instance);
 
-    /**
-     * @brief release VkPhysicalDevice and
-     * destroy object
-     * 
-     */
     ~PhysicalDevice() =default;
 
 private:
@@ -67,21 +58,15 @@ private:
     bool isCorrercFeatures(VkPhysicalDevice device);
 }; // PhysicalDevice
 
-
-/********************************************/
-/***************IMPLIMENTATION***************/
-/********************************************/
-PhysicalDevice::PhysicalDevice(VkInstance instance) {
-    _native = VK_NULL_HANDLE;
+PhysicalDevice::PhysicalDevice(VkInstance instance): Internal() {
+    native(VK_NULL_HANDLE);
     std::vector<VkPhysicalDevice> devices;
     
     VkGet<vkEnumeratePhysicalDevices>(devices, instance);
     
     select(devices);
     
-    if (_native == VK_NULL_HANDLE) { 
-        throw std::runtime_error("Physical device not found"); 
-    }
+    native() ?: throw std::runtime_error("Physical device not found"); 
 }
 
 void PhysicalDevice::select(std::vector<VkPhysicalDevice>& devices) {
@@ -103,5 +88,14 @@ bool PhysicalDevice::isCorrectProperty( [[maybe_unused]] VkPhysicalDevice device
 }
 
 bool PhysicalDevice::isCorrercFeatures( [[maybe_unused]] VkPhysicalDevice device) {
+    VkPhysicalDeviceProperties deviceProperties;
+    VkPhysicalDeviceFeatures deviceFeatures;
+    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+    vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+    std::cout << deviceProperties.deviceName << std::endl;
+
+    // // return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
+    //        deviceFeatures.geometryShader;
     return true;
 }

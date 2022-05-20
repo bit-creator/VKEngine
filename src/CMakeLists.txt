@@ -1,4 +1,5 @@
 add_subdirectory(Vulkan)
+add_subdirectory(Geometry)
 
 include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
 
@@ -13,18 +14,19 @@ find_package(glfw3 3.3 REQUIRED)
 
 add_compile_options(
     -std=c++${CMAKE_CXX_STANDARD}
-    -fmodules
+    -std=c++20
     -stdlib=libc++
-    -fimplicit-modules
-    -fimplicit-module-maps
+    -fmodules
+    -O3
+    -fPIC
     -Wall
     -Wextra
     -fmath-errno
-    -O3
     -march=native
     -ffast-math
-    -fcxx-exceptions 
+    -fcxx-exceptions
     -fprebuilt-module-path=${PRECOMPILED_MODULES_DIR}
+    -fprebuilt-module-path=/home/user/Code/C++/Mathon/precompiled/
 )
 
 add_executable(VKEngine
@@ -37,4 +39,5 @@ target_link_libraries(VKEngine
     Vulkan::Vulkan
     Vulkan::Headers
     c++
+    mathon
 )
