@@ -46,7 +46,6 @@ export import App.ShaderFactory;
 export class Pipeline:
     public vk::NativeWrapper <VkPipeline> {
 private:
-    VertexBuffer                        _verticies;
     Assembly                            _assembly;
     Viewport                            _viewport;
     Rasterizer                          _rasterizer;
@@ -58,9 +57,9 @@ private:
     ShaderFactory                       _factory;
 
 public:
-    Pipeline(Swapchain swapchain, LogicalDevice device, PhysicalDevice pd);
+    Pipeline(Swapchain swapchain, LogicalDevice device);
 
-    const VertexBuffer& getBuffer() const;
+    // const VertexBuffer& getBuffer() const;
     const RenderPass& getRenderPass() const;
 }; // Pipeline
 
@@ -68,9 +67,8 @@ public:
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
-Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device, PhysicalDevice pd):
+Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
     Internal([&](value_type p){ vkDestroyPipeline(device, p, nullptr); })
-    , _verticies(device, pd)
     , _assembly()
     , _viewport(swapchain)
     , _rasterizer()
@@ -133,6 +131,6 @@ const RenderPass& Pipeline::getRenderPass() const {
     return _pass;
 }
 
-const VertexBuffer& Pipeline::getBuffer() const {
-    return _verticies;
-}
+// const VertexBuffer& Pipeline::getBuffer() const {
+//     return _verticies;
+// }

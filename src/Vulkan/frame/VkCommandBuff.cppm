@@ -38,12 +38,12 @@ Commandbuffer::Commandbuffer(VkCommandPool pool, LogicalDevice device) {
         throw std::runtime_error("failed to allocate command buffers!");
     }
 
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = 0; // Optional
-    beginInfo.pInheritanceInfo = nullptr; // Optional
+    // VkCommandBufferBeginInfo beginInfo{};
+    // beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    // beginInfo.flags = 0; // Optional
+    // beginInfo.pInheritanceInfo = nullptr; // Optional
 
-    if (vkBeginCommandBuffer(_native, &beginInfo) != VK_SUCCESS) {
-        throw std::runtime_error("failed to begin recording command buffer!");
-    }
+    // if (vkBeginCommandBuffer(_native, &beginInfo) != VK_SUCCESS) {
+    //     throw std::runtime_error("failed to begin recording command buffer!");
+    // }
 }

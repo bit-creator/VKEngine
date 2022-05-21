@@ -6,6 +6,10 @@ export import Math.Vector3;
 import <vector>;
 import <array>;
 import Vulkan;
+import Vk.VertexBuffer;
+import Vk.LogicalDevice;
+import Vk.PhysicalDevice;
+
 
 export class Vertex {
 public:
@@ -36,15 +40,31 @@ public:
     }
 };
 
-export struct Triangle {
-    Vertex     coord[3];
-    Triangle();  
+export struct Geometry {
+    VertexBuffer                                            vbo;
+    std::array<VkVertexInputAttributeDescription, 2>        vao;
+public:
+    Geometry(LogicalDevice ld);
 };
 
-Triangle::Triangle()
-    : coord {
+Geometry::Geometry(LogicalDevice ld)
+    : vbo(ld) 
+    , vao(Vertex::getAttributeDescriptions())
+{  }
+
+
+export struct Triangle: public Geometry {
+    // Vertex     coord[3];
+    Triangle(LogicalDevice ld, PhysicalDevice pd);
+};
+
+Triangle::Triangle(LogicalDevice ld, PhysicalDevice pd):
+    Geometry(ld) {
+    std::vector<Vertex> coord = {
         {{0.0f, -0.5f}, {1.0f, 1.0f, 0.0f}},
         {{0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
         {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
-    } {
+    };
+
+    vbo.loadData(ld, pd, coord);
 }

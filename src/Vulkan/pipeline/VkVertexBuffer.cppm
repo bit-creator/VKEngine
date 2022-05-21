@@ -12,8 +12,8 @@
 export module Vk.VertexBuffer;
 
 import <array>;
+import <vector>;
 import Vulkan;
-import Geometry.Triangle;
 import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
 import Vk.Checker;
@@ -23,23 +23,57 @@ export class VertexBuffer:
     public vk::NativeWrapper <VkBuffer> {
 public:
     Memory                  _mem;
-    Triangle                _geom;
 
-    VertexBuffer(LogicalDevice ld, PhysicalDevice pd);
+    VertexBuffer(LogicalDevice ld);
 
     VkPipelineVertexInputStateCreateInfo 
     getState();
 
+    template <typename T>
+    void loadData(LogicalDevice ld, PhysicalDevice pd, T& data) {
+        loadRawData(ld, pd, std::data(data), std::size(data) * sizeof(typename T::value_type));
+    }
+
 private:
+    void loadRawData(LogicalDevice ld, PhysicalDevice pd, void* data, size_t size);
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, PhysicalDevice pd);
 };
 
-VertexBuffer::VertexBuffer(LogicalDevice ld, PhysicalDevice pd):
+VertexBuffer::VertexBuffer(LogicalDevice ld):
         Internal([&](value_type vb){ vkDestroyBuffer(ld, vb, nullptr); }),
         _mem(ld) {
+}
+
+VkPipelineVertexInputStateCreateInfo VertexBuffer::getState() {
+    // auto bindingDescription = Vertex::getBindingDescription();
+    // auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    
+    // vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    // vertexInputInfo.vertexBindingDescriptionCount = 1;
+    // vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    // vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    // vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+    return vertexInputInfo;
+}
+
+uint32_t VertexBuffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, PhysicalDevice pd) {
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(pd, &memProperties);
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+void VertexBuffer::loadRawData(LogicalDevice ld, PhysicalDevice pd, void* data, size_t size) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(Vertex) * 3;
+    bufferInfo.size = size;
     bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     VkCreate<vkCreateBuffer>(ld, &bufferInfo, nullptr, &_native);
@@ -57,34 +91,8 @@ VertexBuffer::VertexBuffer(LogicalDevice ld, PhysicalDevice pd):
 
     vkBindBufferMemory(ld, _native, _mem, 0);
 
-    void* data;
-    vkMapMemory(ld, _mem, 0, bufferInfo.size, 0, &data);
-        memcpy(data, &_geom.coord, (size_t) bufferInfo.size);
+    void* internal_data;
+    vkMapMemory(ld, _mem, 0, bufferInfo.size, 0, &internal_data);
+        memcpy(internal_data, data, size);
     vkUnmapMemory(ld, _mem);
-}
-
-VkPipelineVertexInputStateCreateInfo VertexBuffer::getState() {
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-    
-    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-
-    return vertexInputInfo;
-}
-
-uint32_t VertexBuffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, PhysicalDevice pd) {
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(pd, &memProperties);
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-            return i;
-        }
-    }
-    return 0;
 }

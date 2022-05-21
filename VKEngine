@@ -59,7 +59,6 @@ function compile {
 
     mkdir -p .build
     
-    compile_module src/Geometry/Triangle.cppm        Geometry.Triangle
     
     cd .build
 
@@ -74,8 +73,6 @@ function compile {
     compile_module src/Vulkan/pipeline/VkMultisampling.cppm         Vk.Multisampler
     compile_module src/Vulkan/pipeline/VkDynamicStates.cppm         Vk.DynamicState
     compile_module src/Vulkan/pipeline/VkColorBlender.cppm          Vk.ColorBlender 
-    compile_module src/Vulkan/pipeline/VkMemory.cppm                Vk.Memory
-    compile_module src/Vulkan/pipeline/VkVertexBuffer.cppm          Vk.VertexBuffer 
     compile_module src/Vulkan/pipeline/VkRasterizer.cppm            Vk.Rasterizer
     compile_module src/AppSettings.cppm                             App.Settings
     compile_module src/Vulkan/pipeline/VkAssembly.cppm              Vk.Assembly
@@ -90,6 +87,9 @@ function compile {
     compile_module src/Vulkan/core/VkQueue.cppm                     Vk.Queue
     compile_module src/Vulkan/core/VkQueuePool.cppm                 Vk.QueuePool
     compile_module src/Vulkan/core/VkLogicDevice.cppm               Vk.LogicalDevice
+    compile_module src/Vulkan/pipeline/VkMemory.cppm                Vk.Memory
+    compile_module src/Vulkan/pipeline/VkVertexBuffer.cppm          Vk.VertexBuffer 
+    compile_module src/Geometry/Triangle.cppm                       Geometry.Triangle
     compile_module src/Vulkan/VkSemaphore.cppm                      Vk.Semaphore 
     compile_module src/Vulkan/pipeline/VkLayout.cppm                Vk.Layout
     compile_module src/Vulkan/VkShader.cppm                         Vk.Shader  
@@ -169,6 +169,7 @@ function compile {
 
 function clean {
     rm -rf .build/
+    rm -rf precompiled/
 }
 
 function help {

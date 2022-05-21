@@ -27,8 +27,8 @@ export enum class ShaderType {
 
 class ShaderFactory;
 
-export struct Shader: public
-    vk::NativeWrapper < VkShaderModule > {
+export struct Shader:
+        public vk::NativeWrapper < VkShaderModule > {
     const ShaderType                          _type;
 
     Shader(ShaderType type, const LogicalDevice& device, const std::vector<std::byte>& source);

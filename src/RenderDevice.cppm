@@ -34,6 +34,8 @@ import Vk.FramePool;
 import Vk.Frame;
 import Vk.Semaphore;
 
+import Geometry.Triangle;
+
 /**
  * @class RenderDevice
  * @brief Aggregates base Vulkan objects such as: 
@@ -49,11 +51,12 @@ private:
     Instance                                               instance; 
     WindowSurface                                          surface;  
     PhysicalDevice                                         physical;
-    LogicalDevice                                          logical;  
+    LogicalDevice                                          logical;
     Swapchain                                              swapchain;
     Pipeline                                               pipeline;
     FramePool                                              frames;
     Semaphore                                              sync;
+    Triangle                                               geom;
 
 private:
     /**
@@ -102,9 +105,10 @@ RenderDevice::RenderDevice()
     , physical  (instance)
     , logical   (physical, surface)
     , swapchain (physical, logical, surface, wnd)
-    , pipeline  (swapchain, logical, physical)
+    , pipeline  (swapchain, logical)
     , frames    (swapchain, logical, pipeline)
     , sync      (logical)
+    , geom      (logical, physical)
 {  }
 
 RenderDevice& RenderDevice::device() {
@@ -124,8 +128,12 @@ void RenderDevice::execute() {
 void RenderDevice::render() {
     uint32_t imageIndex;
     vkAcquireNextImageKHR(logical, swapchain, UINT64_MAX, sync, VK_NULL_HANDLE, &imageIndex);
+    auto frame = frames[imageIndex];
     
-    auto& renderEnd = frames[imageIndex].submit(sync, logical.queues);
+    frame.bind();
+    frame.draw(geom);
+    frame.unbind();
+    auto& renderEnd = frame.submit(sync, logical.queues);
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
