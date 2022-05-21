@@ -23,7 +23,7 @@ import Vk.Pipeline;
 import Vk.RenderPass;
 import Vk.ImageView;
 import Vk.Framebuffer;
-import Vk.Commandbuffer;
+import Vk.CommandBuffer;
 import Vk.Semaphore;
 import Vk.QueuePool;
 import Vk.Queue;
@@ -36,7 +36,7 @@ private:
     Swapchain                               _swapchain;
     ImageView                               _view;
     Framebuffer                             _buffer;
-    Commandbuffer                           _command;
+    CommandBuffer                           _command;
     Semaphore                               _renderEnd;
     Pipeline&                               _pipe;
     VkExtent2D                              _extent;

@@ -33,6 +33,7 @@ import Vk.QueuePool;
 import Vk.FramePool;
 import Vk.Frame;
 import Vk.Semaphore;
+import Vk.CommandBuffer;
 
 import Geometry.Triangle;
 
@@ -108,7 +109,7 @@ RenderDevice::RenderDevice()
     , pipeline  (swapchain, logical)
     , frames    (swapchain, logical, pipeline)
     , sync      (logical)
-    , geom      (logical, physical)
+    , geom      (logical, physical, {frames, logical})
 {  }
 
 RenderDevice& RenderDevice::device() {

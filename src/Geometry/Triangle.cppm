@@ -9,6 +9,7 @@ import Vulkan;
 import Vk.VertexBuffer;
 import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
+import Vk.CommandBuffer;
 
 
 export class Vertex {
@@ -55,10 +56,10 @@ Geometry::Geometry(LogicalDevice ld)
 
 export struct Triangle: public Geometry {
     // Vertex     coord[3];
-    Triangle(LogicalDevice ld, PhysicalDevice pd);
+    Triangle(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff);
 };
 
-Triangle::Triangle(LogicalDevice ld, PhysicalDevice pd):
+Triangle::Triangle(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff):
     Geometry(ld) {
     std::vector<Vertex> coord = {
         {{0.0f, -0.5f}, {1.0f, 1.0f, 0.0f}},
@@ -66,5 +67,5 @@ Triangle::Triangle(LogicalDevice ld, PhysicalDevice pd):
         {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
     };
 
-    vbo.loadData(ld, pd, coord);
+    vbo.loadData(ld, pd, buff, coord);
 }

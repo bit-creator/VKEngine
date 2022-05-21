@@ -10,7 +10,7 @@
  */
 
  
-export module Vk.Commandbuffer;
+export module Vk.CommandBuffer;
 
 export import App.NativeWrapper;
 
@@ -20,14 +20,14 @@ import Vk.LogicalDevice;
 import Vk.ImageView;
 import Vk.RenderPass;
 
-export class Commandbuffer:
+export class CommandBuffer:
     public vk::NativeWrapper<VkCommandBuffer> {
 public:
-    Commandbuffer(VkCommandPool pool, LogicalDevice device);
+    CommandBuffer(VkCommandPool pool, LogicalDevice device);
 };
 
 
-Commandbuffer::Commandbuffer(VkCommandPool pool, LogicalDevice device) {
+CommandBuffer::CommandBuffer(VkCommandPool pool, LogicalDevice device) {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = pool;

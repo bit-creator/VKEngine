@@ -19,7 +19,7 @@ import <iostream>;
 
 import Vk.ImageView;
 import Vk.Framebuffer;
-import Vk.Commandbuffer;
+import Vk.CommandBuffer;
 import Vk.Frame;
 import Vk.Swapchain;
 import Vk.LogicalDevice;

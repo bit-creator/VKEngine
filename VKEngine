@@ -88,8 +88,6 @@ function compile {
     compile_module src/Vulkan/core/VkQueuePool.cppm                 Vk.QueuePool
     compile_module src/Vulkan/core/VkLogicDevice.cppm               Vk.LogicalDevice
     compile_module src/Vulkan/pipeline/VkMemory.cppm                Vk.Memory
-    compile_module src/Vulkan/pipeline/VkVertexBuffer.cppm          Vk.VertexBuffer 
-    compile_module src/Geometry/Triangle.cppm                       Geometry.Triangle
     compile_module src/Vulkan/VkSemaphore.cppm                      Vk.Semaphore 
     compile_module src/Vulkan/pipeline/VkLayout.cppm                Vk.Layout
     compile_module src/Vulkan/VkShader.cppm                         Vk.Shader  
@@ -100,7 +98,9 @@ function compile {
     compile_module src/Vulkan/pipeline/VkRenderPass.cppm            Vk.RenderPass
     compile_module src/Vulkan/frame/VkImageView.cppm                Vk.ImageView
     compile_module src/Vulkan/frame/VkFramebuffer.cppm              Vk.Framebuffer 
-    compile_module src/Vulkan/frame/VkCommandBuff.cppm              Vk.Commandbuffer 
+    compile_module src/Vulkan/frame/VkCommandBuff.cppm              Vk.CommandBuffer 
+    compile_module src/Vulkan/pipeline/VkVertexBuffer.cppm          Vk.VertexBuffer
+    compile_module src/Geometry/Triangle.cppm                       Geometry.Triangle
     compile_module src/Vulkan/pipeline/VkPipeline.cppm              Vk.Pipeline
     compile_module src/Vulkan/frame/VkFrame.cppm                    Vk.Frame
     compile_module src/Vulkan/frame/VkFramePool.cppm                Vk.FramePool
