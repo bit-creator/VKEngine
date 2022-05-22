@@ -87,6 +87,7 @@ function compile {
     compile_module src/Vulkan/core/VkQueue.cppm                     Vk.Queue
     compile_module src/Vulkan/core/VkQueuePool.cppm                 Vk.QueuePool
     compile_module src/Vulkan/core/VkLogicDevice.cppm               Vk.LogicalDevice
+    compile_module src/Vulkan/frame/cmdPool.cppm                    Vk.CommandPool
     compile_module src/Vulkan/pipeline/VkMemory.cppm                Vk.Memory
     compile_module src/Vulkan/VkSemaphore.cppm                      Vk.Semaphore 
     compile_module src/Vulkan/pipeline/VkLayout.cppm                Vk.Layout

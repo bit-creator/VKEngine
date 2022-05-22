@@ -26,7 +26,6 @@ public:
     CommandBuffer(VkCommandPool pool, LogicalDevice device);
 };
 
-
 CommandBuffer::CommandBuffer(VkCommandPool pool, LogicalDevice device) {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

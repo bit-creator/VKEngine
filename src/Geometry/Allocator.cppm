@@ -18,36 +18,21 @@ struct MapMemory {
     Memory& _mem;
 
     ~MapMemory();
+    MapMemory(Memory& mem);
     MapMemory(Memory& mem, size_t offset, size_t size, void** pv);
 
     void unmap();
+    void map(size_t offset, size_t size, void** pv);
 };
-
-MapMemory::MapMemory(Memory& mem, size_t offset, size_t size, void** pv):
-        _mem(mem) {
-    vkMapMemory (
-        HostAllocatorRequirement::logical,
-        _mem, offset, size, 0, pv
-    );
-}
-
-MapMemory::~MapMemory() {
-    unmap();
-}
-
-void MapMemory::unmap() {
-    vkUnmapMemory(HostAllocatorRequirement::logical, _mem);
-}
 
 template < typename Tp >
 struct HostAllocator {
     typedef Tp value_type;
 
     StagingBuffer           host;
-    void*                   begin;                   
-    
+    void*                   begin;                 
+
     HostAllocator() noexcept;
-    ~HostAllocator() noexcept;
 
     template<typename U> bool
     operator==(const HostAllocator<U>&) const noexcept { return true; }
@@ -56,27 +41,16 @@ struct HostAllocator {
     operator!=(const HostAllocator<U>&) const noexcept { return false; }
 
     Tp* allocate(const size_t n);
-    void deallocate(Tp* const p, size_t) const noexcept;
-    void construct(Tp* p, const Tp& val);
+    void deallocate(Tp* const, size_t) const noexcept;
 
     template < typename... Args>
     void construct(Tp* p, Args&&... args);
-
-
+    void construct(Tp* p, const Tp& val);
 };
 
 template < typename T > 
 HostAllocator<T>::HostAllocator() noexcept
         : host(HostAllocatorRequirement::logical) {
-    std::cout << HostAllocatorRequirement::logical << std::endl;
-}
-
-template < typename T > 
-HostAllocator<T>::~HostAllocator() noexcept {
-    // vkUnmapMemory (
-    //     HostAllocatorRequirement::logical,
-    //     host._mem
-    // );
 }
 
 template < typename T > T* 
@@ -100,7 +74,8 @@ HostAllocator<T>::allocate(const size_t n) {
 }
 
 template < typename T > void
-HostAllocator<T>::deallocate(T * const p, size_t) const noexcept {
+HostAllocator<T>::deallocate(T * const, size_t) const noexcept {
+    host.~StagingBuffer();
 }
 
 template < typename Tp > void
@@ -116,5 +91,27 @@ HostAllocator<Tp>::construct(Tp* p, Args&&... args) {
     std::construct_at(p, args...);
 }
 
+MapMemory::MapMemory(Memory& mem): _mem(mem) {
+}
+
+MapMemory::MapMemory(Memory& mem, size_t offset, size_t size, void** pv):
+        _mem(mem) {
+    map(offset, size, pv);
+}
+
+MapMemory::~MapMemory() {
+    unmap();
+}
+
+void MapMemory::map(size_t offset, size_t size, void** pv) {
+    vkMapMemory (
+        HostAllocatorRequirement::logical,
+        _mem, offset, size, 0, pv
+    );
+}
+
+void MapMemory::unmap() {
+    vkUnmapMemory(HostAllocatorRequirement::logical, _mem);
+}
 
 } // export

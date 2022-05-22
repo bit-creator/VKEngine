@@ -60,7 +60,7 @@ private:
     Pipeline                                               pipeline;
     FramePool                                              frames;
     Semaphore                                              sync;
-    Triangle                                               geom;
+    Quad                                                   geom;
 
 private:
     /**

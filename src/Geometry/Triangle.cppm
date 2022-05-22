@@ -42,9 +42,16 @@ public:
     }
 };
 
+export struct MemoryRegion {
+    size_t offset;
+    size_t size;
+};
+
 export struct Geometry {
-    VertexBuffer                                            vbo;
-    std::array<VkVertexInputAttributeDescription, 2>        vao;
+    LocalBuffer                                               vbo;
+    std::array<VkVertexInputAttributeDescription, 2>          vao;
+    std::array<MemoryRegion, 2>                               regions;
+    
 public:
     Geometry(LogicalDevice ld, PhysicalDevice pd);
 };
@@ -55,7 +62,6 @@ Geometry::Geometry(LogicalDevice ld, PhysicalDevice pd)
     Alloc::HostAllocatorRequirement::logical = ld;
     Alloc::HostAllocatorRequirement::physical = pd;
 }
-
 
 export struct Triangle: public Geometry {
     // Vertex     coord[3];
@@ -72,15 +78,13 @@ Triangle::Triangle(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff):
 
     auto alloc = coord.get_allocator();
 
-    vkUnmapMemory(ld, alloc.host._mem.native());
-    vbo.gen_local_buff(ld, pd, sizeof(Vertex) * coord.size());
+    vbo.allocate(ld, pd, sizeof(Vertex) * coord.size());
 
-     VkCommandBufferBeginInfo beginInfo{};
+    VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
     vkBeginCommandBuffer(buff, &beginInfo);
-
 
     VkBufferCopy copyRegion{};
     copyRegion.srcOffset = 0; // Optional
@@ -98,4 +102,61 @@ Triangle::Triangle(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff):
     vkQueueSubmit(ld.queues.graphic, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(ld.queues.graphic);
     // vbo.loadData(ld, pd, buff, coord);
+}
+
+export struct Quad: Geometry {
+    Quad(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff);
+};
+
+Quad::Quad(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff): Geometry(ld, pd) {
+    std::vector<Vertex, Alloc::HostAllocator<Vertex>> coord = {
+        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+    };
+
+    const std::vector<uint16_t, Alloc::HostAllocator<uint16_t>> indices = {
+        0, 1, 2, 2, 3, 0
+    };
+
+    auto alloc = coord.get_allocator();
+    auto idx_alloc = indices.get_allocator();
+
+    vbo.allocate(ld, pd, sizeof(Vertex) * coord.size() + sizeof(uint16_t) * indices.size());
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(buff, &beginInfo);
+
+    regions[0] = {0, 80};
+    regions[1] = {80, 96};
+
+    VkBufferCopy coord_cp_reg;
+    VkBufferCopy idx_cp_reg;
+    coord_cp_reg.srcOffset = 0;
+    coord_cp_reg.dstOffset = regions[0].offset;
+    coord_cp_reg.size = regions[0].size;
+
+    idx_cp_reg.srcOffset = 0;
+    idx_cp_reg.dstOffset = regions[1].offset;
+    idx_cp_reg.size = regions[1].size;
+
+    std::cout << coord_cp_reg.srcOffset << '\t' << coord_cp_reg.size << std::endl;
+    std::cout << idx_cp_reg.srcOffset << '\t' << idx_cp_reg.size << std::endl;
+
+    vkCmdCopyBuffer(buff, alloc.host, vbo, 1, &coord_cp_reg);
+    vkCmdCopyBuffer(buff, idx_alloc.host, vbo, 1, &idx_cp_reg);
+
+    vkEndCommandBuffer(buff);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &buff.native();
+
+    vkQueueSubmit(ld.queues.graphic, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(ld.queues.graphic);
 }

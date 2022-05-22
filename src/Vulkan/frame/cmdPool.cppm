@@ -1,0 +1,36 @@
+export module Vk.CommandPool;
+
+import Vk.LogicalDevice;
+
+export {
+struct CommandPool:
+        public vk::NativeWrapper<VkCommandPool> {
+    CommandPool(LogicalDevice device, QueueType type);
+}; // CommandPool
+
+struct DrawCmdPool: public CommandPool {
+    DrawCmdPool(LogicalDevice device);
+}; // DrawCmdPool
+
+struct TransferCmdPool: public CommandPool {
+    TransferCmdPool(LogicalDevice device);
+}; // TransferCmdPool
+}; // export
+
+CommandPool::CommandPool(LogicalDevice device, QueueType type):
+        Internal([&](value_type cp){ vkDestroyCommandPool(device, cp, nullptr); }) {
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.queueFamilyIndex = device.queues[type].getIndex();
+    poolInfo.flags = 0;
+
+    if (vkCreateCommandPool(device, &poolInfo, nullptr, &_native) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create command pool!");
+    }
+}
+
+DrawCmdPool::DrawCmdPool(LogicalDevice device): CommandPool(device, QueueType::Graphics) {
+}
+
+TransferCmdPool::TransferCmdPool(LogicalDevice device): CommandPool(device, QueueType::Transfer) {
+}

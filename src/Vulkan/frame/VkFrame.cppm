@@ -13,6 +13,7 @@ export module Vk.Frame;
 
 export import App.NativeWrapper;
 
+import <array>;
 import <vector>;
 import <iostream>;
 
@@ -113,8 +114,10 @@ void Frame::draw(Geometry geom) const {
         VkBuffer vertexBuffers[] = {geom.vbo.native()};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(_command, 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(_command, vertexBuffers[0], geom.regions[1].offset, VK_INDEX_TYPE_UINT16);
 
-        vkCmdDraw(_command, 3, 1, 0, 0);
+        // vkCmdDraw(_command, 3, 1, 0, 0);
+        vkCmdDrawIndexed(_command, static_cast<uint32_t>(6), 1, 0, 0, 0);
     vkCmdEndRenderPass(_command);
     // if (vkEndCommandBuffer(_command) != VK_SUCCESS) {
     //     throw std::runtime_error("failed to record command buffer!");
