@@ -34,8 +34,9 @@ import Vk.FramePool;
 import Vk.Frame;
 import Vk.Semaphore;
 import Vk.CommandBuffer;
+import Vk.CommandPool;
 
-import Geometry.Triangle;
+import Geometry.Quad;
 
 
 // to-do:/ improve commandPool abstraction to allow creating transfer cmdBuffer
@@ -59,6 +60,7 @@ private:
     Swapchain                                              swapchain;
     Pipeline                                               pipeline;
     FramePool                                              frames;
+    TransferCmdPool                                        transferPool;
     Semaphore                                              sync;
     Quad                                                   geom;
 
@@ -103,16 +105,17 @@ private:
 }; // RenderDevice
 
 RenderDevice::RenderDevice() 
-    : wnd       (name)
-    , instance  ()
-    , surface   (instance, wnd)
-    , physical  (instance)
-    , logical   (physical, surface)
-    , swapchain (physical, logical, surface, wnd)
-    , pipeline  (swapchain, logical)
-    , frames    (swapchain, logical, pipeline)
-    , sync      (logical)
-    , geom      (logical, physical, {frames, logical})
+    : wnd           (name)
+    , instance      ()
+    , surface       (instance, wnd)
+    , physical      (instance)
+    , logical       (physical, surface)
+    , swapchain     (physical, logical, surface, wnd)
+    , pipeline      (swapchain, logical)
+    , frames        (swapchain, logical, pipeline)
+    , transferPool  (logical)
+    , sync          (logical)
+    , geom          (logical, physical, {transferPool, logical})
 {  }
 
 RenderDevice& RenderDevice::device() {
@@ -134,9 +137,7 @@ void RenderDevice::render() {
     vkAcquireNextImageKHR(logical, swapchain, UINT64_MAX, sync, VK_NULL_HANDLE, &imageIndex);
     auto frame = frames[imageIndex];
     
-    frame.bind();
     frame.draw(geom);
-    frame.unbind();
     auto& renderEnd = frame.submit(sync, logical.queues);
 
     VkPresentInfoKHR presentInfo{};

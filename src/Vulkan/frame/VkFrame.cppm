@@ -28,7 +28,7 @@ import Vk.CommandBuffer;
 import Vk.Semaphore;
 import Vk.QueuePool;
 import Vk.Queue;
-import Geometry.Triangle;
+import Geometry;
 
 export class Frame:
     public vk::NativeWrapper<VkImage> {
@@ -65,11 +65,7 @@ Frame::Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice
     _native = img;
 }
 
-const Semaphore& Frame::submit(const Semaphore& imageSync, QueuePool& queues) const{
-    // if (vkEndCommandBuffer(_command) != VK_SUCCESS) {
-    //     throw std::runtime_error("failed to record command buffer!");
-    // }
-
+const Semaphore& Frame::submit(const Semaphore& imageSync, QueuePool& queues) const {
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -92,12 +88,7 @@ const Semaphore& Frame::submit(const Semaphore& imageSync, QueuePool& queues) co
 }
 
 void Frame::draw(Geometry geom) const {
-    // VkCommandBufferBeginInfo beginInfo{};
-    // beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    // if (vkBeginCommandBuffer(_command.native(), &beginInfo) != VK_SUCCESS) {
-    //     throw std::runtime_error("failed to begin recording command buffer!");
-    // }
-
+    bind();
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = _pipe.getRenderPass();
@@ -116,12 +107,10 @@ void Frame::draw(Geometry geom) const {
         vkCmdBindVertexBuffers(_command, 0, 1, vertexBuffers, offsets);
         vkCmdBindIndexBuffer(_command, vertexBuffers[0], geom.regions[1].offset, VK_INDEX_TYPE_UINT16);
 
-        // vkCmdDraw(_command, 3, 1, 0, 0);
         vkCmdDrawIndexed(_command, static_cast<uint32_t>(6), 1, 0, 0, 0);
+
     vkCmdEndRenderPass(_command);
-    // if (vkEndCommandBuffer(_command) != VK_SUCCESS) {
-    //     throw std::runtime_error("failed to record command buffer!");
-    // }
+    unbind();
 }
 
 void Frame::bind() const {

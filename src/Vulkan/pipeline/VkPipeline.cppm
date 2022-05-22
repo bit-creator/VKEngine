@@ -15,7 +15,7 @@ export import App.NativeWrapper;
 
 import Vulkan;
 import <array>;
-import Geometry.Triangle;
+import Geometry;
 
 import <vector>;
 import <filesystem>;
