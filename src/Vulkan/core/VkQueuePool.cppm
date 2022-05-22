@@ -67,6 +67,8 @@ public:
     // const Queue& operator[](QueueType type) const;
     
     QueueType bitToType(uint32_t flag);
+
+    QueuePool() =default;
 }; // QueuePool
 // #include <vulkan/vulkan_core.h>
 QueuePool::QueuePool(PhysicalDevice phys, WindowSurface surf) {  

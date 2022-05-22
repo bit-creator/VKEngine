@@ -10,7 +10,8 @@ import Vk.VertexBuffer;
 import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
 import Vk.CommandBuffer;
-
+import Vk.HostAllocator;
+import Vk.Memory;
 
 export class Vertex {
 public:
@@ -45,13 +46,15 @@ export struct Geometry {
     VertexBuffer                                            vbo;
     std::array<VkVertexInputAttributeDescription, 2>        vao;
 public:
-    Geometry(LogicalDevice ld);
+    Geometry(LogicalDevice ld, PhysicalDevice pd);
 };
 
-Geometry::Geometry(LogicalDevice ld)
-    : vbo(ld) 
-    , vao(Vertex::getAttributeDescriptions())
-{  }
+Geometry::Geometry(LogicalDevice ld, PhysicalDevice pd)
+    : vbo(ld)
+    , vao(Vertex::getAttributeDescriptions()) {
+    Alloc::HostAllocatorRequirement::logical = ld;
+    Alloc::HostAllocatorRequirement::physical = pd;
+}
 
 
 export struct Triangle: public Geometry {
@@ -60,12 +63,39 @@ export struct Triangle: public Geometry {
 };
 
 Triangle::Triangle(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff):
-    Geometry(ld) {
-    std::vector<Vertex> coord = {
+    Geometry(ld, pd) {
+    std::vector<Vertex, Alloc::HostAllocator<Vertex>> coord = {
         {{0.0f, -0.5f}, {1.0f, 1.0f, 0.0f}},
         {{0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
         {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
     };
 
-    vbo.loadData(ld, pd, buff, coord);
+    auto alloc = coord.get_allocator();
+
+    vkUnmapMemory(ld, alloc.host._mem.native());
+    vbo.gen_local_buff(ld, pd, sizeof(Vertex) * coord.size());
+
+     VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(buff, &beginInfo);
+
+
+    VkBufferCopy copyRegion{};
+    copyRegion.srcOffset = 0; // Optional
+    copyRegion.dstOffset = 0; // Optional
+    copyRegion.size = sizeof(Vertex) * coord.size();
+    vkCmdCopyBuffer(buff, alloc.host, vbo, 1, &copyRegion);
+
+    vkEndCommandBuffer(buff);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &buff.native();
+
+    vkQueueSubmit(ld.queues.graphic, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(ld.queues.graphic);
+    // vbo.loadData(ld, pd, buff, coord);
 }

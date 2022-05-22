@@ -153,6 +153,12 @@ public:
         : _native(new Native{}, del)
     {  };
 
+    NativeWrapper(const Internal& oth)
+        : _native(oth._native)
+        , _del(oth._del) 
+    {  };
+
+
     NativeWrapper()
         : _native()
         , _del() 

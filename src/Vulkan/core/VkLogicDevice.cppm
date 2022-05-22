@@ -30,6 +30,13 @@ export struct LogicalDevice: public
     LogicalDevice(PhysicalDevice device, WindowSurface surf);
 
     QueuePool   queues;
+
+    static LogicalDevice invalid() {
+        return LogicalDevice{};
+    }
+
+private:
+    LogicalDevice(): Internal([](const value_type& l){ vkDestroyDevice(l, nullptr); }) {};
 }; // LogicalDevice
 
 LogicalDevice::LogicalDevice(PhysicalDevice device, WindowSurface surf)

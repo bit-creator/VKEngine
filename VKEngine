@@ -100,6 +100,7 @@ function compile {
     compile_module src/Vulkan/frame/VkFramebuffer.cppm              Vk.Framebuffer 
     compile_module src/Vulkan/frame/VkCommandBuff.cppm              Vk.CommandBuffer 
     compile_module src/Vulkan/pipeline/VkVertexBuffer.cppm          Vk.VertexBuffer
+    compile_module src/Geometry/Allocator.cppm                      Vk.HostAllocator
     compile_module src/Geometry/Triangle.cppm                       Geometry.Triangle
     compile_module src/Vulkan/pipeline/VkPipeline.cppm              Vk.Pipeline
     compile_module src/Vulkan/frame/VkFrame.cppm                    Vk.Frame

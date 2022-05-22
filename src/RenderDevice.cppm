@@ -37,6 +37,9 @@ import Vk.CommandBuffer;
 
 import Geometry.Triangle;
 
+
+// to-do:/ improve commandPool abstraction to allow creating transfer cmdBuffer
+
 /**
  * @class RenderDevice
  * @brief Aggregates base Vulkan objects such as: 

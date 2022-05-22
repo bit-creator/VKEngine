@@ -20,7 +20,7 @@ public:
 
 // to-do:/ something magic in this... I recieve crash in staging buffer when vkFreeMemory is called;
 Memory::Memory(LogicalDevice ld):
-    Internal([&](value_type mem){ /*vkFreeMemory(ld, mem, nullptr);*/ }),
+    // Internal([&](value_type mem){ vkFreeMemory(ld, mem, nullptr); }),
     _ld(ld){
 }
 
