@@ -10,20 +10,41 @@ import Vk.Memory;
 
 export namespace Alloc {
 struct HostAllocatorRequirement {
-    HostAllocatorRequirement(LogicalDevice _logical, PhysicalDevice _physical) {
-        static LogicalDevice  logical = _logical;
-        static PhysicalDevice physical = _physical;
-    }
-
     static inline LogicalDevice  logical  = LogicalDevice::invalid();
     static inline PhysicalDevice physical = PhysicalDevice::invalid();
 }; // HostAllocatorRequirement
+
+struct MapMemory {
+    Memory& _mem;
+
+    ~MapMemory();
+    MapMemory(Memory& mem, size_t offset, size_t size, void** pv);
+
+    void unmap();
+};
+
+MapMemory::MapMemory(Memory& mem, size_t offset, size_t size, void** pv):
+        _mem(mem) {
+    vkMapMemory (
+        HostAllocatorRequirement::logical,
+        _mem, offset, size, 0, pv
+    );
+}
+
+MapMemory::~MapMemory() {
+    unmap();
+}
+
+void MapMemory::unmap() {
+    vkUnmapMemory(HostAllocatorRequirement::logical, _mem);
+}
 
 template < typename Tp >
 struct HostAllocator {
     typedef Tp value_type;
 
-    VertexBuffer        host;
+    StagingBuffer           host;
+    void*                   begin;                   
     
     HostAllocator() noexcept;
     ~HostAllocator() noexcept;
@@ -36,6 +57,12 @@ struct HostAllocator {
 
     Tp* allocate(const size_t n);
     void deallocate(Tp* const p, size_t) const noexcept;
+    void construct(Tp* p, const Tp& val);
+
+    template < typename... Args>
+    void construct(Tp* p, Args&&... args);
+
+
 };
 
 template < typename T > 
@@ -54,34 +81,40 @@ HostAllocator<T>::~HostAllocator() noexcept {
 
 template < typename T > T* 
 HostAllocator<T>::allocate(const size_t n) {
-    if (n == 0)
-    {
+    if (n == 0) {
         return nullptr;
-    }
-    if (n > static_cast<size_t>(-1) / sizeof(T))
-    {
+    } if (n > static_cast<size_t>(-1) / sizeof(T)) {
         throw std::bad_array_new_length();
     }
     
-    void* pv =nullptr;
-    
-    host.gen_staging_buff (
+    host.allocate (
         HostAllocatorRequirement::logical,
         HostAllocatorRequirement::physical,
         n * sizeof(T)
     );
 
-    vkMapMemory (
-        HostAllocatorRequirement::logical,
-        host._mem, 0, n, 0, &pv
-    );
+    MapMemory guard{host._mem, 0, n, &begin};
 
-    if (!pv) { throw std::bad_alloc(); }
-    return static_cast<T*>(pv);
+    if (!begin) { throw std::bad_alloc(); }
+    return static_cast<T*>(begin);
 }
 
 template < typename T > void
 HostAllocator<T>::deallocate(T * const p, size_t) const noexcept {
 }
+
+template < typename Tp > void
+HostAllocator<Tp>::construct(Tp* p, const Tp& val) {
+    MapMemory guard(host._mem, (p - (Tp*)begin)/sizeof(Tp), 1, &begin);
+    ::new((void *)p) Tp{val};
+}
+
+template < typename Tp >
+    template < typename... Args> void
+HostAllocator<Tp>::construct(Tp* p, Args&&... args) {
+    MapMemory guard(host._mem, (p - (Tp*)begin)/sizeof(Tp), 1, &begin);
+    std::construct_at(p, args...);
+}
+
 
 } // export

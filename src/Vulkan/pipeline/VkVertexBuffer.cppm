@@ -33,12 +33,64 @@ public:
         loadRawData(ld, pd, buff, std::data(data), std::size(data) * sizeof(typename T::value_type));
     }
 
+    void allocate(
+        LogicalDevice           ld,
+        PhysicalDevice          pd,
+        size_t                  size,
+        VkBufferUsageFlags      usage,
+        VkSharingMode           shareMode,
+        VkMemoryPropertyFlags   flags
+    );
+
     void gen_staging_buff(LogicalDevice ld, PhysicalDevice pd, size_t size);
     void gen_local_buff(LogicalDevice ld, PhysicalDevice pd, size_t size);
 
     void loadRawData(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff, void* data, size_t size);
 private:
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, PhysicalDevice pd);
+};
+
+void VertexBuffer::allocate(LogicalDevice ld, PhysicalDevice pd, 
+        size_t size, VkBufferUsageFlags usage,
+        VkSharingMode shareMode, VkMemoryPropertyFlags flags) {
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = shareMode;
+
+    VkCreate<vkCreateBuffer>(ld, &bufferInfo, nullptr, &_native);
+    
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(ld, _native, &memRequirements);
+
+    uint32_t typeFilter = memRequirements.memoryTypeBits;
+    VkMemoryPropertyFlags properties = flags;
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(typeFilter, properties, pd);
+    
+    VkCreate<vkAllocateMemory>(ld, &allocInfo, nullptr, &_mem.native());
+    
+    vkBindBufferMemory(ld, _native, _mem, 0);
+}
+
+export struct StagingBuffer: public VertexBuffer {
+    StagingBuffer(LogicalDevice ld);
+    void allocate(LogicalDevice ld, PhysicalDevice pd, size_t size);
+};
+
+StagingBuffer::StagingBuffer(LogicalDevice ld): VertexBuffer(ld) {  }
+
+void StagingBuffer::allocate(LogicalDevice ld, PhysicalDevice pd, size_t size) {
+    VertexBuffer::allocate(ld, pd, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+}
+
+export class LocalBuffer {
+    
 };
 
 VertexBuffer::VertexBuffer(LogicalDevice ld):
