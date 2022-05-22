@@ -33,6 +33,10 @@ export class PhysicalDevice:
 public:
     PhysicalDevice(VkInstance instance);
 
+    static PhysicalDevice invalid() {
+        return PhysicalDevice{};
+    }
+
     ~PhysicalDevice() =default;
 
 private:
@@ -56,6 +60,8 @@ private:
      * @return false if no
      */
     bool isCorrercFeatures(VkPhysicalDevice device);
+
+    PhysicalDevice() =default;
 }; // PhysicalDevice
 
 PhysicalDevice::PhysicalDevice(VkInstance instance): Internal() {

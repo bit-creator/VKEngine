@@ -10,24 +10,54 @@
  */
 
  
-export module Vk.Commandbuffer;
+export module Vk.CommandBuffer;
 
 export import App.NativeWrapper;
 
 import Vulkan;
 
 import Vk.LogicalDevice;
-import Vk.ImageView;
 import Vk.RenderPass;
+import Vk.ImageView;
+import Vk.Checker;
+import Vk.Queue;
 
-export class Commandbuffer:
-    public vk::NativeWrapper<VkCommandBuffer> {
-public:
-    Commandbuffer(VkCommandPool pool, LogicalDevice device);
+export struct CommandBuffer:
+        public vk::NativeWrapper<VkCommandBuffer> {
+    CommandBuffer(VkCommandPool pool, LogicalDevice device);
+    
+    void submit(Queue queue) {
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &_native;
+
+        vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(queue);
+    }
+
+    template < typename Pred >
+    void record(Pred predicat) const {
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = 0; // Optional
+        beginInfo.pInheritanceInfo = nullptr; // Optional
+
+        VkCreate<vkBeginCommandBuffer>(_native, &beginInfo);
+
+        predicat(*this);
+
+        vkEndCommandBuffer(_native);
+    }
+
+    template < typename Pred >
+    void recordAndSubmit(Queue queue, Pred predicat) {
+        record(predicat);
+        submit(queue);
+    }
 };
 
-
-Commandbuffer::Commandbuffer(VkCommandPool pool, LogicalDevice device) {
+CommandBuffer::CommandBuffer(VkCommandPool pool, LogicalDevice device) {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = pool;
@@ -38,12 +68,14 @@ Commandbuffer::Commandbuffer(VkCommandPool pool, LogicalDevice device) {
         throw std::runtime_error("failed to allocate command buffers!");
     }
 
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = 0; // Optional
-    beginInfo.pInheritanceInfo = nullptr; // Optional
+    // VkCommandBufferBeginInfo beginInfo{};
+    // beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    // beginInfo.flags = 0; // Optional
+    // beginInfo.pInheritanceInfo = nullptr; // Optional
 
-    if (vkBeginCommandBuffer(_native, &beginInfo) != VK_SUCCESS) {
-        throw std::runtime_error("failed to begin recording command buffer!");
-    }
+    // if (vkBeginCommandBuffer(_native, &beginInfo) != VK_SUCCESS) {
+    //     throw std::runtime_error("failed to begin recording command buffer!");
+    // }
 }
+
+

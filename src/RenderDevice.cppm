@@ -33,6 +33,13 @@ import Vk.QueuePool;
 import Vk.FramePool;
 import Vk.Frame;
 import Vk.Semaphore;
+import Vk.CommandBuffer;
+import Vk.CommandPool;
+
+import Geometry.Quad;
+
+
+// to-do:/ improve commandPool abstraction to allow creating transfer cmdBuffer
 
 /**
  * @class RenderDevice
@@ -49,11 +56,13 @@ private:
     Instance                                               instance; 
     WindowSurface                                          surface;  
     PhysicalDevice                                         physical;
-    LogicalDevice                                          logical;  
+    LogicalDevice                                          logical;
     Swapchain                                              swapchain;
     Pipeline                                               pipeline;
     FramePool                                              frames;
+    TransferCmdPool                                        transferPool;
     Semaphore                                              sync;
+    Quad                                                   geom;
 
 private:
     /**
@@ -96,15 +105,17 @@ private:
 }; // RenderDevice
 
 RenderDevice::RenderDevice() 
-    : wnd       (name)
-    , instance  ()
-    , surface   (instance, wnd)
-    , physical  (instance)
-    , logical   (physical, surface)
-    , swapchain (physical, logical, surface, wnd)
-    , pipeline  (swapchain, logical, physical)
-    , frames    (swapchain, logical, pipeline)
-    , sync      (logical)
+    : wnd           (name)
+    , instance      ()
+    , surface       (instance, wnd)
+    , physical      (instance)
+    , logical       (physical, surface)
+    , swapchain     (physical, logical, surface, wnd)
+    , pipeline      (swapchain, logical)
+    , frames        (swapchain, logical, pipeline)
+    , transferPool  (logical)
+    , sync          (logical)
+    , geom          (logical, physical, {transferPool, logical})
 {  }
 
 RenderDevice& RenderDevice::device() {
@@ -124,8 +135,10 @@ void RenderDevice::execute() {
 void RenderDevice::render() {
     uint32_t imageIndex;
     vkAcquireNextImageKHR(logical, swapchain, UINT64_MAX, sync, VK_NULL_HANDLE, &imageIndex);
+    auto frame = frames[imageIndex];
     
-    auto& renderEnd = frames[imageIndex].submit(sync, logical.queues);
+    frame.draw(geom);
+    auto& renderEnd = frame.submit(sync, logical.queues);
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

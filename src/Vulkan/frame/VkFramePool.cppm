@@ -19,7 +19,7 @@ import <iostream>;
 
 import Vk.ImageView;
 import Vk.Framebuffer;
-import Vk.Commandbuffer;
+import Vk.CommandBuffer;
 import Vk.Frame;
 import Vk.Swapchain;
 import Vk.LogicalDevice;
@@ -28,11 +28,11 @@ import Vk.Pipeline;
 import Vk.Queue;
 import Vk.QueuePool;
 import Vk.Semaphore;
+import Vk.CommandPool;
 
 import <vector>;
 
-export class FramePool:
-    public vk::NativeWrapper<VkCommandPool> {
+export class FramePool: public DrawCmdPool {
 private:
     std::vector<Frame>                    _frames;
 
@@ -46,23 +46,13 @@ public:
 
 
 FramePool::FramePool( Swapchain swapchain, LogicalDevice device, Pipeline& pipe): 
-    Internal([&](value_type fp){ vkDestroyCommandPool(device, fp, nullptr); }) {
+   DrawCmdPool(device) {
     std::vector<VkImage>                        images;
    
     VkGet<vkGetSwapchainImagesKHR>(images, device, swapchain);
 
     _frames.reserve(images.size());
    
-    VkCommandPoolCreateInfo poolInfo{};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.queueFamilyIndex = device.queues.graphic.getIndex();
-    // poolInfo.queueFamilyIndex = queues[QueueType::Graphics].getIndex();
-    poolInfo.flags = 0;
-
-    if (vkCreateCommandPool(device, &poolInfo, nullptr, &_native) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create command pool!");
-    }
-
     for(uint32_t i =0; i < images.size(); ++i) {
         _frames.emplace_back(images[i], _native, swapchain, device, pipe);
     }

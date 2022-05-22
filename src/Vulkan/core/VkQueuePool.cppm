@@ -67,23 +67,29 @@ public:
     // const Queue& operator[](QueueType type) const;
     
     QueueType bitToType(uint32_t flag);
+
+    QueuePool() =default;
 }; // QueuePool
-// #include <vulkan/vulkan_core.h>
+
 QueuePool::QueuePool(PhysicalDevice phys, WindowSurface surf) {  
     std::vector<VkQueueFamilyProperties> queueFamilies;
     VkGet<vkGetPhysicalDeviceQueueFamilyProperties>(queueFamilies, phys);
 
-    // uint32_t index =0;
+    uint32_t index =0;
     // for(auto [ flag, count, tsbits, transferGranularuty ]: queueFamilies) {
-    //     std::cout << queueFamilies.size() << std::endl;
-    //     std::cout << VK_QUEUE_GRAPHICS_BIT << std::endl;
+    //     std::cout << std::hex << (void*)flag << '\t' << VK_QUEUE_GRAPHICS_BIT << std::endl;
+    //     std::cout << count << '\t' << std::endl;
+    //     std::cout << tsbits << '\t' << std::endl;
     //     // if   (get(flag).isSupported()) continue;
     //     // else 
     //      get(flag).setIndex(index);
     //     ++index;
     // }
 
+    // to-do:/ now on my arch I have only one queue type need fix this method for multiple families
+
     graphic.setIndex(0);
+    transfer.setIndex(0);
 
     VkBool32 presentSupport = false;
     // uint32_t queueIndex =0;

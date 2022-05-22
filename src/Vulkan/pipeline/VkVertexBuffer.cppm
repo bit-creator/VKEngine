@@ -11,71 +11,78 @@
 
 export module Vk.VertexBuffer;
 
+import <iostream>;
 import <array>;
+import <vector>;
 import Vulkan;
-import Geometry.Triangle;
 import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
 import Vk.Checker;
 import Vk.Memory;
+import Vk.CommandBuffer;
 
-export class VertexBuffer:
+export {
+class VertexBuffer:
     public vk::NativeWrapper <VkBuffer> {
 public:
     Memory                  _mem;
-    Triangle                _geom;
 
-    VertexBuffer(LogicalDevice ld, PhysicalDevice pd);
+    VertexBuffer(LogicalDevice ld);
 
-    VkPipelineVertexInputStateCreateInfo 
-    getState();
+    void allocate(
+        LogicalDevice           ld,
+        PhysicalDevice          pd,
+        size_t                  size,
+        VkBufferUsageFlags      usage,
+        VkSharingMode           shareMode,
+        VkMemoryPropertyFlags   flags
+    );
 
 private:
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, PhysicalDevice pd);
-};
+}; // VertexBuffer
 
-VertexBuffer::VertexBuffer(LogicalDevice ld, PhysicalDevice pd):
-        Internal([&](value_type vb){ vkDestroyBuffer(ld, vb, nullptr); }),
+struct StagingBuffer: public VertexBuffer {
+    StagingBuffer(LogicalDevice ld);
+    void allocate(LogicalDevice ld, PhysicalDevice pd, size_t size);
+}; // StagingBuffer
+
+struct LocalBuffer: public VertexBuffer {
+    LocalBuffer(LogicalDevice ld);
+    void allocate(LogicalDevice ld, PhysicalDevice pd, size_t size);    
+}; // LocalBuffer
+}; // export
+
+VertexBuffer::VertexBuffer(LogicalDevice ld):
+        // Internal([&](value_type vb){ vkDestroyBuffer(ld, vb, nullptr); }),
         _mem(ld) {
+}
+
+void VertexBuffer::allocate(LogicalDevice ld, PhysicalDevice pd, 
+        size_t size, VkBufferUsageFlags usage,
+        VkSharingMode shareMode, VkMemoryPropertyFlags flags) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(Vertex) * 3;
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    VkCreate<vkCreateBuffer>(ld, &bufferInfo, nullptr, &_native);
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = shareMode;
 
+    VkCreate<vkCreateBuffer>(ld, &bufferInfo, nullptr, &_native);
+    
     VkMemoryRequirements memRequirements;
     vkGetBufferMemoryRequirements(ld, _native, &memRequirements);
+
     uint32_t typeFilter = memRequirements.memoryTypeBits;
-    VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    VkMemoryPropertyFlags properties = flags;
+
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(typeFilter, properties, pd);
-
+    
     VkCreate<vkAllocateMemory>(ld, &allocInfo, nullptr, &_mem.native());
-
+    
     vkBindBufferMemory(ld, _native, _mem, 0);
-
-    void* data;
-    vkMapMemory(ld, _mem, 0, bufferInfo.size, 0, &data);
-        memcpy(data, &_geom.coord, (size_t) bufferInfo.size);
-    vkUnmapMemory(ld, _mem);
-}
-
-VkPipelineVertexInputStateCreateInfo VertexBuffer::getState() {
-    auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    
-    VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-    
-    vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-
-    return vertexInputInfo;
 }
 
 uint32_t VertexBuffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, PhysicalDevice pd) {
@@ -87,4 +94,19 @@ uint32_t VertexBuffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
         }
     }
     return 0;
+}
+
+StagingBuffer::StagingBuffer(LogicalDevice ld): VertexBuffer(ld) {  }
+
+void StagingBuffer::allocate(LogicalDevice ld, PhysicalDevice pd, size_t size) {
+    VertexBuffer::allocate(ld, pd, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+}
+
+LocalBuffer::LocalBuffer(LogicalDevice ld): VertexBuffer(ld) {  }
+
+void LocalBuffer::allocate(LogicalDevice ld, PhysicalDevice pd, size_t size) {
+    VertexBuffer::allocate(ld, pd, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+        VK_SHARING_MODE_EXCLUSIVE, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 }
