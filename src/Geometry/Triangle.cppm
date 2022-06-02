@@ -34,7 +34,7 @@ Triangle::Triangle(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff):
 
     buff.recordAndSubmit(ld.queues.transfer,
         [&alloc, this, &cp_info](CommandBuffer cmd) {
-            vkCmdCopyBuffer(buff, alloc.host, vbo, 1, &cp_info);
+            vkCmdCopyBuffer(cmd, alloc.host, vbo, 1, &cp_info);
         }
     );
 }

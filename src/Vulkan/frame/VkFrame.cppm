@@ -29,6 +29,7 @@ import Vk.Semaphore;
 import Vk.QueuePool;
 import Vk.Queue;
 import Geometry;
+import Math.Matrix4f;
 
 export class Frame:
     public vk::NativeWrapper<VkImage> {
@@ -106,6 +107,15 @@ void Frame::draw(Geometry geom) const {
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(_command, 0, 1, vertexBuffers, offsets);
         vkCmdBindIndexBuffer(_command, vertexBuffers[0], geom.regions[1].offset, VK_INDEX_TYPE_UINT16);
+
+        Transform transf{{
+            2, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        }};
+
+        vkCmdPushConstants(_command, _pipe.getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Transform), &transf);
 
         vkCmdDrawIndexed(_command, static_cast<uint32_t>(6), 1, 0, 0, 0);
 

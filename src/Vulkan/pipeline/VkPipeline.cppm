@@ -61,6 +61,7 @@ public:
 
     // const VertexBuffer& getBuffer() const;
     const RenderPass& getRenderPass() const;
+    const Layout& getLayout() const;
 }; // Pipeline
 
 
@@ -98,8 +99,21 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
     vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 
+    VkPushConstantRange push;
+    push.offset =0;
+    push.size = sizeof(Transform);
+    push.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount = 0; 
+    pipelineLayoutInfo.pSetLayouts = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &push;
 
+    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &_layout.native()) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create pipeline layout!");
+    }
 
     // auto vertInfo = _verticies.getState();
     auto assemInfo = _assembly.getState();
@@ -129,6 +143,10 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
 
 const RenderPass& Pipeline::getRenderPass() const {
     return _pass;
+}
+
+const Layout& Pipeline::getLayout() const {
+    return _layout;
 }
 
 // const VertexBuffer& Pipeline::getBuffer() const {
