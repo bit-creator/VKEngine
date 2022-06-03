@@ -58,11 +58,11 @@ private:
     PhysicalDevice                                         physical;
     LogicalDevice                                          logical;
     Swapchain                                              swapchain;
+    TransferCmdPool                                        transferPool;
+    Quad                                                   geom;
     Pipeline                                               pipeline;
     FramePool                                              frames;
-    TransferCmdPool                                        transferPool;
     Semaphore                                              sync;
-    Quad                                                   geom;
 
 private:
     /**
@@ -111,11 +111,11 @@ RenderDevice::RenderDevice()
     , physical      (instance)
     , logical       (physical, surface)
     , swapchain     (physical, logical, surface, wnd)
-    , pipeline      (swapchain, logical)
-    , frames        (swapchain, logical, pipeline)
     , transferPool  (logical)
-    , sync          (logical)
     , geom          (logical, physical, {transferPool, logical})
+    , pipeline      (swapchain, logical, geom.vao)
+    , frames        (swapchain, logical, pipeline)
+    , sync          (logical)
 {  }
 
 RenderDevice& RenderDevice::device() {

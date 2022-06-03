@@ -23,10 +23,20 @@ export import <fstream>;
 export import <vector>;
 export import <string>;
 export import <map>;
+import App.Settings;
 
 namespace fs = std::filesystem;
 
-using shaderData = std::pair<ShaderType, std::string>;
+// using shaderData = std::pair<ShaderType, std::string>;
+
+export struct ShaderData {
+    ShaderType      _type;
+    std::string     _name;
+
+    std::string getFile() const {
+        return _name + std::to_string((int)_type) + ".spv";
+    }
+};
 
 export class ShaderFactory {
 private:
@@ -49,24 +59,25 @@ public:
     ShaderFactory(fs::path path, const LogicalDevice& device);
     ~ShaderFactory();
 
-    Shader operator[](const shaderData& data) const;
+    // Shader operator[](const ShaderData& data) const;
 
     /**
      * Be carefully this create a copy of shader buffer
      */
-    Shader operator[](const shaderData& data);
+    Shader operator[](const ShaderData& data);
 
 private:
     void loadBinarySource(fs::path path);
-    Shader get(const shaderData& data) const;
+    void compileShader(const ShaderData& data);
+    Shader get(const ShaderData& data);
 };
 
 ShaderFactory::ShaderFactory(fs::path path, const LogicalDevice& device) : _device(device) {
-    for(const auto& shader: fs::recursive_directory_iterator(path)) {
-        if(!shader.is_directory()) {
-            loadBinarySource(shader.path());
-        }
-    }
+    // for(const auto& shader: fs::recursive_directory_iterator(path)) {
+    //     if(!shader.is_directory()) {
+    //         loadBinarySource(shader.path());
+    //     }
+    // }
 }
 
 ShaderFactory::~ShaderFactory() {
@@ -78,6 +89,7 @@ void ShaderFactory::loadBinarySource(fs::path path) {
 
     if (shader.is_open()) {
         size_t size = (size_t)shader.tellg();
+        std::cout << path.filename() << std::endl;
         _shaderTree[path.filename()].resize(size);
         shader.seekg(0);
         shader.read((char*)_shaderTree[path.filename()].data(), size);
@@ -87,18 +99,30 @@ void ShaderFactory::loadBinarySource(fs::path path) {
     }
 }
 
-Shader ShaderFactory::get(const shaderData& data) const {
-    if(const auto& [type, name] = data; _shaderTree.contains(name)) {
-        return Shader(type, _device, _shaderTree.at(name));
+Shader ShaderFactory::get(const ShaderData& data) {
+    if(_shaderTree.contains(data.getFile())) {
+        return Shader(data._type, _device, _shaderTree.at(data.getFile()));
     } else {
-        throw std::runtime_error("Unknown name of shader");
+        compileShader(data);
+        loadBinarySource(std::string(shaderDirectory) + "/bin/" + data.getFile());
+        return Shader(data._type, _device, _shaderTree.at(data.getFile()));
     }
 }
 
-Shader ShaderFactory::operator[](const shaderData& data) const {
-    return get(data); 
+void ShaderFactory::compileShader(const ShaderData& data) {
+    std::string stage = data._type == ShaderType::Vertex ? "vert" : "frag";
+    std::string define = data._type == ShaderType::Vertex ? "VERTEX_SHADER" : "FRAGMENT_SHADER";
+    
+    std::string syscall =
+        "glslangValidator -V " +
+        std::string(shaderDirectory) + "shaders/" + data._name + ".glsl" +
+        " -S " + stage + " -D" + define + " -o " +
+        std::string(shaderDirectory) + "bin/" + data.getFile();
+
+    std::cout << syscall << std::endl;
+    system(syscall.c_str());
 }
 
-Shader ShaderFactory::operator[](const shaderData& data) {
+Shader ShaderFactory::operator[](const ShaderData& data) {
     return get(data);
 }

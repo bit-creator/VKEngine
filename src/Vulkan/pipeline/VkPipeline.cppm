@@ -35,6 +35,7 @@ export import Vk.DynamicState;
 export import Vk.ColorBlender;
 import Vk.PhysicalDevice;
 import Vk.LogicalDevice;
+import Geometry.Attributes;
 
 import App.Settings;
 export import App.ShaderFactory;
@@ -57,7 +58,7 @@ private:
     ShaderFactory                       _factory;
 
 public:
-    Pipeline(Swapchain swapchain, LogicalDevice device);
+    Pipeline(Swapchain swapchain, LogicalDevice device, Attributes& attr);
 
     // const VertexBuffer& getBuffer() const;
     const RenderPass& getRenderPass() const;
@@ -68,7 +69,7 @@ public:
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
-Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
+Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device, Attributes& attr):
     Internal([&](value_type p){ vkDestroyPipeline(device, p, nullptr); })
     , _assembly()
     , _viewport(swapchain)
@@ -80,16 +81,17 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
     , _pass(device, swapchain)
     , _factory(std::filesystem::current_path().concat(shaderDirectory), device)
 {
-    const auto& vertShader = _factory[{ShaderType::Vertex, "vert.spv"}];
-    const auto& fragShader = _factory[{ShaderType::Fragment, "frag.spv"}];
+    const auto& vertShader = _factory[{ShaderType::Vertex, "simple"}];
+    const auto& fragShader = _factory[{ShaderType::Fragment, "simple"}];
 
     std::vector stages{vertShader.getStage(), fragShader.getStage()};
 
-
-
     auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    
+    // auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    std::cout << "Pipe" << std::endl;
+    auto attributeDescriptions = attr.getDescriptions();
+
+
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
