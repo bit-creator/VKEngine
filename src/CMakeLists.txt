@@ -9,8 +9,9 @@ precompile ( App.RenderDevice    RenderDevice.cppm  )
 precompile ( App.Settings        AppSettings.cppm   )
 precompile ( App.Window          Window.cppm        )
 
-find_package(Vulkan REQUIRED)
+# find_package(Vulkan REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
+link_directories(3RDPARTY_DIR)
 
 add_compile_options(
     -std=c++${CMAKE_CXX_STANDARD}
@@ -35,9 +36,9 @@ add_executable(VKEngine
 )
 
 target_link_libraries(VKEngine
-    glfw 
-    Vulkan::Vulkan
-    Vulkan::Headers
+    glfw
+    vulkan
+    # Vulkan::Headers
     c++
     mathon
 )

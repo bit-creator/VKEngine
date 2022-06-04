@@ -52,7 +52,7 @@ Quad::Quad(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff): Geometry(ld
         }
     );
 
-    std::cout << "quad" << std::endl;
+    // std::cout << "quad" << std::endl;
 
     vao.add(Attribute::Position, offsetof(vertex, position), VK_FORMAT_R32G32_SFLOAT);
     vao.add(Attribute::Color, offsetof(vertex, color), VK_FORMAT_R32G32B32_SFLOAT);

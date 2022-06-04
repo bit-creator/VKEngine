@@ -44,6 +44,7 @@ export import App.ShaderFactory;
  * @brief simple aggregator for pipeline primitives 
  * 
  */
+
 export class Pipeline:
     public vk::NativeWrapper <VkPipeline> {
 private:
@@ -55,10 +56,10 @@ private:
     ColorBlender                        _blender;
     Layout                              _layout;
     RenderPass                          _pass;
-    ShaderFactory                       _factory;
+    // ShaderFactory                       _factory;
 
 public:
-    Pipeline(Swapchain swapchain, LogicalDevice device, Attributes& attr);
+    Pipeline(Swapchain swapchain, LogicalDevice device, ShaderFactory& _factory, Attributes& attr);
 
     // const VertexBuffer& getBuffer() const;
     const RenderPass& getRenderPass() const;
@@ -69,7 +70,7 @@ public:
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
-Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device, Attributes& attr):
+Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device, ShaderFactory& _factory, Attributes& attr):
     Internal([&](value_type p){ vkDestroyPipeline(device, p, nullptr); })
     , _assembly()
     , _viewport(swapchain)
@@ -79,16 +80,13 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device, Attributes& attr):
     , _blender()
     , _layout(device)
     , _pass(device, swapchain)
-    , _factory(std::filesystem::current_path().concat(shaderDirectory), device)
 {
-    const auto& vertShader = _factory[{ShaderType::Vertex, "simple"}];
-    const auto& fragShader = _factory[{ShaderType::Fragment, "simple"}];
+    const auto& vertShader = _factory[{0, ShaderType::Vertex}];
+    const auto& fragShader = _factory[{0, ShaderType::Fragment}];
 
     std::vector stages{vertShader.getStage(), fragShader.getStage()};
 
     auto bindingDescription = Vertex::getBindingDescription();
-    // auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    std::cout << "Pipe" << std::endl;
     auto attributeDescriptions = attr.getDescriptions();
 
 

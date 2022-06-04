@@ -57,6 +57,7 @@ private:
     WindowSurface                                          surface;  
     PhysicalDevice                                         physical;
     LogicalDevice                                          logical;
+    ShaderFactory                                          factory;
     Swapchain                                              swapchain;
     TransferCmdPool                                        transferPool;
     Quad                                                   geom;
@@ -110,13 +111,15 @@ RenderDevice::RenderDevice()
     , surface       (instance, wnd)
     , physical      (instance)
     , logical       (physical, surface)
+    , factory       (std::filesystem::current_path().concat(shaderDirectory), logical)
     , swapchain     (physical, logical, surface, wnd)
     , transferPool  (logical)
     , geom          (logical, physical, {transferPool, logical})
-    , pipeline      (swapchain, logical, geom.vao)
+    , pipeline      (swapchain, logical, factory, geom.vao)
     , frames        (swapchain, logical, pipeline)
-    , sync          (logical)
-{  }
+    , sync          (logical) {
+        // factory.registerShader("simple.glsl");
+}
 
 RenderDevice& RenderDevice::device() {
     static RenderDevice device;

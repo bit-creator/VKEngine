@@ -44,7 +44,7 @@ Attributes::Attributes()
 }
 
 void Attributes::enable(Attribute attr) {
-    std::cout << "enable" << (int)attr << std::endl;
+    // std::cout << "enable" << (int)attr << std::endl;
     _hash |= 1 << (size_t)attr;
 }
 
@@ -76,7 +76,7 @@ std::size_t Attributes::getAttribHash() const {
 }
 std::vector<VkVertexInputAttributeDescription> Attributes::getDescriptions() {
     std::vector<VkVertexInputAttributeDescription> ret;
-        std::cout << _hash << std::endl;
+        // std::cout << _hash << std::endl;
     for(auto& [attr, descr]: _attributes) {
 
         
