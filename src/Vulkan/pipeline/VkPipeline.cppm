@@ -35,6 +35,7 @@ export import Vk.DynamicState;
 export import Vk.ColorBlender;
 import Vk.PhysicalDevice;
 import Vk.LogicalDevice;
+import Geometry.Attributes;
 
 import App.Settings;
 export import App.ShaderFactory;
@@ -43,6 +44,7 @@ export import App.ShaderFactory;
  * @brief simple aggregator for pipeline primitives 
  * 
  */
+
 export class Pipeline:
     public vk::NativeWrapper <VkPipeline> {
 private:
@@ -54,20 +56,21 @@ private:
     ColorBlender                        _blender;
     Layout                              _layout;
     RenderPass                          _pass;
-    ShaderFactory                       _factory;
+    // ShaderFactory                       _factory;
 
 public:
-    Pipeline(Swapchain swapchain, LogicalDevice device);
+    Pipeline(Swapchain swapchain, LogicalDevice device, ShaderFactory& _factory, Attributes& attr);
 
     // const VertexBuffer& getBuffer() const;
     const RenderPass& getRenderPass() const;
+    const Layout& getLayout() const;
 }; // Pipeline
 
 
 /********************************************/
 /***************IMPLIMENTATION***************/
 /********************************************/
-Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
+Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device, ShaderFactory& _factory, Attributes& attr):
     Internal([&](value_type p){ vkDestroyPipeline(device, p, nullptr); })
     , _assembly()
     , _viewport(swapchain)
@@ -77,18 +80,16 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
     , _blender()
     , _layout(device)
     , _pass(device, swapchain)
-    , _factory(std::filesystem::current_path().concat(shaderDirectory), device)
 {
-    const auto& vertShader = _factory[{ShaderType::Vertex, "vert.spv"}];
-    const auto& fragShader = _factory[{ShaderType::Fragment, "frag.spv"}];
+    const auto& vertShader = _factory[{0, ShaderType::Vertex}];
+    const auto& fragShader = _factory[{0, ShaderType::Fragment}];
 
     std::vector stages{vertShader.getStage(), fragShader.getStage()};
 
-
-
     auto bindingDescription = Vertex::getBindingDescription();
-    auto attributeDescriptions = Vertex::getAttributeDescriptions();
-    
+    auto attributeDescriptions = attr.getDescriptions();
+
+
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -98,8 +99,21 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
     vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 
+    VkPushConstantRange push;
+    push.offset =0;
+    push.size = sizeof(Transform);
+    push.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount = 0; 
+    pipelineLayoutInfo.pSetLayouts = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &push;
 
+    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &_layout.native()) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create pipeline layout!");
+    }
 
     // auto vertInfo = _verticies.getState();
     auto assemInfo = _assembly.getState();
@@ -129,6 +143,10 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device):
 
 const RenderPass& Pipeline::getRenderPass() const {
     return _pass;
+}
+
+const Layout& Pipeline::getLayout() const {
+    return _layout;
 }
 
 // const VertexBuffer& Pipeline::getBuffer() const {

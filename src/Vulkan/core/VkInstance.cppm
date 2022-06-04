@@ -87,7 +87,19 @@ void Instance::checkExtensionSupport(std::vector<const char*>& required) {
     for(uint32_t i = 0; i < requiredExtCount; ++i) {
         required.push_back(ext[i]);
     }
-    
+
+    required.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    // required.push_back(VK_KHR_PIPELINE_LIBRARY_EXTENSION_NAME);
+    // required.push_back(VK_EXT_GRAPHICS_PIPELINE_LIBRARY_EXTENSION_NAME);
+
+    // uint32_t count;
+    // vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr); //get number of extensions
+    // std::vector<VkExtensionProperties> extensions(count);
+    // vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data()); //populate buffer
+    // for (auto & extension : extensions) {
+    //     std::cout << extension.extensionName << std::endl;
+    // }
+
     if constexpr (buildType == BuildType::Debug) {
         if(!Extensions<VkInstance>(_native).isSupported(required)) {
         

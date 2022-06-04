@@ -16,7 +16,12 @@ export struct Quad: public Geometry {
 };
 
 Quad::Quad(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff): Geometry(ld, pd) {
-    std::vector<Vertex, Alloc::HostAllocator<Vertex>> coord = {
+    struct vertex {
+        mathon::Vector2f        position;
+        mathon::Vector3f        color;
+    };
+
+    std::vector<vertex, Alloc::HostAllocator<vertex>> coord = {
         {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
         {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
         {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
@@ -30,9 +35,9 @@ Quad::Quad(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff): Geometry(ld
     auto alloc = coord.get_allocator();
     auto idx_alloc = indices.get_allocator();
 
-    vbo.allocate(ld, pd, sizeof(Vertex) * coord.size() + sizeof(uint16_t) * indices.size());
+    vbo.allocate(ld, pd, sizeof(vertex) * coord.size() + sizeof(uint16_t) * indices.size());
 
-    regions[0] = {0,                sizeof(Vertex) * coord.size()};
+    regions[0] = {0,                sizeof(vertex) * coord.size()};
     regions[1] = {regions[0].size,  sizeof(uint16_t) * indices.size()};
 
     VkBufferCopy cp_info[2] = {
@@ -46,4 +51,9 @@ Quad::Quad(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff): Geometry(ld
             vkCmdCopyBuffer(cmd, idx_alloc.host, this->vbo, 1, &cp_info[1]);
         }
     );
+
+    // std::cout << "quad" << std::endl;
+
+    vao.add(Attribute::Position, offsetof(vertex, position), VK_FORMAT_R32G32_SFLOAT);
+    vao.add(Attribute::Color, offsetof(vertex, color), VK_FORMAT_R32G32B32_SFLOAT);
 }

@@ -12,6 +12,7 @@ import Vk.PhysicalDevice;
 import Vk.CommandBuffer;
 import Vk.HostAllocator;
 import Vk.Memory;
+export import Geometry.Attributes;
 
 export class Vertex {
 public:
@@ -49,7 +50,7 @@ export struct MemoryRegion {
 
 export struct Geometry {
     LocalBuffer                                               vbo;
-    std::array<VkVertexInputAttributeDescription, 2>          vao;
+    Attributes                                                vao;
     std::array<MemoryRegion, 2>                               regions;
     
 public:
@@ -58,7 +59,7 @@ public:
 
 Geometry::Geometry(LogicalDevice ld, PhysicalDevice pd)
     : vbo(ld)
-    , vao(Vertex::getAttributeDescriptions()) {
+    , vao() {
     Alloc::HostAllocatorRequirement::logical = ld;
     Alloc::HostAllocatorRequirement::physical = pd;
 }
