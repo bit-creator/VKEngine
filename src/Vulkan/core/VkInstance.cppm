@@ -111,19 +111,24 @@ void Instance::checkLayerSupport(std::vector<const char*>& required) {
     required = {
         "VK_LAYER_MESA_device_select",
         "VK_LAYER_MESA_overlay",
+
+        // this extension doesnt work well with pipline libraries
         // "VK_LAYER_LUNARG_standard_validation",
-        // "VK_LAYER_KHRONOS_validation"
+        // "VK_LAYER_KHRONOS_validation",
+        
     };
 
     std::vector<VkLayerProperties> availableLayers;
     VkGet<vkEnumerateInstanceLayerProperties>(availableLayers);
 
-    for(size_t i =0; i < required.size(); ++i) {
-        bool hasLayer =false;
-        for(auto avalibleLayer: availableLayers) {
-            hasLayer += !strcmp(avalibleLayer.layerName, required[i]);
-        }
-        if(!hasLayer) {
-        }
-    }
+    // for(size_t i =0; i < availableLayers.size(); ++i) {
+        // std::cout << availableLayers[i].layerName << std::endl;
+        // required.push_back(availableLayers[i].layerName);
+        // bool hasLayer =false;
+        // for(auto avalibleLayer: availableLayers) {
+        //     hasLayer += !strcmp(avalibleLayer.layerName, required[i]);
+        // }
+        // if(!hasLayer) {
+        // }
+    // }
 }
