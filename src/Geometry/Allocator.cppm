@@ -78,6 +78,7 @@ HostAllocator<T>::deallocate(T * const, size_t) const noexcept {
     host.~StagingBuffer();
 }
 
+// to-do:/ validation layers tell: we need multiple offset from 64 bit
 template < typename Tp > void
 HostAllocator<Tp>::construct(Tp* p, const Tp& val) {
     MapMemory guard(host._mem, (p - (Tp*)begin)/sizeof(Tp), 1, &begin);

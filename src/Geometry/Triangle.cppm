@@ -17,6 +17,11 @@ export struct Triangle: public Geometry {
 
 Triangle::Triangle(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff):
     Geometry(ld, pd) {
+    struct Vertex {
+        mathon::Vector2f        position;
+        mathon::Vector3f        color;
+    };
+
     std::vector<Vertex, Alloc::HostAllocator<Vertex>> coord = {
         {{0.0f, -0.5f}, {1.0f, 1.0f, 0.0f}},
         {{0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},

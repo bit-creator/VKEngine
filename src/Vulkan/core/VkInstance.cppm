@@ -114,7 +114,7 @@ void Instance::checkLayerSupport(std::vector<const char*>& required) {
 
         // this extension doesnt work well with pipline libraries
         // "VK_LAYER_LUNARG_standard_validation",
-        // "VK_LAYER_KHRONOS_validation",
+        "VK_LAYER_KHRONOS_validation",
         
     };
 

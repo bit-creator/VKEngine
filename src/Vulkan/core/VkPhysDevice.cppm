@@ -90,6 +90,17 @@ void PhysicalDevice::select(std::vector<VkPhysicalDevice>& devices) {
 }
 
 bool PhysicalDevice::isCorrectProperty( [[maybe_unused]] VkPhysicalDevice device) {
+    // VkPhysicalDeviceFeatures2 pFeatures;
+    // VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT pl;
+    // pl.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT;
+    // pl.pNext = nullptr;
+    // pl.graphicsPipelineLibrary = true;
+
+    // pFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    // pFeatures.pNext = &pl;
+
+    // vkGetPhysicalDeviceFeatures2(device, &pFeatures);
+    
     return true;
 }
 

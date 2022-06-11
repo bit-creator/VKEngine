@@ -17,15 +17,15 @@ export struct Quad: public Geometry {
 
 Quad::Quad(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff): Geometry(ld, pd) {
     struct vertex {
-        mathon::Vector2f        position;
+        mathon::Vector3f        position;
         mathon::Vector3f        color;
     };
 
     std::vector<vertex, Alloc::HostAllocator<vertex>> coord = {
-        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+        {{-0.5f, -0.5f, 0.0}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f, -0.5f, 0.0}, {0.0f, 1.0f, 0.0f}},
+        {{0.5f, 0.5f, 0.0}, {0.0f, 0.0f, 1.0f}},
+        {{-0.5f, 0.5f, 0.0}, {1.0f, 1.0f, 1.0f}}
     };
 
     const std::vector<uint16_t, Alloc::HostAllocator<uint16_t>> indices = {
@@ -54,6 +54,14 @@ Quad::Quad(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff): Geometry(ld
 
     // std::cout << "quad" << std::endl;
 
-    vao.add(Attribute::Position, offsetof(vertex, position), VK_FORMAT_R32G32_SFLOAT);
+    vao.add(Attribute::Position, offsetof(vertex, position), VK_FORMAT_R32G32B32_SFLOAT);
     vao.add(Attribute::Color, offsetof(vertex, color), VK_FORMAT_R32G32B32_SFLOAT);
+
+    VkVertexInputBindingDescription bindingDescription{};
+    bindingDescription.binding = 0;
+    bindingDescription.stride = sizeof(vertex);
+    bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    vao.setBindingDescription(bindingDescription);
+    
 }

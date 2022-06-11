@@ -109,7 +109,7 @@ void Frame::draw(Geometry geom) const {
         vkCmdBindIndexBuffer(_command, vertexBuffers[0], geom.regions[1].offset, VK_INDEX_TYPE_UINT16);
 
         Transform transf{{
-            2, 0, 0, 0,
+            1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
             0, 0, 0, 1

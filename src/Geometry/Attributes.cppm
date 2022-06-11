@@ -22,6 +22,7 @@ using WholeAttribDescr = std::map<Attribute, VkVertexInputAttributeDescription>;
 export class Attributes {
 private:
     WholeAttribDescr                 _attributes;
+    VkVertexInputBindingDescription  _binding;
     size_t                           _hash;
 
 public:
@@ -36,6 +37,9 @@ public:
     void add(Attribute attr, uint32_t offset, VkFormat format);
 
     std::vector<VkVertexInputAttributeDescription> getDescriptions();
+
+    VkVertexInputBindingDescription getBindingDescription();
+    void setBindingDescription(VkVertexInputBindingDescription desc);
 };
 
 Attributes::Attributes()
@@ -85,4 +89,12 @@ std::vector<VkVertexInputAttributeDescription> Attributes::getDescriptions() {
 
     }
     return ret;
+}
+
+VkVertexInputBindingDescription Attributes::getBindingDescription() {
+    return _binding;
+}
+
+void Attributes::setBindingDescription(VkVertexInputBindingDescription desc) {
+    _binding = desc;
 }
