@@ -135,6 +135,7 @@ function compile {
     compile_module src/Geometry/Quad.cppm                           Geometry.Quad
     compile_module src/Geometry/Triangle.cppm                       Geometry.Triangle
     compile_module src/Vulkan/pipeline/VkPipelineCache.cppm         Vk.PipelineCache
+    compile_module src/Vulkan/pipeline/PipelineFactory.cppm         App.PipelineFactory
     compile_module src/Vulkan/pipeline/VkPipeline.cppm              Vk.Pipeline
     compile_module src/Vulkan/frame/VkFrame.cppm                    Vk.Frame
     compile_module src/Vulkan/frame/VkFramePool.cppm                Vk.FramePool

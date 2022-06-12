@@ -20,6 +20,8 @@ import Geometry;
 import <vector>;
 import <filesystem>;
 
+import App.PipelineFactory;
+
 export import Vk.Checker;
 export import Vk.Shader;
 export import Vk.Layout;
@@ -56,7 +58,7 @@ private:
     ColorBlender                        _blender;
     Layout                              _layout;
     RenderPass                          _pass;
-    // ShaderFactory                       _factory;
+    PipelineTree<PipelineLib::VertexInput>        _tree;
 
 public:
     Pipeline(Swapchain swapchain, LogicalDevice device, ShaderFactory& _factory, Attributes& attr);
@@ -80,6 +82,7 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device, ShaderFactory& _fa
     , _blender()
     , _layout(device)
     , _pass(device, swapchain)
+    , _tree(device)
 {
     VkPushConstantRange push;
     push.offset =0;
@@ -104,37 +107,47 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device, ShaderFactory& _fa
 		VkPipeline fragmentOutputInterface;
 	} pipelineLibrary;
 
-    {
-        VkGraphicsPipelineLibraryCreateInfoEXT libraryInfo{};
-		libraryInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
-		libraryInfo.flags = VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT;
+    // {
+    //     VkGraphicsPipelineLibraryCreateInfoEXT libraryInfo{};
+	// 	libraryInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
+	// 	libraryInfo.flags = VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT;
 
-        auto bindingDescription =    attr.getBindingDescription();
-        auto attributeDescriptions = attr.getDescriptions();
+    //     auto bindingDescription =    attr.getBindingDescription();
+    //     auto attributeDescriptions = attr.getDescriptions();
 
-        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+    //     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 
-        vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 1;
-        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    //     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    //     vertexInputInfo.vertexBindingDescriptionCount = 1;
+    //     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    //     vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    //     vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-        inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        inputAssembly.primitiveRestartEnable = VK_FALSE;
+    //     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+    //     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    //     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    //     inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-        VkGraphicsPipelineCreateInfo pipelineCI{};
-        pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipelineCI.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
-		pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipelineCI.pNext = &libraryInfo;
-		pipelineCI.pInputAssemblyState = &inputAssembly;
-		pipelineCI.pVertexInputState = &vertexInputInfo;
+    //     VkGraphicsPipelineCreateInfo pipelineCI{};
+    //     pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	// 	pipelineCI.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+	// 	pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	// 	pipelineCI.pNext = &libraryInfo;
+	// 	pipelineCI.pInputAssemblyState = &inputAssembly;
+	// 	pipelineCI.pVertexInputState = &vertexInputInfo;
     
-    	VkCreate<vkCreateGraphicsPipelines>(device, nullptr, 1, &pipelineCI, nullptr, &pipelineLibrary.vertexInputInterface);
-    }
+    // 	VkCreate<vkCreateGraphicsPipelines>(device, nullptr, 1, &pipelineCI, nullptr, &pipelineLibrary.vertexInputInterface);
+    // }
+
+    DrawInfo::VertexInputData info;
+    info.attributeHash = attr.getAttribHash();
+    info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+    RequiredData::VertexInputData data;
+    data.binding    = attr.getBindingDescription();
+    data.attributes =    attr.getDescriptions();
+
+    pipelineLibrary.vertexInputInterface = _tree[{info, data}];
 
     {
     	VkGraphicsPipelineLibraryCreateInfoEXT libraryInfo{};

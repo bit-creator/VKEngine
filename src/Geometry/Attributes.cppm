@@ -78,6 +78,7 @@ bool Attributes::hasAttribute(Attribute attr) const {
 std::size_t Attributes::getAttribHash() const {
     return _hash;
 }
+
 std::vector<VkVertexInputAttributeDescription> Attributes::getDescriptions() {
     std::vector<VkVertexInputAttributeDescription> ret;
         // std::cout << _hash << std::endl;
