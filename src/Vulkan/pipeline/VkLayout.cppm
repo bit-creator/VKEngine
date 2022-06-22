@@ -33,4 +33,19 @@ export struct Transform {
 Layout::Layout(const LogicalDevice& device)
     : Internal([&device](const value_type& l)
         { vkDestroyPipelineLayout(device, l, nullptr); }) {
+    VkPushConstantRange push;
+    push.offset =0;
+    push.size = sizeof(Transform);
+    push.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount = 0;
+    pipelineLayoutInfo.pSetLayouts = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &push;
+
+    if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &_native) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create pipeline layout!");
+    }
 }

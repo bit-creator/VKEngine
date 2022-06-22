@@ -59,7 +59,7 @@ private:
     const LogicalDevice&        _device;
 
 public:
-    ShaderFactory(fs::path path, const LogicalDevice& device);
+    ShaderFactory([[maybe_unused]]fs::path path, const LogicalDevice& device);
     ~ShaderFactory();
 
     void registerShader(fs::path path);

@@ -130,6 +130,7 @@ function compile {
     compile_module src/Vulkan/frame/VkCommandBuff.cppm              Vk.CommandBuffer 
     compile_module src/Vulkan/pipeline/VkVertexBuffer.cppm          Vk.VertexBuffer
     compile_module src/Geometry/Allocator.cppm                      Vk.HostAllocator
+    compile_module src/Vulkan/pipeline/drawData.cppm                App.DrawData
     compile_module src/Geometry/Attributes.cppm                     Geometry.Attributes
     compile_module src/Geometry/Geometry.cppm                       Geometry
     compile_module src/Geometry/Quad.cppm                           Geometry.Quad

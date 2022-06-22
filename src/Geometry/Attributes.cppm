@@ -7,6 +7,8 @@ import <vector>;
 import <map>;
 import <iostream>;
 
+import App.DrawData;
+
 export enum class Attribute {
     Position  =0,
     Normal    =1,

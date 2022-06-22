@@ -20,23 +20,23 @@ private:
     VkRect2D            _scissor;
 
 public:
-    Viewport(const Swapchain& swapchain);
+    Viewport(const VkExtent2D& extent);
     ~Viewport();
 
     VkPipelineViewportStateCreateInfo 
-    getState();
+    getState() const;
 };
 
-Viewport::Viewport(const Swapchain& swapchain) {
+Viewport::Viewport(const VkExtent2D& extent) {
     _viewport.x = 0.0f;
     _viewport.y = 0.0f;
-    _viewport.width = (float) swapchain.getExtent().width;
-    _viewport.height = (float) swapchain.getExtent().height;
+    _viewport.width = (float) extent.width;
+    _viewport.height = (float) extent.height;
     _viewport.minDepth = 0.0f;
     _viewport.maxDepth = 1.0f;
 
     _scissor.offset = {0, 0};
-    _scissor.extent = swapchain.getExtent();
+    _scissor.extent = extent;
 }
 
 Viewport::~Viewport() {
@@ -44,7 +44,7 @@ Viewport::~Viewport() {
 }
 
 VkPipelineViewportStateCreateInfo 
-Viewport::getState() {
+Viewport::getState() const {
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;

@@ -19,7 +19,7 @@ public:
     ~Rasterizer();
 
     VkPipelineRasterizationStateCreateInfo 
-    getState();
+    getState() const;
 };
 
 Rasterizer::Rasterizer() {
@@ -29,7 +29,7 @@ Rasterizer::~Rasterizer() {
 }
 
 VkPipelineRasterizationStateCreateInfo 
-Rasterizer::getState() {
+Rasterizer::getState() const {
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.depthClampEnable = VK_FALSE;
