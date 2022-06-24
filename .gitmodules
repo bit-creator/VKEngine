@@ -1,0 +1,3 @@
+[submodule "Mathon"]
+	path = Mathon
+	url = https://github.com/bit-creator/Mathon.git
