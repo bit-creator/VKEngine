@@ -1,3 +1,6 @@
 [submodule "Mathon"]
 	path = Mathon
 	url = https://github.com/bit-creator/Mathon.git
+[submodule "mesa"]
+	path = mesa
+	url = https://gitlab.freedesktop.org/mesa/mesa.git

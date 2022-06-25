@@ -1,11 +1,11 @@
 
 module GLFW {
-       header  "/home/user/Mesa/mesa/include/vulkan/vulkan_core.h"
+       header "../mesa/include/vulkan/vulkan_core.h"
        header "/usr/include/GLFW/glfw3.h"
        export *
 }
 
 module Vulkan {
-       header "/home/user/Mesa/mesa/include/vulkan/vulkan_core.h"
+       header "../mesa/include/vulkan/vulkan_core.h"
        export *
 }

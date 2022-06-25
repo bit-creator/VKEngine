@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(BUILD_DIR ${CMAKE_SOURCE_DIR}/.build)
 set(PRECOMPILED_MODULES_DIR ${CMAKE_SOURCE_DIR}/precompiled)
 set(3RDPARTY_DIR ${CMAKE_SOURCE_DIR}/3rdparty)
+set(VULKAN_DIR ${3RDPARTY_DIR}/latest/lib/x86_64-linux-gnu/)
 set(CMAKE_SCRIPTS_DIR ${CMAKE_SOURCE_DIR}/cmakeScripts)
 
 project(VKEngine)
