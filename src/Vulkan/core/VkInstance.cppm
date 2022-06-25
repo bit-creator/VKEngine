@@ -111,8 +111,8 @@ void Instance::checkLayerSupport(std::vector<const char*>& required) {
     required = {
         "VK_LAYER_MESA_device_select",
         "VK_LAYER_MESA_overlay",
-        "VK_LAYER_LUNARG_standard_validation",
-        "VK_LAYER_KHRONOS_validation"
+        // "VK_LAYER_LUNARG_standard_validation",
+        // "VK_LAYER_KHRONOS_validation"
     };
 
     std::vector<VkLayerProperties> availableLayers;

@@ -48,17 +48,45 @@ function compile_source {
     -march=native\
     -ffast-math\
     -fcxx-exceptions\
-    -fmodules-cache-path=/home/user/Code/C++/Mathon/.build/cache\
+    # -fmodules-cache-path=/home/user/Code/C++/Mathon/.build/cache\
     -fprebuilt-module-path=../precompiled/\
-    -fprebuilt-module-path=/home/user/Code/C++/Mathon/precompiled/\
+    -fprebuilt-module-path=Mathon/precompiled/\
     $1 -c
+}
+
+function build_mesa() {
+    prefix=$PWD/3rdparty/latest
+
+    cd mesa
+    meson setup --reconfigure . .mesa_build \
+        -D buildtype=debug \
+        -D prefix=$prefix \
+        -D valgrind=false \
+        -D gallium-drivers=iris \
+        -D vulkan-drivers=intel \
+        -D gallium-nine=false \
+        -D gallium-omx="disabled" \
+        -D platforms=x11,wayland \
+        -D llvm=false \
+        -D tools=intel \
+        -D build-tests=false \
+        -D vulkan-layers=overlay
+
+    ninja -C ./.mesa_build/ install
+
+    cd ..
 }
 
 function compile {
     clear
 
+    export VK_ICD_FILENAMES=$PWD/3rdparty/latest/share/vulkan/icd.d/intel_icd.x86_64.json
+
     mkdir -p .build
     
+    cd Mathon
+    ./Mathon -rb
+    cd ..
     
     cd .build
 
@@ -203,6 +231,12 @@ if [[ "$1" == "--help" || "$1" == "-h" ]]; then
     help    
 fi
 
+if [[ "$1" == "--build_mesa" ]]; then
+    build_mesa
+fi
+
 if [[ "$2" == "--run" || "$2" == "-r" || "$1" == "" ]]; then
     ./.build/src/VKEngine
 fi
+
+

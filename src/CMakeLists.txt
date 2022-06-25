@@ -11,7 +11,9 @@ precompile ( App.Window          Window.cppm        )
 
 # find_package(Vulkan REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
-link_directories(3RDPARTY_DIR)
+link_directories(VULKAN_DIR)
+
+Message(${VULKAN_DIR})
 
 add_compile_options(
     -std=c++${CMAKE_CXX_STANDARD}

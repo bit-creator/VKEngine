@@ -36,6 +36,7 @@
 assets/bin/
 .cache/
 precompiled/
+3rdparty/latest
 
 # ide
 .vscode
