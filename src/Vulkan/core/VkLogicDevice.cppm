@@ -72,6 +72,17 @@ LogicalDevice::LogicalDevice(PhysicalDevice device, WindowSurface surf)
     VkPhysicalDeviceFeatures deviceFeatures;
     vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
+    VkPhysicalDeviceFeatures2 pFeatures;
+    VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT pl;
+    pl.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_FEATURES_EXT;
+    pl.pNext = nullptr;
+    pl.graphicsPipelineLibrary = true;
+
+    pFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    pFeatures.pNext = &pl;
+    pFeatures.features = deviceFeatures;
+
+
     // const auto ext = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
     std::vector<const char*> extensions;
     extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
@@ -84,9 +95,10 @@ LogicalDevice::LogicalDevice(PhysicalDevice device, WindowSurface surf)
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createInfo.pNext = &pFeatures;
     createInfo.pQueueCreateInfos = queueInfos.data();
     createInfo.queueCreateInfoCount = (uint32_t)queueInfos.size();
-    createInfo.pEnabledFeatures = &deviceFeatures;
+    // createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = extensions.size();
     createInfo.ppEnabledExtensionNames = extensions.data();
 

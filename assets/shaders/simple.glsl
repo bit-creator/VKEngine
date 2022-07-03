@@ -17,7 +17,7 @@ INPUT(FRAG_COLOR)
 vec3 fragColor;
 
 #ifdef VERTEX_SHADER 
-INPUT(POSITION) vec2 inPosition;
+INPUT(POSITION) vec3 inPosition;
 INPUT(COLOR)    vec3 inColor;
 
 PUSH_CONST() uTransform {
@@ -25,7 +25,7 @@ PUSH_CONST() uTransform {
 } transform;
 
 void main() {
-    gl_Position = transform.MVP * vec4(inPosition, 0.0, 1.0);
+    gl_Position = transform.MVP * vec4(inPosition, 1.0);
     fragColor = inColor;
 }
 #endif // VERTEX_SHADER

@@ -21,20 +21,24 @@ import GLFW;
 
 import App.Settings;
 import App.Window;
+import Math.Matrix4f;
 
 import Vk.PhysicalDevice;
 import Vk.LogicalDevice;
 import Vk.WindowSurface;
 import Vk.Swapchain;
 import Vk.Instance;
-import Vk.Pipeline;
+import Vk.VertexBuffer;
 import Vk.Queue;
 import Vk.QueuePool;
 import Vk.FramePool;
 import Vk.Frame;
 import Vk.Semaphore;
 import Vk.CommandBuffer;
+import Vk.Framebuffer;
 import Vk.CommandPool;
+import App.DrawData;
+import App.PipelineFactory;
 
 import Geometry.Quad;
 
@@ -57,11 +61,11 @@ private:
     WindowSurface                                          surface;  
     PhysicalDevice                                         physical;
     LogicalDevice                                          logical;
-    ShaderFactory                                          factory;
+    PipelineFactory                                        pipelines;
     Swapchain                                              swapchain;
     TransferCmdPool                                        transferPool;
     Quad                                                   geom;
-    Pipeline                                               pipeline;
+    RenderPass                                             pass;
     FramePool                                              frames;
     Semaphore                                              sync;
 
@@ -102,7 +106,7 @@ public:
     void execute();
 
 private:
-    void render();
+    void render(const Frame& frame);
 }; // RenderDevice
 
 RenderDevice::RenderDevice() 
@@ -111,12 +115,12 @@ RenderDevice::RenderDevice()
     , surface       (instance, wnd)
     , physical      (instance)
     , logical       (physical, surface)
-    , factory       (std::filesystem::current_path().concat(shaderDirectory), logical)
+    , pipelines     (logical)
     , swapchain     (physical, logical, surface, wnd)
     , transferPool  (logical)
     , geom          (logical, physical, {transferPool, logical})
-    , pipeline      (swapchain, logical, factory, geom.vao)
-    , frames        (swapchain, logical, pipeline)
+    , pass          (logical, swapchain.getFormat().format)
+    , frames        (swapchain, logical, pass)
     , sync          (logical) {
         // factory.registerShader("simple.glsl");
 }
@@ -129,33 +133,89 @@ RenderDevice& RenderDevice::device() {
 void RenderDevice::execute() {
     while(!glfwWindowShouldClose(wnd)) {
         glfwPollEvents();
-        render();
+        uint32_t imageIndex;
+        vkAcquireNextImageKHR(logical, swapchain, UINT64_MAX, sync, VK_NULL_HANDLE, &imageIndex);
+        auto frame = frames[imageIndex];
+        
+        render(frame);
+
+        auto& available = frame.submit(sync, logical.queues);
+
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = &available.native();
+    
+        VkSwapchainKHR swapChains[] = {swapchain};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pImageIndices = &imageIndex;
+    
+        presentInfo.pResults = nullptr; // Optional
+    
+        vkQueuePresentKHR(logical.queues.graphic, &presentInfo);
+        vkQueueWaitIdle(logical.queues.graphic);
     }
 
     vkDeviceWaitIdle(logical);
 }
 
-void RenderDevice::render() {
-    uint32_t imageIndex;
-    vkAcquireNextImageKHR(logical, swapchain, UINT64_MAX, sync, VK_NULL_HANDLE, &imageIndex);
-    auto frame = frames[imageIndex];
+void RenderDevice::render(const Frame& frame) {
+    data::DrawInfo info;
+    info.attributeHash = geom.vao.getAttribHash();
+    info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    info.vertexShader =0;
+    info.fragmentShader =0;
+
+    Viewport viewport(swapchain.getExtent());
+    Rasterizer rasterizer;
+    Layout layout(logical);
+
+    data::DrawData data {
+        geom.vao.getDescriptions()
+        , geom.vao.getBindingDescription()
+        , viewport
+        , rasterizer
+        , layout
+        , pass
+    };
+
+    auto pipeline = pipelines[{info, data}];
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = pass;
+    renderPassInfo.framebuffer = frame._buffer;
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = swapchain.getExtent();
+    VkClearValue clearColor;
+    clearColor.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
     
-    frame.draw(geom);
-    auto& renderEnd = frame.submit(sync, logical.queues);
+    frame.bind();
+    
+    vkCmdBeginRenderPass(frame._command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBindPipeline(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-    VkPresentInfoKHR presentInfo{};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        VkBuffer vertexBuffers[] = {geom.vbo.native()};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(frame._command, 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(frame._command, vertexBuffers[0], geom.regions[1].offset, VK_INDEX_TYPE_UINT16);
 
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &renderEnd.native();
+        Transform transf{{
+            1, 0, 0, 0,
+            0, 2, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        }};
 
-    VkSwapchainKHR swapChains[] = {swapchain};
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapChains;
-    presentInfo.pImageIndices = &imageIndex;
+        vkCmdPushConstants(frame._command, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Transform), &transf);
 
-    presentInfo.pResults = nullptr; // Optional
+        vkCmdDrawIndexed(frame._command, static_cast<uint32_t>(6), 1, 0, 0, 0);
 
-    vkQueuePresentKHR(logical.queues.graphic, &presentInfo);
-    vkQueueWaitIdle(logical.queues.graphic);
+    vkCmdEndRenderPass(frame._command);
+    
+    frame.unbind();
 }

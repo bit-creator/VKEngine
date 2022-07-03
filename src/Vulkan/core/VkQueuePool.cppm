@@ -75,7 +75,7 @@ QueuePool::QueuePool(PhysicalDevice phys, WindowSurface surf) {
     std::vector<VkQueueFamilyProperties> queueFamilies;
     VkGet<vkGetPhysicalDeviceQueueFamilyProperties>(queueFamilies, phys);
 
-    uint32_t index =0;
+    // uint32_t index =0;
     // for(auto [ flag, count, tsbits, transferGranularuty ]: queueFamilies) {
     //     std::cout << std::hex << (void*)flag << '\t' << VK_QUEUE_GRAPHICS_BIT << std::endl;
     //     std::cout << count << '\t' << std::endl;

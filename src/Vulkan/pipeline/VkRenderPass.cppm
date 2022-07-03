@@ -13,6 +13,7 @@ export module Vk.RenderPass;
 
 import Vulkan;
 
+export import App.NativeWrapper;
 import Vk.ColorAttachment;
 import Vk.LogicalDevice;
 import Vk.Swapchain;
@@ -41,31 +42,32 @@ export struct RenderSubPass {
     }
 };
 
-export class RenderPass {
+export class RenderPass:
+    public vk::NativeWrapper<VkRenderPass> {
 private:           
-    VkRenderPass                            _pass;
-    const LogicalDevice&                    _device;
+    // VkRenderPass                            _pass;
+    // const LogicalDevice&                    _device;
     // ColorAttachment                         _attach;
 
 
 public:
-    RenderPass(const LogicalDevice& device, const Swapchain& swapchain);
+    RenderPass(const LogicalDevice& device, VkFormat format);
 
-    operator VkRenderPass() const;
-    operator VkRenderPass();
+    // operator VkRenderPass() const;
+    // operator VkRenderPass();
 
-    ~RenderPass();
+    // ~RenderPass();
 
     void start();
 };
 
 
-RenderPass::RenderPass(const LogicalDevice& device, const Swapchain& swapchain) 
-    : _device(device)
+RenderPass::RenderPass(const LogicalDevice& device, VkFormat format) 
+        : Internal([&](value_type p){ vkDestroyRenderPass(device, p, nullptr); })
     // , _attach(swapchain) 
     {
         VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = swapchain.getFormat().format;
+        colorAttachment.format = format;
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -90,7 +92,7 @@ RenderPass::RenderPass(const LogicalDevice& device, const Swapchain& swapchain)
         renderPassInfo.subpassCount = 1;
         renderPassInfo.pSubpasses = &subpass;
 
-        if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &_pass) != VK_SUCCESS) {
+        if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &_native) != VK_SUCCESS) {
             throw std::runtime_error("failed to create render pass!");
         }
 
@@ -109,17 +111,17 @@ RenderPass::RenderPass(const LogicalDevice& device, const Swapchain& swapchain)
     // }
 }
 
-RenderPass::~RenderPass() {
-    vkDestroyRenderPass(_device, _pass, nullptr);
-}
+// RenderPass::~RenderPass() {
+//     vkDestroyRenderPass(_device, _pass, nullptr);
+// }
 
-RenderPass::operator VkRenderPass() const {
-    return _pass;
-}
+// RenderPass::operator VkRenderPass() const {
+//     return _pass;
+// }
 
-RenderPass::operator VkRenderPass() {
-    return _pass;
-}
+// RenderPass::operator VkRenderPass() {
+//     return _pass;
+// }
 
 void RenderPass::start() {
     

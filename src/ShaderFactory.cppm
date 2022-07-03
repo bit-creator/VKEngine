@@ -59,7 +59,7 @@ private:
     const LogicalDevice&        _device;
 
 public:
-    ShaderFactory(fs::path path, const LogicalDevice& device);
+    ShaderFactory(const LogicalDevice& device);
     ~ShaderFactory();
 
     void registerShader(fs::path path);
@@ -77,7 +77,7 @@ private:
     std::string spvFile(const ShaderData& data);
 };
 
-ShaderFactory::ShaderFactory(fs::path path, const LogicalDevice& device) : _device(device) {
+ShaderFactory::ShaderFactory(const LogicalDevice& device) : _device(device) {
     _pathes.push_back(preRegistredShader);
 }
 

@@ -7,6 +7,8 @@ import <vector>;
 import <map>;
 import <iostream>;
 
+import App.DrawData;
+
 export enum class Attribute {
     Position  =0,
     Normal    =1,
@@ -22,6 +24,7 @@ using WholeAttribDescr = std::map<Attribute, VkVertexInputAttributeDescription>;
 export class Attributes {
 private:
     WholeAttribDescr                 _attributes;
+    VkVertexInputBindingDescription  _binding;
     size_t                           _hash;
 
 public:
@@ -36,6 +39,9 @@ public:
     void add(Attribute attr, uint32_t offset, VkFormat format);
 
     std::vector<VkVertexInputAttributeDescription> getDescriptions();
+
+    VkVertexInputBindingDescription getBindingDescription();
+    void setBindingDescription(VkVertexInputBindingDescription desc);
 };
 
 Attributes::Attributes()
@@ -74,6 +80,7 @@ bool Attributes::hasAttribute(Attribute attr) const {
 std::size_t Attributes::getAttribHash() const {
     return _hash;
 }
+
 std::vector<VkVertexInputAttributeDescription> Attributes::getDescriptions() {
     std::vector<VkVertexInputAttributeDescription> ret;
         // std::cout << _hash << std::endl;
@@ -85,4 +92,12 @@ std::vector<VkVertexInputAttributeDescription> Attributes::getDescriptions() {
 
     }
     return ret;
+}
+
+VkVertexInputBindingDescription Attributes::getBindingDescription() {
+    return _binding;
+}
+
+void Attributes::setBindingDescription(VkVertexInputBindingDescription desc) {
+    _binding = desc;
 }
