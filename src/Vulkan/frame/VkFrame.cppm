@@ -20,7 +20,6 @@ import <iostream>;
 import Vulkan;
 import Vk.Swapchain;
 import Vk.LogicalDevice;
-import Vk.Pipeline;
 import Vk.RenderPass;
 import Vk.ImageView;
 import Vk.Framebuffer;
@@ -33,18 +32,14 @@ import Math.Matrix4f;
 
 export class Frame:
     public vk::NativeWrapper<VkImage> {
-private:
-    LogicalDevice                           _device;
-    Swapchain                               _swapchain;
+public:
     ImageView                               _view;
     Framebuffer                             _buffer;
     CommandBuffer                           _command;
-    Semaphore                               _renderEnd;
-    Pipeline&                               _pipe;
-    VkExtent2D                              _extent;
+    Semaphore                               _available;
 
 public:
-    Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, Pipeline& pipe);
+    Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, const RenderPass& pass);
 
     void bind() const;
     void unbind() const;
@@ -53,16 +48,12 @@ public:
     void draw(Geometry geom) const;
 };
 
-Frame::Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, Pipeline& pipe):
+Frame::Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, const RenderPass& pass):
         Internal()
-        , _device(device)
-        , _swapchain(swapchain)
         , _view(img, swapchain.getFormat().format, device)
-        , _buffer(swapchain.getExtent(), pipe.getRenderPass(), _view, device)
+        , _buffer(swapchain.getExtent(), pass, _view, device)
         , _command(pool, device) 
-        , _renderEnd(device)
-        , _pipe(pipe)
-        , _extent(swapchain.getExtent()) {
+        , _available(device) {
     _native = img;
 }
 
@@ -79,48 +70,13 @@ const Semaphore& Frame::submit(const Semaphore& imageSync, QueuePool& queues) co
     submitInfo.pCommandBuffers = &_command.native();
 
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &_renderEnd.native();
+    submitInfo.pSignalSemaphores = &_available.native();
 
     if (vkQueueSubmit(queues[QueueType::Graphics], 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
     
-    return _renderEnd;
-}
-
-void Frame::draw(Geometry geom) const {
-    bind();
-    VkRenderPassBeginInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = _pipe.getRenderPass();
-    renderPassInfo.framebuffer = _buffer;
-    renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = _extent;
-    VkClearValue clearColor;
-    clearColor.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
-    vkCmdBeginRenderPass(_command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(_command, VK_PIPELINE_BIND_POINT_GRAPHICS, _pipe);
-
-        VkBuffer vertexBuffers[] = {geom.vbo.native()};
-        VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(_command, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(_command, vertexBuffers[0], geom.regions[1].offset, VK_INDEX_TYPE_UINT16);
-
-        Transform transf{{
-            1, 0, 0, 0,
-            0, 2, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        }};
-
-        vkCmdPushConstants(_command, _pipe.getLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Transform), &transf);
-
-        vkCmdDrawIndexed(_command, static_cast<uint32_t>(6), 1, 0, 0, 0);
-
-    vkCmdEndRenderPass(_command);
-    unbind();
+    return _available;
 }
 
 void Frame::bind() const {

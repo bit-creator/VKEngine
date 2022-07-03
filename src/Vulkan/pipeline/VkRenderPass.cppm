@@ -51,7 +51,7 @@ private:
 
 
 public:
-    RenderPass(const LogicalDevice& device, const Swapchain& swapchain);
+    RenderPass(const LogicalDevice& device, VkFormat format);
 
     // operator VkRenderPass() const;
     // operator VkRenderPass();
@@ -62,12 +62,12 @@ public:
 };
 
 
-RenderPass::RenderPass(const LogicalDevice& device, const Swapchain& swapchain) 
+RenderPass::RenderPass(const LogicalDevice& device, VkFormat format) 
         : Internal([&](value_type p){ vkDestroyRenderPass(device, p, nullptr); })
     // , _attach(swapchain) 
     {
         VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = swapchain.getFormat().format;
+        colorAttachment.format = format;
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
