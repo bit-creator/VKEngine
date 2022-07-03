@@ -58,9 +58,12 @@ private:
     ColorBlender                        _blender;
     Layout                              _layout;
     RenderPass                          _pass;
-    PipelineTree<PipelineLib::VertexInput>        _tree;
-    PipelineTree<PipelineLib::PreRasterisation>        _pr;
+    // PipelineTree<PipelineLib::VertexInput>        _tree;
+    // PipelineTree<PipelineLib::PreRasterisation>        _pr;
+    // PipelineTree<PipelineLib::FragmentShader>        _fs;
+    // PipelineTree<PipelineLib::FragmentOutput>        _fo;
 
+    PipelineFactory             _fac;
 public:
     Pipeline(Swapchain swapchain, LogicalDevice device, ShaderFactory& _factory, Attributes& attr);
 
@@ -83,177 +86,53 @@ Pipeline::Pipeline(Swapchain swapchain, LogicalDevice device, ShaderFactory& _fa
     , _blender()
     , _layout(device)
     , _pass(device, swapchain)
-    , _tree(device)
-    , _pr(device, _factory)
+    // , _tree(device)
+    // , _pr(device, _factory)
+    // , _fs(device, _factory)
+    // , _fo(device)
+    , _fac(device)
 {
-    // VkPushConstantRange push;
-    // push.offset =0;
-    // push.size = sizeof(Transform);
-    // push.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	// struct PipelineLibrary {
+	// 	VkPipeline vertexInputInterface;
+	// 	VkPipeline preRasterizationShaders;
+    //     VkPipeline fragmentShader;
+	// 	VkPipeline fragmentOutputInterface;
+	// } pipelineLibrary;
 
-    // VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    // pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    // pipelineLayoutInfo.setLayoutCount = 0;
-    // pipelineLayoutInfo.pSetLayouts = nullptr;
-    // pipelineLayoutInfo.pushConstantRangeCount = 1;
-    // pipelineLayoutInfo.pPushConstantRanges = &push;
-
-    // if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &_layout.native()) != VK_SUCCESS) {
-    //     throw std::runtime_error("failed to create pipeline layout!");
-    // }
-
-	struct PipelineLibrary {
-		VkPipeline vertexInputInterface;
-		VkPipeline preRasterizationShaders;
-        VkPipeline fragmentShader;
-		VkPipeline fragmentOutputInterface;
-	} pipelineLibrary;
-
-{
-    data::InfoVI info;
+    data::DrawInfo info;
     info.attributeHash = attr.getAttribHash();
     info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    info.vertexShader =0;
+    info.fragmentShader =0;
 
-    data::DataVI data;
-    data.binding    = attr.getBindingDescription();
-    data.attributes =    attr.getDescriptions();
-
-    pipelineLibrary.vertexInputInterface = _tree[{info, data}];
-}
-{
-    data::InfoPR info;
-    info.shaderIndex =0;
-
-    data::DataPR data {
-         _viewport
+    data::DrawData data {
+        attr.getDescriptions()
+        , attr.getBindingDescription()
+        , _viewport
         , _rasterizer
         , _layout
         , _pass
     };
 
-    pipelineLibrary.preRasterizationShaders = _pr[{info, data}];
-}
-    // {
-    // 	VkGraphicsPipelineLibraryCreateInfoEXT libraryInfo{};
-	// 	libraryInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
-	// 	libraryInfo.flags = VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT;
-		
 
+    // pipelineLibrary.vertexInputInterface = _tree[{info, data}];
+    // pipelineLibrary.preRasterizationShaders = _pr[{info, data}];
+    // pipelineLibrary.fragmentShader = _fs[{info, data}];
+    // pipelineLibrary.fragmentOutputInterface = _fo[{info, data}];
 
+    _native = _fac[{info, data}].native();
 
+    // VkPipelineLibraryCreateInfoKHR pipelineLibraryCI{};
+	// pipelineLibraryCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
+	// pipelineLibraryCI.libraryCount = 4;
+	// pipelineLibraryCI.pLibraries = &pipelineLibrary.vertexInputInterface;
 
-
-    //     auto viewInfo = _viewport.getState();
-    //     auto rasterInfo= _rasterizer.getState();
-
-    //     const auto& vertShader = _factory[{0, ShaderType::Vertex}];
-    //     auto shader = vertShader.getStage();
-    	 	
-    //     VkGraphicsPipelineCreateInfo pipelineCI{};
-	// 	pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	// 	pipelineCI.pNext = &libraryInfo;
-	// 	pipelineCI.renderPass = _pass;
-	// 	pipelineCI.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
-	// 	pipelineCI.stageCount = 1;
-	// 	pipelineCI.pStages = &shader;
-	// 	pipelineCI.layout = _layout;
-	// 	pipelineCI.pDynamicState = nullptr;
-	// 	pipelineCI.pViewportState = &viewInfo;
-	// 	pipelineCI.pRasterizationState = &rasterInfo;
-		
-    //     VkCreate<vkCreateGraphicsPipelines>(device, nullptr, 1, &pipelineCI, nullptr, &pipelineLibrary.preRasterizationShaders);
-    // }
-
-    {		
-		VkGraphicsPipelineLibraryCreateInfoEXT libraryInfo{};
-		libraryInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
-		libraryInfo.flags = VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT;
-		
-        auto msInfo = _ms.getState();
-        auto blendInfo = _blender.getState();
-        VkGraphicsPipelineCreateInfo pipelineLibraryCI{};
-		pipelineLibraryCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineLibraryCI.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
-		pipelineLibraryCI.pNext = &libraryInfo;
-		pipelineLibraryCI.layout = _layout;
-		pipelineLibraryCI.renderPass = _pass;
-		pipelineLibraryCI.pColorBlendState = &blendInfo;
-		pipelineLibraryCI.pMultisampleState = &msInfo;
-        VkCreate<vkCreateGraphicsPipelines>(device, nullptr, 1, &pipelineLibraryCI, nullptr, &pipelineLibrary.fragmentOutputInterface);
-	}
-    {
-    	VkGraphicsPipelineLibraryCreateInfoEXT libraryInfo{};
-		libraryInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
-		libraryInfo.flags = VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT;
-
-        auto msInfo = _ms.getState();		
-        const auto& fragShader = _factory[{0, ShaderType::Fragment}];
-        auto fshader = fragShader.getStage();
-
-		VkGraphicsPipelineCreateInfo pipelineCI{};
-		pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipelineCI.pNext = &libraryInfo;
-		pipelineCI.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
-		pipelineCI.stageCount = 1;
-		pipelineCI.pStages = &fshader;
-		pipelineCI.layout = _layout;
-		pipelineCI.renderPass = _pass;
-		pipelineCI.pDepthStencilState = nullptr;
-		pipelineCI.pMultisampleState = &msInfo;
-        VkCreate<vkCreateGraphicsPipelines>(device, nullptr, 1, &pipelineCI, nullptr, &pipelineLibrary.fragmentShader);
-    }
+	// VkGraphicsPipelineCreateInfo executablePipelineCI{};
+	// executablePipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	// executablePipelineCI.pNext = &pipelineLibraryCI;
+	// executablePipelineCI.flags |= VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
     
-    // const auto& vertShader = _factory[{0, ShaderType::Vertex}];
-    // const auto& fragShader = _factory[{0, ShaderType::Fragment}];
-
-    // std::vector stages{vertShader.getStage(), fragShader.getStage()};
-
-    // auto bindingDescription = attr.getBindingDescription();
-    // auto attributeDescriptions = attr.getDescriptions();
-
-    // VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-    
-    // vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    // vertexInputInfo.vertexBindingDescriptionCount = 1;
-    // vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    // vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    // vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-
-    // // auto vertInfo = _verticies.getState();
-    // auto assemInfo = _assembly.getState();
-    // auto viewInfo = _viewport.getState();
-    // auto rasterInfo= _rasterizer.getState();
-    // auto msInfo = _ms.getState();
-    // auto dynInfo = _dynamic.getState();
-    // auto blendInfo = _blender.getState();
-
-    
-    // VkGraphicsPipelineCreateInfo pipelineInfo{};
-    // pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    // pipelineInfo.stageCount = 2;
-    // pipelineInfo.pStages = stages.data();
-    // pipelineInfo.pVertexInputState    = &vertexInputInfo;
-    // pipelineInfo.pInputAssemblyState  = &assemInfo;
-    // pipelineInfo.pViewportState       = &viewInfo;
-    // pipelineInfo.pRasterizationState  = &rasterInfo;
-    // pipelineInfo.pMultisampleState    = &msInfo;
-    // pipelineInfo.pDepthStencilState   = nullptr;
-    // pipelineInfo.pColorBlendState     = &blendInfo;
-    // pipelineInfo.pDynamicState        = nullptr;
-    // pipelineInfo.layout               = _layout;
-    // pipelineInfo.renderPass           = _pass;
-
-    VkPipelineLibraryCreateInfoKHR pipelineLibraryCI{};
-	pipelineLibraryCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
-	pipelineLibraryCI.libraryCount = 4;
-	pipelineLibraryCI.pLibraries = &pipelineLibrary.vertexInputInterface;
-
-	VkGraphicsPipelineCreateInfo executablePipelineCI{};
-	executablePipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	executablePipelineCI.pNext = &pipelineLibraryCI;
-	executablePipelineCI.flags |= VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
-    
-    VkCreate<vkCreateGraphicsPipelines>(device, nullptr, 1, &executablePipelineCI, nullptr, &_native);
+    // VkCreate<vkCreateGraphicsPipelines>(device, nullptr, 1, &executablePipelineCI, nullptr, &_native);
     // VkCreate<vkCreateGraphicsPipelines>(device, nullptr, 1, &pipelineInfo, nullptr, &_native);
 }
 
