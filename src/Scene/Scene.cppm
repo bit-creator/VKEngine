@@ -16,7 +16,7 @@ export struct Scene {
 
     static pointer default_scene() {
         Object obj;
-        // obj._geometry = GeomRef(new Quad());
+        obj._geometry = GeomRef(new Quad());
         Camera cam = PerspectiveCamera(3.1415f / 3.0f, 1.0f, 0.1f, 100.0f);
         pointer scene = pointer(new Scene{cam, obj});
         // scene._camera = PerspectiveCamera(3.1415f / 3.0f, 1.0f, 0.1f, 100.0f);

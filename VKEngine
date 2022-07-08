@@ -139,6 +139,10 @@ function compile {
     compile_module src/Vulkan/pipeline/PipelineFactory.cppm         App.PipelineFactory
     compile_module src/Vulkan/frame/VkFrame.cppm                    Vk.Frame
     compile_module src/Vulkan/frame/VkFramePool.cppm                Vk.FramePool
+    compile_module src/Scene/Entity.cppm                            Scene.Entity
+    compile_module src/Scene/Camera.cppm                            Scene.Camera
+    compile_module src/Scene/Object.cppm                            Scene.Object
+    compile_module src/Scene/Scene.cppm                             Scene
     compile_module src/RenderDevice.cppm                            App.RenderDevice
    
     
