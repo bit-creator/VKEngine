@@ -1,8 +1,10 @@
 export module Scene.Camera;
 
-import Math.Matrix4f;
+export import Math.Matrix4f;
 
 import Scene.Entity;
+
+namespace mth = mathon;
 
 export class Camera: public Entity {
     mth::Matrix4f              projection;

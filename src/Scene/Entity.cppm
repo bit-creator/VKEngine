@@ -1,43 +1,61 @@
 export module Scene.Entity;
 
 import Math.Matrix4f;
-import Math.Vector4f;
+import Math.Vector3f;
+import Math.Quaternion4f;
+
+namespace mth = mathon;
 
 export class Entity {
 protected:
     mth::Matrix4f                                               _modelMat;
     mth::Matrix4f												_worldMat;
-    mth::Quaternion                                             _rotate;
-    mth::Vector4f                                               _position;
-    mth::Vector4f                                               _scale;
+    mth::Quaternion4f                                           _rotate;
+    mth::Vector3f                                               _position;
+    mth::Vector3f                                               _scale;
     bool                                                        _dirtyTransform;
     bool 		    											_dirtyWorldTransform;
+public:
+    Entity();
+    Entity(const Entity& oth);
+    Entity(Entity&&);
+    
 
 public:
-    void rotate(mth::Quaternion quat);
-    void scale(mth::Vector4f scale);
-    void translate(mth::Vector4f pos);
+    void rotate(mth::Quaternion4f quat);
+    void scale(mth::Vector3f scale);
+    void translate(mth::Vector3f pos);
 
     mth::Matrix4f transformation();
 };
 
-void Entity::rotate(mth::Quaternion quat) {
+
+Entity::Entity() {
+}
+
+Entity::Entity(const Entity& oth) {
+}
+
+Entity::Entity(Entity&& oth) {
+}
+
+void Entity::rotate(mth::Quaternion4f quat) {
     _rotate = quat;
     _dirtyTransform = true;
 }
 
-void Entity::scale(mth::Vector4f scale) {
+void Entity::scale(mth::Vector3f scale) {
     _scale = scale;
     _dirtyTransform = true;
 }
 
-void Entity::translate(mth::Vector4f pos) {
+void Entity::translate(mth::Vector3f pos) {
     _position = pos;
     _dirtyTransform = true;
 }
 
-mth::Matrix4f transformation() {
-    if(_dirtyTransform) _modelMat.makeModel(_scale, _rotate, _position);
+mth::Matrix4f Entity::transformation() {
+    if(_dirtyTransform) _modelMat.make_model(_scale, _rotate, _position);
     return _modelMat;
 }
 
