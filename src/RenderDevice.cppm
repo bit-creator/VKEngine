@@ -64,7 +64,7 @@ private:
     PipelineFactory                                        pipelines;
     Swapchain                                              swapchain;
     TransferCmdPool                                        transferPool;
-    Quad                                                   geom;
+    GeomRef                                                geom;
     RenderPass                                             pass;
     FramePool                                              frames;
     Semaphore                                              sync;
@@ -118,10 +118,15 @@ RenderDevice::RenderDevice()
     , pipelines     (logical)
     , swapchain     (physical, logical, surface, wnd)
     , transferPool  (logical)
-    , geom          (logical, physical, {transferPool, logical})
+    // , geom          (logical, physical, {transferPool, logical})
     , pass          (logical, swapchain.getFormat().format)
     , frames        (swapchain, logical, pass)
     , sync          (logical) {
+        Vk::Geometry::FastLoad::logical  = logical;
+        Vk::Geometry::FastLoad::physical = physical;
+        Vk::Geometry::FastLoad::transfer = transferPool;
+        
+        geom = GeomRef(new Quad());
         // factory.registerShader("simple.glsl");
 }
 
@@ -163,7 +168,7 @@ void RenderDevice::execute() {
 
 void RenderDevice::render(const Frame& frame) {
     data::DrawInfo info;
-    info.attributeHash = geom.vao.getAttribHash();
+    info.attributeHash = geom->vao.getAttribHash();
     info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     info.vertexShader =0;
     info.fragmentShader =0;
@@ -173,8 +178,8 @@ void RenderDevice::render(const Frame& frame) {
     Layout layout(logical);
 
     data::DrawData data {
-        geom.vao.getDescriptions()
-        , geom.vao.getBindingDescription()
+        geom->vao.getDescriptions()
+        , geom->vao.getBindingDescription()
         , viewport
         , rasterizer
         , layout
@@ -199,10 +204,10 @@ void RenderDevice::render(const Frame& frame) {
     vkCmdBeginRenderPass(frame._command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-        VkBuffer vertexBuffers[] = {geom.vbo.native()};
+        VkBuffer vertexBuffers[] = {geom->vbo.native()};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(frame._command, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(frame._command, vertexBuffers[0], geom.regions[1].offset, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(frame._command, vertexBuffers[0], geom->regions[1].offset, VK_INDEX_TYPE_UINT16);
 
         Transform transf{{
             1, 0, 0, 0,

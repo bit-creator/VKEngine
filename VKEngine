@@ -29,7 +29,7 @@ function compile_module {
     -ffast-math\
     -fcxx-exceptions\
     -fprebuilt-module-path=precompiled/\
-    -fprebuilt-module-path=/home/user/Code/C++/Mathon/precompiled/\
+    -fprebuilt-module-path=Mathon/precompiled/\
     -c --precompile\
     $1 -o precompiled/$2.pcm
 }

@@ -29,7 +29,7 @@ add_compile_options(
     -ffast-math
     -fcxx-exceptions
     -fprebuilt-module-path=${PRECOMPILED_MODULES_DIR}
-    -fprebuilt-module-path=/home/user/Code/C++/Mathon/precompiled/
+    -fprebuilt-module-path=${CMAKE_SOURCE_DIR}/Mathon/precompiled/
 )
 
 add_executable(VKEngine
