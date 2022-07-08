@@ -11,6 +11,7 @@ import Vulkan;
 import Vk.VertexBuffer;
 import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
+import Vk.CommandPool;
 import Vk.CommandBuffer;
 import Vk.HostAllocator;
 import Vk.Memory;

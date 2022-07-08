@@ -7,6 +7,7 @@ import Vk.VertexBuffer;
 import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
 import Vk.CommandBuffer;
+import Vk.CommandPool;
 import Vk.HostAllocator;
 import Vk.Memory;
 import Vk.CommandPool;
@@ -51,7 +52,7 @@ Quad::Quad(): Geometry() {
         {0, regions[1].offset, regions[1].size}
     };
 
-    CommandBuffer buff{
+    CommandBuffer buff {
         FastLoad::transfer,
         FastLoad::logical
     };
@@ -62,8 +63,6 @@ Quad::Quad(): Geometry() {
             vkCmdCopyBuffer(cmd, idx_alloc.host, this->vbo, 1, &cp_info[1]);
         }
     );
-
-    // std::cout << "quad" << std::endl;
 
     vao.add(Attribute::Position, offsetof(vertex, position), VK_FORMAT_R32G32B32_SFLOAT);
     vao.add(Attribute::Color, offsetof(vertex, color), VK_FORMAT_R32G32B32_SFLOAT);
