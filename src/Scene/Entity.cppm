@@ -30,7 +30,10 @@ public:
 };
 
 
-Entity::Entity() {
+Entity::Entity():
+    _rotate(0, {1, 0, 0}),  
+    _position(0, 0, 0),
+    _scale(1, 1, 1) {
 }
 
 Entity::Entity(const Entity& oth) {

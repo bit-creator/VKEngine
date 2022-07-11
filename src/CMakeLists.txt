@@ -1,5 +1,6 @@
 add_subdirectory(Vulkan)
 add_subdirectory(Geometry)
+add_subdirectory(Scene)
 
 include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
 
@@ -8,6 +9,7 @@ precompile ( App.ShaderFactory   ShaderFactory.cppm )
 precompile ( App.RenderDevice    RenderDevice.cppm  )
 precompile ( App.Settings        AppSettings.cppm   )
 precompile ( App.Window          Window.cppm        )
+precompile ( App.Event           Event.cppm        )
 
 # find_package(Vulkan REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
@@ -17,11 +19,9 @@ Message(${VULKAN_DIR})
 
 add_compile_options(
     -std=c++${CMAKE_CXX_STANDARD}
-    -std=c++20
     -stdlib=libc++
     -fmodules
-    -O3
-    -fPIC
+    -g3
     -Wall
     -Wextra
     -fmath-errno

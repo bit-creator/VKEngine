@@ -2,11 +2,13 @@ export module Scene.Camera;
 
 export import Math.Matrix4f;
 
+import <memory>;
 import Scene.Entity;
 
 namespace mth = mathon;
 
 export class Camera: public Entity {
+protected:
     mth::Matrix4f              projection;
 
 public:
@@ -17,9 +19,9 @@ public:
     mth::Matrix4f View();
 };
 
-export struct OrthoCamera: public Camera {
-    OrthoCamera(float left, float right, float bottom, float top, float near, float far);
-};
+// export struct OrthoCamera: public Camera {
+//     OrthoCamera(float left, float right, float bottom, float top, float near, float far);
+// };
 
 export struct PerspectiveCamera: public Camera {
     PerspectiveCamera(float fovy, float aspect, float near, float far);
@@ -28,6 +30,8 @@ export struct PerspectiveCamera: public Camera {
 export struct CustomCamera: public Camera {
     CustomCamera(mth::Matrix4f proj);
 };
+
+export using CameraPtr = std::shared_ptr<Camera>;
 
 Camera::Camera(mth::Matrix4f proj)
     : projection(proj) {
@@ -42,19 +46,18 @@ mth::Matrix4f Camera::Projection() {
 }
 
 mth::Matrix4f Camera::View() {
-
+    
 }
 
-OrthoCamera::OrthoCamera(float left, float right, float bottom, float top, float near, float far)
-    : Camera(mth::Matrix4f {
+// OrthoCamera::OrthoCamera(float left, float right, float bottom, float top, float near, float far)
+//     : Camera(mth::Matrix4f {
 
-    }){
-}
+//     }){
+// }
 
 PerspectiveCamera::PerspectiveCamera(float fovy, float aspect, float near, float far)
-    : Camera(mth::Matrix4f {
-
-    }){
+    : Camera(mth::Matrix4f{}){
+        projection.make_perspective(fovy, aspect, near, far);
 }
 
 CustomCamera::CustomCamera(mth::Matrix4f proj)

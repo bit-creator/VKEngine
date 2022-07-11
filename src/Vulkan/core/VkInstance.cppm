@@ -67,7 +67,7 @@ void Instance::setup() {
     appData.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.path);
     appData.pEngineName        = "VKEngine";
     appData.engineVersion      = VK_MAKE_VERSION(version.major, version.minor, version.path);
-    appData.apiVersion         = VK_API_VERSION_1_0;
+    appData.apiVersion         = VK_API_VERSION_1_3;
 
     instanceData.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceData.pApplicationInfo        = &appData;

@@ -22,6 +22,7 @@ import GLFW;
 import App.Settings;
 import App.Window;
 import Math.Matrix4f;
+import App.Event;
 
 import Vk.PhysicalDevice;
 import Vk.LogicalDevice;
@@ -39,9 +40,9 @@ import Vk.Framebuffer;
 import Vk.CommandPool;
 import App.DrawData;
 import App.PipelineFactory;
+import Scene;
 
 import Geometry.Quad;
-
 
 // to-do:/ improve commandPool abstraction to allow creating transfer cmdBuffer
 
@@ -54,6 +55,8 @@ import Geometry.Quad;
  * use device() static function to get an instance
  * 
  */
+
+
 export class RenderDevice {
 private:
     Window                                                 wnd;      
@@ -64,10 +67,12 @@ private:
     PipelineFactory                                        pipelines;
     Swapchain                                              swapchain;
     TransferCmdPool                                        transferPool;
-    GeomRef                                                geom;
     RenderPass                                             pass;
     FramePool                                              frames;
     Semaphore                                              sync;
+
+    ScenePtr                                               scene;
+    std::vector<EventPtr>                                  events;
 
 private:
     /**
@@ -103,13 +108,16 @@ public:
      * @brief provides game loop
      * 
      */
-    void execute();
+    void execute(ScenePtr s);
+
+    void addEvent(EventPtr ptr) { events.push_back(ptr); }
+    void removeEvent(EventPtr ptr) { /*for feature work*/ }
 
 private:
     void render(const Frame& frame);
 }; // RenderDevice
 
-RenderDevice::RenderDevice() 
+RenderDevice::RenderDevice()
     : wnd           (name)
     , instance      ()
     , surface       (instance, wnd)
@@ -118,16 +126,13 @@ RenderDevice::RenderDevice()
     , pipelines     (logical)
     , swapchain     (physical, logical, surface, wnd)
     , transferPool  (logical)
-    // , geom          (logical, physical, {transferPool, logical})
     , pass          (logical, swapchain.getFormat().format)
     , frames        (swapchain, logical, pass)
     , sync          (logical) {
         Vk::Geometry::FastLoad::logical  = logical;
         Vk::Geometry::FastLoad::physical = physical;
         Vk::Geometry::FastLoad::transfer = transferPool;
-        
-        geom = GeomRef(new Quad());
-        // factory.registerShader("simple.glsl");
+        std::cout << "Render device constructed" << std::endl;
 }
 
 RenderDevice& RenderDevice::device() {
@@ -135,7 +140,8 @@ RenderDevice& RenderDevice::device() {
     return device;
 }
 
-void RenderDevice::execute() {
+void RenderDevice::execute(ScenePtr s) {
+    scene = s;
     while(!glfwWindowShouldClose(wnd)) {
         glfwPollEvents();
         uint32_t imageIndex;
@@ -167,6 +173,8 @@ void RenderDevice::execute() {
 }
 
 void RenderDevice::render(const Frame& frame) {
+    for (auto event: events) event->onRender();
+    auto geom = scene->_object->_geometry;
     data::DrawInfo info;
     info.attributeHash = geom->vao.getAttribHash();
     info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -209,12 +217,18 @@ void RenderDevice::render(const Frame& frame) {
         vkCmdBindVertexBuffers(frame._command, 0, 1, vertexBuffers, offsets);
         vkCmdBindIndexBuffer(frame._command, vertexBuffers[0], geom->regions[1].offset, VK_INDEX_TYPE_UINT16);
 
-        Transform transf{{
-            1, 0, 0, 0,
-            0, 2, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
-        }};
+        // Transform transf{{
+        //     1, 0, 0, 0,
+        //     0, 2, 0, 0,
+        //     0, 0, 1, 0,
+        //     0, 0, 0, 1
+        // }};
+
+        mathon::Matrix4f model = scene->_object->transformation(); 
+
+        // std::cout << model << std::endl;
+
+        Transform transf{model};
 
         vkCmdPushConstants(frame._command, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Transform), &transf);
 

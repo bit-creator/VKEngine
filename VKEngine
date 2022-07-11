@@ -20,8 +20,7 @@ function compile_module {
     -std=c++20\
     -stdlib=libc++\
     -fmodules\
-    -O3\
-    -fPIC\
+    -g3\
     -Wall\
     -Wextra\
     -fmath-errno\
@@ -143,13 +142,14 @@ function compile {
     compile_module src/Scene/Camera.cppm                            Scene.Camera
     compile_module src/Scene/Object.cppm                            Scene.Object
     compile_module src/Scene/Scene.cppm                             Scene
+    compile_module src/Event.cppm                                   App.Event
     compile_module src/RenderDevice.cppm                            App.RenderDevice
    
     
     
 
     cd .build
-    cmake --build . -j7 --target VKEngine
+        cmake --build . -j8 --target VKEngine
     cd ..
 
 #     cd .build
@@ -209,6 +209,9 @@ function compile {
 function clean {
     rm -rf .build/
     rm -rf precompiled/
+    cd Mathon
+        ./Mathon -c
+    cd ..
 }
 
 function help {

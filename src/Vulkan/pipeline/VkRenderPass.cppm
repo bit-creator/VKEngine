@@ -20,27 +20,27 @@ import Vk.Swapchain;
 
 import <stdexcept>;
 
-export struct RenderSubPass {
-    RenderSubPass() {
-    }
+// export struct RenderSubPass {
+//     RenderSubPass() {
+//     }
 
-    ~RenderSubPass() {
-    }
+//     ~RenderSubPass() {
+//     }
 
-    VkSubpassDescription
-    getDescription(size_t ind) {
-        VkAttachmentReference colorAttachmentRef{};
-        colorAttachmentRef.attachment = ind;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+//     VkSubpassDescription
+//     getDescription(size_t ind) {
+//         VkAttachmentReference colorAttachmentRef{};
+//         colorAttachmentRef.attachment = ind;
+//         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         
-        VkSubpassDescription subpass{};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
+//         VkSubpassDescription subpass{};
+//         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+//         subpass.colorAttachmentCount = 1;
+//         subpass.pColorAttachments = &colorAttachmentRef;
 
-        return subpass;
-    }
-};
+//         return subpass;
+//     }
+// };,
 
 export class RenderPass:
     public vk::NativeWrapper<VkRenderPass> {
