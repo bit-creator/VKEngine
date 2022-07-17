@@ -1,9 +1,10 @@
 export module Scene.Camera;
 
-export import Math.Matrix4f;
-
 import <memory>;
 import Scene.Entity;
+import Math.Matrix4f;
+import Math.Vector3f;
+import Math.Quaternion4f;
 
 namespace mth = mathon;
 

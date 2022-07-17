@@ -93,6 +93,8 @@ function compile {
 #target 3rdparty
     cmake --build . --target Vulkan
     cmake --build . --target GLFW
+    cmake --build . --target Image
+    
     cd ..
     # cmake --build . --target Geometry.Triangle
     
@@ -117,6 +119,7 @@ function compile {
     compile_module src/Vulkan/frame/cmdPool.cppm                    Vk.CommandPool
     compile_module src/Vulkan/pipeline/VkMemory.cppm                Vk.Memory
     compile_module src/Vulkan/VkSemaphore.cppm                      Vk.Semaphore 
+    compile_module src/Vulkan/pipeline/VkDescriptorPool.cppm        Vk.DescriptorPool
     compile_module src/Vulkan/pipeline/VkLayout.cppm                Vk.Layout
     compile_module src/Vulkan/VkShader.cppm                         Vk.Shader  
     compile_module src/ShaderFactory.cppm                           App.ShaderFactory
@@ -143,6 +146,9 @@ function compile {
     compile_module src/Scene/Object.cppm                            Scene.Object
     compile_module src/Scene/Scene.cppm                             Scene
     compile_module src/Event.cppm                                   App.Event
+    compile_module src/Vulkan/frame/VkImage.cppm                    Vk.Image
+    compile_module src/Vulkan/frame/VkSampler.cppm                  Vk.Image.Sampler
+    compile_module src/Vulkan/frame/Texture.cppm                    App.Texture2D
     compile_module src/RenderDevice.cppm                            App.RenderDevice
    
     

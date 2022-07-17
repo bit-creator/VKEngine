@@ -14,8 +14,7 @@ precompile ( App.Event           Event.cppm        )
 # find_package(Vulkan REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
 link_directories(VULKAN_DIR)
-
-Message(${VULKAN_DIR})
+link_directories(${BUILD_DIR}/src)
 
 add_compile_options(
     -std=c++${CMAKE_CXX_STANDARD}
@@ -40,7 +39,6 @@ add_executable(VKEngine
 target_link_libraries(VKEngine
     glfw
     vulkan
-    # Vulkan::Headers
     c++
-    mathon
+    3rdparty
 )

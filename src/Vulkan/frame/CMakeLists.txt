@@ -6,5 +6,8 @@ precompile ( Vk.Framebuffer     VkFramebuffer.cppm     )
 precompile ( Vk.FramePool       VkFramePool.cppm       )
 precompile ( Vk.ImageView       VkImageView.cppm       )
 precompile ( Vk.Frame           VkFrame.cppm           )
+precompile ( Vk.Image           VkImage.cppm           )
+precompile ( Vk.Image.Sampler   VkSampler.cppm         )
+precompile ( Vk.Texture2D       Texture.cppm           )
 
 set(sources ${sources} PARENT_SCOPE)

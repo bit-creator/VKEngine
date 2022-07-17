@@ -11,6 +11,7 @@ import Vk.CommandPool;
 import Vk.HostAllocator;
 import Vk.Memory;
 import Vk.CommandPool;
+export import Math.Vector2f;
 export import Geometry;
 
 export struct Quad: public Geometry {
@@ -22,14 +23,15 @@ using namespace Vk::Geometry;
 Quad::Quad(): Geometry() {
     struct vertex {
         mathon::Vector3f        position;
-        mathon::Vector3f        color;
+        // mathon::Vector3f        color;
+        mathon::Vector2f        uv;
     };
 
     std::vector<vertex, Alloc::HostAllocator<vertex>> coord = {
-        {{-0.5f, -0.5f, 0.0}, {1.0f, 0.0f, 0.0f}},
-        {{0.5f, -0.5f, 0.0}, {0.0f, 1.0f, 0.0f}},
-        {{0.5f, 0.5f, 0.0}, {0.0f, 0.0f, 1.0f}},
-        {{-0.5f, 0.5f, 0.0}, {1.0f, 1.0f, 1.0f}}
+        {{-0.5f, -0.5f, 0.0},   {0.0f, 0.0f}},
+        {{ 0.5f, -0.5f, 0.0},   {1.0f, 0.0f}},
+        {{ 0.5f,  0.5f, 0.0},   {1.0f, 1.0f}},
+        {{-0.5f,  0.5f, 0.0},   {0.0f, 1.0f}}
     };
 
     const std::vector<uint16_t, Alloc::HostAllocator<uint16_t>> indices = {
@@ -65,7 +67,7 @@ Quad::Quad(): Geometry() {
     );
 
     vao.add(Attribute::Position, offsetof(vertex, position), VK_FORMAT_R32G32B32_SFLOAT);
-    vao.add(Attribute::Color, offsetof(vertex, color), VK_FORMAT_R32G32B32_SFLOAT);
+    vao.add(Attribute::Texture, offsetof(vertex, uv), VK_FORMAT_R32G32_SFLOAT);
 
     VkVertexInputBindingDescription bindingDescription{};
     bindingDescription.binding = 0;

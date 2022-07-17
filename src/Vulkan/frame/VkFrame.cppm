@@ -75,6 +75,8 @@ const Semaphore& Frame::submit(const Semaphore& imageSync, QueuePool& queues) co
     if (vkQueueSubmit(queues[QueueType::Graphics], 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
+
+    vkQueueWaitIdle(queues[QueueType::Graphics]);
     
     return _available;
 }

@@ -9,3 +9,8 @@ module Vulkan {
        header "../mesa/include/vulkan/vulkan_core.h"
        export *
 }
+
+module Image {
+       header "stb_image.h"
+       export *
+}

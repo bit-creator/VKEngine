@@ -34,6 +34,7 @@
 # build
 .build/
 assets/bin/
+assets/textures/
 .cache/
 precompiled/
 3rdparty/latest
@@ -43,3 +44,4 @@ precompiled/
 
 # dont care about it
 VkGLFWModule.hpp
+rdc

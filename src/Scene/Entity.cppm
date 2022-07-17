@@ -2,6 +2,7 @@ export module Scene.Entity;
 
 import Math.Matrix4f;
 import Math.Vector3f;
+import Math.Vector2f;
 import Math.Quaternion4f;
 
 namespace mth = mathon;

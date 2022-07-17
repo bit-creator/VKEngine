@@ -18,6 +18,7 @@ import <array>;
 
 import Vulkan;
 import GLFW;
+import Image;
 
 import App.Settings;
 import App.Window;
@@ -39,8 +40,11 @@ import Vk.CommandBuffer;
 import Vk.Framebuffer;
 import Vk.CommandPool;
 import App.DrawData;
+import Vk.Image;
 import App.PipelineFactory;
 import Scene;
+import App.Texture2D;
+import Vk.DescriptorPool;
 
 import Geometry.Quad;
 
@@ -56,6 +60,7 @@ import Geometry.Quad;
  * 
  */
 
+namespace fs = std::filesystem;
 
 export class RenderDevice {
 private:
@@ -70,6 +75,8 @@ private:
     RenderPass                                             pass;
     FramePool                                              frames;
     Semaphore                                              sync;
+    DescriptorPool                                         pool;
+    Texture2D                                              img;
 
     ScenePtr                                               scene;
     std::vector<EventPtr>                                  events;
@@ -128,7 +135,9 @@ RenderDevice::RenderDevice()
     , transferPool  (logical)
     , pass          (logical, swapchain.getFormat().format)
     , frames        (swapchain, logical, pass)
-    , sync          (logical) {
+    , sync          (logical)
+    , pool          (logical)
+    , img           (fs::path("assets/textures/brick+wall-512x512.jpg"), logical, physical, {transferPool, logical}, pool.allocate()) {
         Vk::Geometry::FastLoad::logical  = logical;
         Vk::Geometry::FastLoad::physical = physical;
         Vk::Geometry::FastLoad::transfer = transferPool;
@@ -183,7 +192,7 @@ void RenderDevice::render(const Frame& frame) {
 
     Viewport viewport(swapchain.getExtent());
     Rasterizer rasterizer;
-    Layout layout(logical);
+    Layout layout(logical, pool.layout());
 
     data::DrawData data {
         geom->vao.getDescriptions()
@@ -230,6 +239,7 @@ void RenderDevice::render(const Frame& frame) {
 
         Transform transf{model};
 
+        vkCmdBindDescriptorSets(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &img._set, 0, nullptr);
         vkCmdPushConstants(frame._command, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Transform), &transf);
 
         vkCmdDrawIndexed(frame._command, static_cast<uint32_t>(6), 1, 0, 0, 0);
