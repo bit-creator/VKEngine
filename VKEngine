@@ -122,7 +122,6 @@ function compile {
     compile_module src/Vulkan/pipeline/VkDescriptorPool.cppm        Vk.DescriptorPool
     compile_module src/Vulkan/pipeline/VkLayout.cppm                Vk.Layout
     compile_module src/Vulkan/VkShader.cppm                         Vk.Shader  
-    compile_module src/ShaderFactory.cppm                           App.ShaderFactory
     compile_module src/Vulkan/VkSwapchain.cppm                      Vk.Swapchain
     compile_module src/Vulkan/pipeline/VkViewport.cppm              Vk.Viewport
     compile_module src/Vulkan/pipeline/VkColorAttachment.cppm       Vk.ColorAttachment
@@ -134,6 +133,7 @@ function compile {
     compile_module src/Geometry/Allocator.cppm                      Vk.HostAllocator
     compile_module src/Vulkan/pipeline/drawData.cppm                App.DrawData
     compile_module src/Geometry/Attributes.cppm                     Geometry.Attributes
+    compile_module src/ShaderFactory.cppm                           App.ShaderFactory
     compile_module src/Geometry/Geometry.cppm                       Geometry
     compile_module src/Geometry/Quad.cppm                           Geometry.Quad
     compile_module src/Geometry/Triangle.cppm                       Geometry.Triangle

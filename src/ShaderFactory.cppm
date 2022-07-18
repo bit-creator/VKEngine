@@ -24,11 +24,13 @@ export import <vector>;
 export import <string>;
 export import <map>;
 import App.Settings;
+import Geometry.Attributes;
 
 namespace fs = std::filesystem;
 
 export struct ShaderData {
     uint32_t        _shaderNumber;
+    uint32_t        _attributeHash;
     ShaderType      _type;
     auto operator <=> (const ShaderData&) const =default;
 };
@@ -42,6 +44,7 @@ export template <  > struct std::hash<ShaderData> {
 
         size_t seed = draw._shaderNumber;
 
+        hasher(seed, (size_t)draw._attributeHash);
         hasher(seed, (size_t)draw._type);
 
 		return seed;
@@ -124,16 +127,35 @@ std::string ShaderFactory::spvFile(const ShaderData& data) {
 }
 
 void ShaderFactory::compileShader(const ShaderData& data) {
-    std::string stage = data._type == ShaderType::Vertex ? "vert" : "frag";
-    std::string define = data._type == ShaderType::Vertex ? "VERTEX_SHADER" : "FRAGMENT_SHADER";
-    
+    std::string stage = data._type == ShaderType::Vertex ? "vert " : "frag ";
+    std::string define = data._type == ShaderType::Vertex ? "-DVERTEX_SHADER " : "-DFRAGMENT_SHADER ";
+
+    auto add_attribute = [&data, &define](Attribute attr, std::string var) {
+        // if((data._attributeHash >> (uint32_t)attr) & 1)
+            define += "-D" + var + "=" + std::to_string((uint32_t)attr) + " ";
+    };
+
+    auto add_uniform = [&data, &define](uint32_t binding, std::string var) {
+        // if((data._attributeHash >> (uint32_t)attr) & 1)
+            define += "-D" + var + "=" + std::to_string((uint32_t)binding) + " ";
+    };
+
+    add_attribute(Attribute::Position, "POSITION");
+    add_attribute(Attribute::Normal,   "NORMAL");
+    add_attribute(Attribute::Tangent,  "TANGENT");
+    add_attribute(Attribute::BiTangent,"BITANGENT");
+    add_attribute(Attribute::Texture,  "TEXTURE");
+    add_attribute(Attribute::Color,    "COLOR");
+
+    add_uniform(0, "ALBEDO");
+
     std::string syscall =
         "glslangValidator -V " +
         std::string(shaderDirectory) + _pathes[data._shaderNumber].string() +
-        " -S " + stage + " -D" + define + " -o " +
+        " -S " + stage + define + " -o " +
         spvFile(data);
 
-    // std::cout << syscall << std::endl;
+    std::cout << syscall << std::endl;
     system(syscall.c_str());
 }
 
