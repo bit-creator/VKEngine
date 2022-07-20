@@ -11,10 +11,10 @@
 
 export module App.NativeWrapper;
 
-export import <memory>;
-export import <iostream>;
+import <memory>;
+import <iostream>;
 
-export import Vulkan;
+import Vulkan;
 
 export namespace vk {
 enum class StorePolitics {
@@ -141,7 +141,7 @@ public:
     // {  };
 
     template <typename D>
-    NativeWrapper(D&& del) requires(pol == StorePolitics::Direct)
+    NativeWrapper(D del) requires(pol == StorePolitics::Direct)
         : _native()
         , _del(new NativeDeleterImpl<value_type, D> {
             std::forward<D>(del)

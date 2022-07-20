@@ -1,5 +1,6 @@
 export module Vk.CommandPool;
 
+import Vulkan;
 import Vk.LogicalDevice;
 
 export {

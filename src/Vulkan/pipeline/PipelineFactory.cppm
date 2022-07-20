@@ -1,6 +1,7 @@
 export module App.PipelineFactory;
 export import App.DrawData;
 
+import Vulkan;
 export import Vk.PipelineCache;
 export import App.ShaderFactory; 
 export import Vk.Shader;
@@ -93,7 +94,7 @@ private:
         auto viewInfo  = data.data.viewport.getState();
         auto rasterInfo= data.data.rasterizer.getState();
 
-        const auto& vertShader = _factory[{(uint32_t)data.info.shaderIndex, (uint32_t)data.info.attributeHash, ShaderType::Vertex}];
+        const auto vertShader = _factory[{(uint32_t)data.info.shaderIndex, (uint32_t)data.info.attributeHash, ShaderType::Vertex}];
         auto shader = vertShader.getStage();
     	 	
         VkGraphicsPipelineCreateInfo pipelineCI{};
@@ -135,7 +136,7 @@ private:
 		libInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
 		libInfo.flags = VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT;
 
-        const auto& fragShader = _factory[{(uint32_t)data.info.shaderIndex, 0, ShaderType::Fragment}];
+        const auto fragShader = _factory[{(uint32_t)data.info.shaderIndex, 0, ShaderType::Fragment}];
         auto shader = fragShader.getStage();
 
         VkPipelineMultisampleStateCreateInfo multisampling{};

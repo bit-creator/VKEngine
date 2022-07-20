@@ -69,7 +69,7 @@ void Swapchain::setup(PhysicalDevice device, LogicalDevice ld, WindowSurface sur
     createInfo.surface = surface;
     createInfo.minImageCount = capabilities.maxImageCount > 0? 
                                capabilities.maxImageCount: 
-                               capabilities.minImageCount + 5;
+                               capabilities.minImageCount;
     createInfo.imageFormat = _format.format;
     createInfo.imageColorSpace = _format.colorSpace;
     createInfo.imageExtent = _extent;
@@ -95,7 +95,7 @@ void Swapchain::setupFormat(PhysicalDevice device, WindowSurface surface) {
     format = formats.at(0);
 
     for (const auto& availableFormat : formats) {
-        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB 
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB
         && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
             format = availableFormat;
         }

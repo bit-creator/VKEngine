@@ -58,7 +58,7 @@ public:
 
     // void getAvailaibleIndex(std::vector<uint32_t>& indices) const;
 
-    void setupDescriptors(const VkDevice& device);
+    void setupDescriptors(VkDevice device);
 
     Queue& get(QueueType type);
     Queue& get(uint32_t flag);
@@ -116,7 +116,7 @@ QueuePool::QueuePool(PhysicalDevice phys, WindowSurface surf) {
 //     // return _descriptors[(uint32_t)type].isSupported();
 // }
 
-void QueuePool::setupDescriptors(const VkDevice& device) {
+void QueuePool::setupDescriptors(VkDevice device) {
     graphic.setupDescriptor(device);
     compute.setupDescriptor(device);
     transfer.setupDescriptor(device);

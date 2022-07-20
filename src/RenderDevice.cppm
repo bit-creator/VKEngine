@@ -45,6 +45,7 @@ import App.PipelineFactory;
 import Scene;
 import App.Texture2D;
 import Vk.DescriptorPool;
+import Material;
 
 import Geometry.Quad;
 
@@ -76,7 +77,7 @@ private:
     FramePool                                              frames;
     Semaphore                                              sync;
     DescriptorPool                                         pool;
-    Texture2D                                              img;
+    TextureRef                                             img;
 
     ScenePtr                                               scene;
     std::vector<EventPtr>                                  events;
@@ -137,7 +138,7 @@ RenderDevice::RenderDevice()
     , frames        (swapchain, logical, pass)
     , sync          (logical)
     , pool          (logical)
-    , img           (fs::path("assets/textures/brick+wall-512x512.jpg"), logical, physical, {transferPool, logical}, pool.allocate()) {
+    , img           (new Texture2D(fs::path("assets/textures/brick+wall-512x512.jpg"), logical, physical, {transferPool, logical}, pool.allocate())) {
         Vk::Geometry::FastLoad::logical  = logical;
         Vk::Geometry::FastLoad::physical = physical;
         Vk::Geometry::FastLoad::transfer = transferPool;
@@ -151,12 +152,14 @@ RenderDevice& RenderDevice::device() {
 
 void RenderDevice::execute(ScenePtr s) {
     scene = s;
+    // scene->_object->_material->_albedo = img;
     while(!glfwWindowShouldClose(wnd)) {
         glfwPollEvents();
         uint32_t imageIndex;
         vkAcquireNextImageKHR(logical, swapchain, UINT64_MAX, sync, VK_NULL_HANDLE, &imageIndex);
         auto frame = frames[imageIndex];
-        
+
+
         render(frame);
 
         auto& available = frame.submit(sync, logical.queues);
@@ -217,29 +220,19 @@ void RenderDevice::render(const Frame& frame) {
     renderPassInfo.pClearValues = &clearColor;
     
     frame.bind();
-    
-    vkCmdBeginRenderPass(frame._command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdBindPipeline(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
         VkBuffer vertexBuffers[] = {geom->vbo.native()};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(frame._command, 0, 1, vertexBuffers, offsets);
         vkCmdBindIndexBuffer(frame._command, vertexBuffers[0], geom->regions[1].offset, VK_INDEX_TYPE_UINT16);
-
-        // Transform transf{{
-        //     1, 0, 0, 0,
-        //     0, 2, 0, 0,
-        //     0, 0, 1, 0,
-        //     0, 0, 0, 1
-        // }};
+        
+    vkCmdBeginRenderPass(frame._command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBindPipeline(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
         mathon::Matrix4f model = scene->_object->transformation(); 
 
-        // std::cout << model << std::endl;
-
         Transform transf{model};
 
-        vkCmdBindDescriptorSets(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &img._set, 0, nullptr);
+        vkCmdBindDescriptorSets(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &img->_set, 0, nullptr);
         vkCmdPushConstants(frame._command, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Transform), &transf);
 
         vkCmdDrawIndexed(frame._command, static_cast<uint32_t>(6), 1, 0, 0, 0);

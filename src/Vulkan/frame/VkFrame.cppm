@@ -27,6 +27,7 @@ import Vk.CommandBuffer;
 import Vk.Semaphore;
 import Vk.QueuePool;
 import Vk.Queue;
+import Vk.Fence;
 import Geometry;
 import Math.Matrix4f;
 
@@ -37,6 +38,8 @@ public:
     Framebuffer                             _buffer;
     CommandBuffer                           _command;
     Semaphore                               _available;
+    Fence                                   _commandEnd;
+    LogicalDevice                           _device;
 
 public:
     Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, const RenderPass& pass);
@@ -53,7 +56,9 @@ Frame::Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice
         , _view(img, swapchain.getFormat().format, device)
         , _buffer(swapchain.getExtent(), pass, _view, device)
         , _command(pool, device) 
-        , _available(device) {
+        , _available(device)
+        , _commandEnd(device)
+        , _device(device) {
     _native = img;
 }
 
@@ -72,7 +77,9 @@ const Semaphore& Frame::submit(const Semaphore& imageSync, QueuePool& queues) co
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &_available.native();
 
-    if (vkQueueSubmit(queues[QueueType::Graphics], 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    vkWaitForFences(_device, 1, &_commandEnd.native(), VK_TRUE, UINT64_MAX);
+    vkResetFences(_device, 1, &_commandEnd.native());
+    if (vkQueueSubmit(queues[QueueType::Graphics], 1, &submitInfo, _commandEnd) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 

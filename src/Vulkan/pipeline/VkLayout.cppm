@@ -24,14 +24,14 @@ import <memory>;
 
 export struct Layout: 
     public vk::NativeWrapper<VkPipelineLayout> {
-    Layout(const LogicalDevice& device, DescriptorSetLayout layout);
+    Layout(LogicalDevice device, DescriptorSetLayout layout);
 };
 
 export struct Transform {
     mathon::Matrix4f        _mvp;
 };
 
-Layout::Layout(const LogicalDevice& device, DescriptorSetLayout layout)
+Layout::Layout(LogicalDevice device, DescriptorSetLayout layout)
     : Internal([&device](const value_type& l)
         { vkDestroyPipelineLayout(device, l, nullptr); }) {
     VkPushConstantRange push;

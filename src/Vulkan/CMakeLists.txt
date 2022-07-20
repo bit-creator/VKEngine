@@ -9,5 +9,6 @@ precompile ( Vk.WindowSurface   VkSurface.cppm         )
 precompile ( Vk.Swapchain       VkSwapchain.cppm       )
 precompile ( Vk.Semaphore       VkSemaphore.cppm       )
 precompile ( Vk.Shader          VkShader.cppm          )
+precompile ( Vk.Fence           VkFence.cppm           )
 
 set(sources ${sources} PARENT_SCOPE)

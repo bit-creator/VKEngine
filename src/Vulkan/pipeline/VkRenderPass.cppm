@@ -46,12 +46,12 @@ export class RenderPass:
     public vk::NativeWrapper<VkRenderPass> {
 private:           
     // VkRenderPass                            _pass;
-    // const LogicalDevice&                    _device;
+    // LogicalDevice                    _device;
     // ColorAttachment                         _attach;
 
 
 public:
-    RenderPass(const LogicalDevice& device, VkFormat format);
+    RenderPass(LogicalDevice device, VkFormat format);
 
     // operator VkRenderPass() const;
     // operator VkRenderPass();
@@ -62,7 +62,7 @@ public:
 };
 
 
-RenderPass::RenderPass(const LogicalDevice& device, VkFormat format) 
+RenderPass::RenderPass(LogicalDevice device, VkFormat format) 
         : Internal([&](value_type p){ vkDestroyRenderPass(device, p, nullptr); })
     // , _attach(swapchain) 
     {

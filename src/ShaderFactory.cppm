@@ -54,15 +54,15 @@ export template <  > struct std::hash<ShaderData> {
 export class ShaderFactory {
 private:
     using SpirV        = std::vector < std::byte >;
-    using ShaderMap    = std::unordered_map < ShaderData, SpirV >;
+    using ShaderMap    = std::unordered_map < ShaderData, Shader >;
 
 private:
     std::vector<fs::path>       _pathes;
     ShaderMap                   _shaders;
-    const LogicalDevice&        _device;
+    LogicalDevice               _device;
 
 public:
-    ShaderFactory(const LogicalDevice& device);
+    ShaderFactory(LogicalDevice device);
     ~ShaderFactory();
 
     void registerShader(fs::path path);
@@ -70,17 +70,17 @@ public:
     /**
      * Be carefully this create a copy of shader buffer
      */
-    Shader operator[](const ShaderData& data);
+    Shader& operator[](const ShaderData& data);
 
 private:
     uint32_t getShaderPathNumber(fs::path path);
     void loadBinarySource(const ShaderData& data);
     void compileShader(const ShaderData& data);
-    Shader get(const ShaderData& data);
+    Shader& get(const ShaderData& data);
     std::string spvFile(const ShaderData& data);
 };
 
-ShaderFactory::ShaderFactory(const LogicalDevice& device) : _device(device) {
+ShaderFactory::ShaderFactory(LogicalDevice device) : _device(device) {
     _pathes.push_back(preRegistredShader);
 }
 
@@ -102,22 +102,25 @@ void ShaderFactory::loadBinarySource(const ShaderData& data) {
 
     if (shader.is_open()) {
         size_t size = (size_t)shader.tellg();
-        _shaders[data] = SpirV{size};
+        auto code = SpirV{size};
         shader.seekg(0);
-        shader.read((char*)_shaders[data].data(), size);
+        shader.read((char*)code.data(), size);
+        _shaders.insert({data, Shader(data._type, _device, code)});
         shader.close();
     } else {
         throw std::runtime_error("failed to open file!");
     }
 }
 
-Shader ShaderFactory::get(const ShaderData& data) {
+Shader& ShaderFactory::get(const ShaderData& data) {
     if(_shaders.contains(data)) {
-        return Shader(data._type, _device, _shaders[data]);
+        return _shaders.at(data);
+        // return Shader(data._type, _device, _shaders[data]);
     } else {
         compileShader(data);
         loadBinarySource(data);
-        return Shader(data._type, _device, _shaders[data]);
+        return _shaders.at(data);
+        // return Shader(data._type, _device, _shaders[data]);
     }
 }
 
@@ -148,6 +151,7 @@ void ShaderFactory::compileShader(const ShaderData& data) {
     add_attribute(Attribute::Color,    "COLOR");
 
     add_uniform(0, "ALBEDO");
+    add_uniform(0, "OUT_COLOR");
 
     std::string syscall =
         "glslangValidator -V " +
@@ -159,6 +163,6 @@ void ShaderFactory::compileShader(const ShaderData& data) {
     system(syscall.c_str());
 }
 
-Shader ShaderFactory::operator[](const ShaderData& data) {
+Shader& ShaderFactory::operator[](const ShaderData& data) {
     return get(data);
 }

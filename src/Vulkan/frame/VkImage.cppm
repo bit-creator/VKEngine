@@ -1,7 +1,9 @@
 export module Vk.Image;
 
 import Image;
+import Vulkan;
 import <filesystem>;
+import <iostream>;
 
 import Vk.VertexBuffer;
 import Vk.LogicalDevice;
