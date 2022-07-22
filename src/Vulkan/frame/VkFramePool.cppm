@@ -29,12 +29,14 @@ import Vk.QueuePool;
 import Vk.Semaphore;
 import Vk.CommandPool;
 import Vk.RenderPass;
+import Vk.DescriptorPool;
 
 import <vector>;
 
 export class FramePool: public DrawCmdPool {
 private:
-    std::vector<Frame>                    _frames;
+    std::vector<Frame>                      _frames;
+    DescriptorPool                          _descriptors;
 
 public:
     FramePool(Swapchain swapchain, LogicalDevice device, const RenderPass& pass);
@@ -44,9 +46,9 @@ public:
     size_t size();
 };
 
-
 FramePool::FramePool( Swapchain swapchain, LogicalDevice device, const RenderPass& pass): 
-   DrawCmdPool(device) {
+   DrawCmdPool(device),
+   _descriptors(device) {
     std::vector<VkImage>                        images;
    
     VkGet<vkGetSwapchainImagesKHR>(images, device, swapchain);
@@ -54,7 +56,7 @@ FramePool::FramePool( Swapchain swapchain, LogicalDevice device, const RenderPas
     _frames.reserve(images.size());
    
     for(uint32_t i =0; i < images.size(); ++i) {
-        _frames.emplace_back(images[i], _native, swapchain, device, pass);
+        _frames.emplace_back(images[i], _descriptors.allocate(), _native, swapchain, device, pass);
     }
 }
 

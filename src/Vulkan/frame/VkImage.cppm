@@ -43,6 +43,7 @@ private:
 Image::Image(fs::path path, LogicalDevice device, PhysicalDevice phys, CommandBuffer buff)
     : Internal([&](value_type img){ vkDestroyImage(device, img, nullptr); })
     , _mem(device)
+    , _layout(ImageLayout::Undefined)
     , _buff(buff) {
     _queue = device.queues.transfer;
     load(path, device, phys);
@@ -69,7 +70,7 @@ void Image::load(fs::path path, LogicalDevice device, PhysicalDevice phys) {
     imageInfo.arrayLayers = 1;
     imageInfo.format = nrChannels == 4? VK_FORMAT_R8G8B8A8_SRGB: VK_FORMAT_R8G8B8_SRGB;
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.initialLayout = VkImageLayout(_layout);
     imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -146,6 +147,16 @@ void Image::switchLayout(ImageLayout layout) {
 
     VkPipelineStageFlags sourceStage;
     VkPipelineStageFlags destinationStage;
+
+    auto print_layout = [](ImageLayout l) {
+        if(l == ImageLayout::Undefined) std::cout << "ImageLayout::Undefined" << std::endl;
+        else if(l == ImageLayout::Destination) std::cout << "ImageLayout::Destination" << std::endl;
+        else if(l == ImageLayout::Read) std::cout << "ImageLayout::Read" << std::endl;
+        else std::cout << "STRANGE" << std::endl;
+    };
+
+    print_layout(_layout);
+    // print_layout(layout);
 
     if (_layout == ImageLayout::Undefined && layout == ImageLayout::Destination) {
         barrier.srcAccessMask = 0;

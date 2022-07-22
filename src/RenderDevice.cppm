@@ -46,6 +46,7 @@ import Scene;
 import App.Texture2D;
 import Vk.DescriptorPool;
 import Material;
+import Vk.Image.Sampler;
 
 import Geometry.Quad;
 
@@ -77,6 +78,7 @@ private:
     FramePool                                              frames;
     Semaphore                                              sync;
     DescriptorPool                                         pool;
+    Sampler                                                sampler;
     TextureRef                                             img;
 
     ScenePtr                                               scene;
@@ -138,7 +140,8 @@ RenderDevice::RenderDevice()
     , frames        (swapchain, logical, pass)
     , sync          (logical)
     , pool          (logical)
-    , img           (new Texture2D(fs::path("assets/textures/brick+wall-512x512.jpg"), logical, physical, {transferPool, logical}, pool.allocate())) {
+    , sampler       (logical)
+    , img           (new Texture2D(fs::path("assets/textures/brick+wall-512x512.jpg"), logical, physical, {transferPool, logical})) {
         Vk::Geometry::FastLoad::logical  = logical;
         Vk::Geometry::FastLoad::physical = physical;
         Vk::Geometry::FastLoad::transfer = transferPool;
@@ -159,7 +162,6 @@ void RenderDevice::execute(ScenePtr s) {
         vkAcquireNextImageKHR(logical, swapchain, UINT64_MAX, sync, VK_NULL_HANDLE, &imageIndex);
         auto frame = frames[imageIndex];
 
-
         render(frame);
 
         auto& available = frame.submit(sync, logical.queues);
@@ -178,7 +180,6 @@ void RenderDevice::execute(ScenePtr s) {
         presentInfo.pResults = nullptr; // Optional
     
         vkQueuePresentKHR(logical.queues.graphic, &presentInfo);
-        vkQueueWaitIdle(logical.queues.graphic);
     }
 
     vkDeviceWaitIdle(logical);
@@ -228,11 +229,12 @@ void RenderDevice::render(const Frame& frame) {
     vkCmdBeginRenderPass(frame._command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
+        img->setUniform(logical, Uniform::Albedo, sampler, frame._set);
         mathon::Matrix4f model = scene->_object->transformation(); 
 
         Transform transf{model};
 
-        vkCmdBindDescriptorSets(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &img->_set, 0, nullptr);
+        vkCmdBindDescriptorSets(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &frame._set, 0, nullptr);
         vkCmdPushConstants(frame._command, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Transform), &transf);
 
         vkCmdDrawIndexed(frame._command, static_cast<uint32_t>(6), 1, 0, 0, 0);

@@ -30,6 +30,7 @@ import Vk.Queue;
 import Vk.Fence;
 import Geometry;
 import Math.Matrix4f;
+import Vk.DescriptorPool;
 
 export class Frame:
     public vk::NativeWrapper<VkImage> {
@@ -37,12 +38,14 @@ public:
     ImageView                               _view;
     Framebuffer                             _buffer;
     CommandBuffer                           _command;
+    VkDescriptorSet                         _set;
+
     Semaphore                               _available;
     Fence                                   _commandEnd;
     LogicalDevice                           _device;
 
 public:
-    Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, const RenderPass& pass);
+    Frame(VkImage img, VkDescriptorSet set, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, const RenderPass& pass);
 
     void bind() const;
     void unbind() const;
@@ -51,11 +54,12 @@ public:
     void draw(Geometry geom) const;
 };
 
-Frame::Frame(VkImage img, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, const RenderPass& pass):
+Frame::Frame(VkImage img, VkDescriptorSet set, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, const RenderPass& pass):
         Internal()
         , _view(img, swapchain.getFormat().format, device)
         , _buffer(swapchain.getExtent(), pass, _view, device)
-        , _command(pool, device) 
+        , _command(pool, device)
+        , _set(set)
         , _available(device)
         , _commandEnd(device)
         , _device(device) {
@@ -66,7 +70,7 @@ const Semaphore& Frame::submit(const Semaphore& imageSync, QueuePool& queues) co
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = &imageSync.native();
     submitInfo.pWaitDstStageMask = waitStages;
@@ -77,24 +81,23 @@ const Semaphore& Frame::submit(const Semaphore& imageSync, QueuePool& queues) co
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = &_available.native();
 
-    vkWaitForFences(_device, 1, &_commandEnd.native(), VK_TRUE, UINT64_MAX);
-    vkResetFences(_device, 1, &_commandEnd.native());
     if (vkQueueSubmit(queues[QueueType::Graphics], 1, &submitInfo, _commandEnd) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
-    vkQueueWaitIdle(queues[QueueType::Graphics]);
-    
     return _available;
 }
 
 void Frame::bind() const {
+    vkWaitForFences(_device, 1, &_commandEnd.native(), VK_TRUE, UINT64_MAX);
+    vkResetFences(_device, 1, &_commandEnd.native());
+
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    
     if (vkBeginCommandBuffer(_command.native(), &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("failed to begin recording command buffer!");
     }
-
 }
 
 void Frame::unbind() const {

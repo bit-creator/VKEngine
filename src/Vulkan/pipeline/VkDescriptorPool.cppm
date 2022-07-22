@@ -4,6 +4,8 @@ import Vulkan;
 import App.NativeWrapper;
 import Vk.LogicalDevice;
 import Vk.Checker;
+import <vector>;
+import <iostream>;
 
 export struct DescriptorSetLayout:
     public vk::NativeWrapper<VkDescriptorSetLayout> {
@@ -15,7 +17,7 @@ export struct DescriptorPool:
         public vk::NativeWrapper<VkDescriptorPool> {
     DescriptorPool(LogicalDevice ld);
     VkDescriptorSet allocate();
-    DescriptorSetLayout layout() {return _layout;}
+    DescriptorSetLayout layout() { return _layout; }
 
 private:
     LogicalDevice           _ld;
@@ -51,7 +53,7 @@ DescriptorPool::DescriptorPool(LogicalDevice ld):
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = 1;
     poolInfo.pPoolSizes = &poolSize;
-    poolInfo.maxSets = 1;
+    poolInfo.maxSets = 10;
 
     VkCreate<vkCreateDescriptorPool>(ld, &poolInfo, nullptr, &_native);
 }
