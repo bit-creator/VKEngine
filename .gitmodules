@@ -4,3 +4,6 @@
 [submodule "mesa"]
 	path = mesa
 	url = https://gitlab.freedesktop.org/mesa/mesa.git
+[submodule "assimp"]
+	path = assimp
+	url = https://github.com/assimp/assimp.git

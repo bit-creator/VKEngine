@@ -38,6 +38,7 @@ assets/textures/
 .cache/
 precompiled/
 3rdparty/latest
+assimp/build64/
 
 # ide
 .vscode

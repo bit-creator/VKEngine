@@ -76,6 +76,12 @@ function build_mesa() {
     cd ..
 }
 
+function build_assimp() {
+    cd assimp
+    cmake -B build64
+    cmake --build build64 --parallel8
+}
+
 function compile {
     clear
 
@@ -94,6 +100,7 @@ function compile {
     cmake --build . --target Vulkan
     cmake --build . --target GLFW
     cmake --build . --target Image
+    cmake --build . --target Importer
     
     cd ..
     # cmake --build . --target Geometry.Triangle
@@ -251,6 +258,10 @@ fi
 
 if [[ "$1" == "--build_mesa" ]]; then
     build_mesa
+fi
+
+if [[ "$1" == "--build_assimp" ]]; then
+    build_assimp
 fi
 
 if [[ "$2" == "--run" || "$2" == "-r" || "$1" == "" ]]; then

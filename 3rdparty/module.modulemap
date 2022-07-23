@@ -14,3 +14,11 @@ module Image {
        header "stb_image.h"
        export *
 }
+
+module Importer {
+       header "../assimp/include/assimp/Importer.hpp"
+       header "../assimp/include/assimp/mesh.h"
+       header "../assimp/include/assimp/scene.h"
+       header "../assimp/include/assimp/postprocess.h"
+       export *
+}
