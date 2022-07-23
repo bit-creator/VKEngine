@@ -101,7 +101,7 @@ function compile {
 # first target
     compile_module src/Vulkan/pipeline/VkMultisampling.cppm         Vk.Multisampler
     compile_module src/Vulkan/pipeline/VkDynamicStates.cppm         Vk.DynamicState
-    compile_module src/Vulkan/pipeline/VkColorBlender.cppm          Vk.ColorBlender 
+    compile_module src/Vulkan/pipeline/VkColorBlender.cppm          Vk.ColorBlender
     compile_module src/Vulkan/pipeline/VkRasterizer.cppm            Vk.Rasterizer
     compile_module src/AppSettings.cppm                             App.Settings
     compile_module src/Vulkan/pipeline/VkAssembly.cppm              Vk.Assembly
@@ -146,6 +146,7 @@ function compile {
     compile_module src/Scene/Camera.cppm                            Scene.Camera
     compile_module src/Vulkan/frame/VkImage.cppm                    Vk.Image
     compile_module src/Vulkan/frame/VkSampler.cppm                  Vk.Image.Sampler
+    compile_module src/Resource.cppm                                App.Resource
     compile_module src/Vulkan/frame/Texture.cppm                    App.Texture2D
     compile_module src/Material/Material.cppm                       Material
     compile_module src/Scene/Object.cppm                            Scene.Object

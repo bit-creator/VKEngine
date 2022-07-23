@@ -8,6 +8,7 @@ import Vk.Image.Sampler;
 import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
 import Vk.CommandBuffer;
+import App.Resource;
 
 import <filesystem>;
 import <memory>;
@@ -20,24 +21,24 @@ export enum class Uniform {
 };
 
 export class Texture2D {
-    Image               _image;
-    ImageView           _view;
+    RTexture2DRef             _resource;
+    fs::path                  _path;
 
 public:
-    VkDescriptorSet     _set;
-    Texture2D(fs::path path, LogicalDevice device, PhysicalDevice phys, CommandBuffer buff);
+    Texture2D(fs::path path);
+    fs::path path() { return _path; }
+    void load(ResourceRef res) { _resource = std::dynamic_pointer_cast<RTexture2D>(res); }
     void setUniform(LogicalDevice ld, Uniform bindind, Sampler sampler, VkDescriptorSet set);
 };
 
-Texture2D::Texture2D(fs::path path, LogicalDevice device, PhysicalDevice phys, CommandBuffer buff)
-        : _image(path, device, phys, buff)
-        , _view(_image, _image.format(), device) {
+Texture2D::Texture2D(fs::path path):
+    _path(path) {
 }
 
 void Texture2D::setUniform(LogicalDevice ld, Uniform bindind, Sampler sampler, VkDescriptorSet set) {
     VkDescriptorImageInfo imageInfo{};
-    imageInfo.imageLayout = _image.layout();
-    imageInfo.imageView = _view;
+    imageInfo.imageLayout = _resource->_image.layout();
+    imageInfo.imageView =   _resource->_view;
     imageInfo.sampler = sampler;
 
     VkWriteDescriptorSet descriptorWrites{};

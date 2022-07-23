@@ -47,6 +47,7 @@ import App.Texture2D;
 import Vk.DescriptorPool;
 import Material;
 import Vk.Image.Sampler;
+import App.Resource;
 
 import Geometry.Quad;
 
@@ -79,7 +80,7 @@ private:
     Semaphore                                              sync;
     DescriptorPool                                         pool;
     Sampler                                                sampler;
-    TextureRef                                             img;
+    // TextureRef                                             img;
 
     ScenePtr                                               scene;
     std::vector<EventPtr>                                  events;
@@ -128,24 +129,23 @@ private:
 }; // RenderDevice
 
 RenderDevice::RenderDevice()
-    : wnd           (name)
-    , instance      ()
-    , surface       (instance, wnd)
-    , physical      (instance)
-    , logical       (physical, surface)
-    , pipelines     (logical)
-    , swapchain     (physical, logical, surface, wnd)
-    , transferPool  (logical)
-    , pass          (logical, swapchain.getFormat().format)
-    , frames        (swapchain, logical, pass)
-    , sync          (logical)
-    , pool          (logical)
-    , sampler       (logical)
-    , img           (new Texture2D(fs::path("assets/textures/brick+wall-512x512.jpg"), logical, physical, {transferPool, logical})) {
-        Vk::Geometry::FastLoad::logical  = logical;
-        Vk::Geometry::FastLoad::physical = physical;
-        Vk::Geometry::FastLoad::transfer = transferPool;
-        std::cout << "Render device constructed" << std::endl;
+        : wnd           (name)
+        , instance      ()
+        , surface       (instance, wnd)
+        , physical      (instance)
+        , logical       (physical, surface)
+        , pipelines     (logical)
+        , swapchain     (physical, logical, surface, wnd)
+        , transferPool  (logical)
+        , pass          (logical, swapchain.getFormat().format)
+        , frames        (swapchain, logical, pass)
+        , sync          (logical)
+        , pool          (logical)
+        , sampler       (logical) {
+    Vk::Geometry::FastLoad::logical  = logical;
+    Vk::Geometry::FastLoad::physical = physical;
+    Vk::Geometry::FastLoad::transfer = transferPool;
+    std::cout << "Render device constructed" << std::endl;
 }
 
 RenderDevice& RenderDevice::device() {
@@ -155,6 +155,14 @@ RenderDevice& RenderDevice::device() {
 
 void RenderDevice::execute(ScenePtr s) {
     scene = s;
+    scene->_object->_material->_albedo.load (
+        RTexture2DRef (
+            new RTexture2D (
+                scene->_object->_material->_albedo.path(),
+                logical, physical, {transferPool, logical}
+            )
+        )
+    );
     // scene->_object->_material->_albedo = img;
     while(!glfwWindowShouldClose(wnd)) {
         glfwPollEvents();
@@ -188,6 +196,8 @@ void RenderDevice::execute(ScenePtr s) {
 void RenderDevice::render(const Frame& frame) {
     for (auto event: events) event->onRender();
     auto geom = scene->_object->_geometry;
+    auto material = scene->_object->_material;
+    
     data::DrawInfo info;
     info.attributeHash = geom->vao.getAttribHash();
     info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -229,7 +239,7 @@ void RenderDevice::render(const Frame& frame) {
     vkCmdBeginRenderPass(frame._command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         vkCmdBindPipeline(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-        img->setUniform(logical, Uniform::Albedo, sampler, frame._set);
+        material->_albedo.setUniform(logical, Uniform::Albedo, sampler, frame._set);
         mathon::Matrix4f model = scene->_object->transformation(); 
 
         Transform transf{model};
