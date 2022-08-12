@@ -1,7 +1,7 @@
-include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
+include(${CMAKE_SCRIPTS_DIR}/settings.cmake)
 
-precompile ( Vk.Extensions VkExtensions.cppm )
-precompile ( Vk.Checker    VkChecker.cppm    )
-precompile ( Vk.Getter     VkGetter.cppm     )
-
-set(sources ${sources} PARENT_SCOPE)
+add_library ( VkWrapperHelpers STATIC
+    VkExtensions.cppm
+    VkChecker.cppm
+    VkGetter.cppm
+)

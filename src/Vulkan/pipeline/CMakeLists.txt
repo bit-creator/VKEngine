@@ -1,19 +1,19 @@
-include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
+include(${CMAKE_SCRIPTS_DIR}/settings.cmake)
 
-precompile ( Vk.ColorAttachment  VkColorAttachment.cppm )
-precompile ( Vk.DynamicState     VkDynamicStates.cppm   )
-precompile ( Vk.Multisampler     VkMultisampling.cppm   )
-precompile ( Vk.VertexBuffer     VkVertexBuffer.cppm    )
-precompile ( Vk.ColorBlender     VkColorBlender.cppm    )
-precompile ( Vk.RenderPass       VkRenderPass.cppm      )
-precompile ( Vk.Rasterizer       VkRasterizer.cppm      )
-precompile ( Vk.Assembly         VkAssembly.cppm        )
-precompile ( Vk.PipelineCache    VkPipelineCache.cppm   )
-precompile ( App.PipelineFactory PipelineFactory.cppm   )
-precompile ( App.DrawData        drawData.cppm          )
-precompile ( Vk.Viewport         VkViewport.cppm        )
-precompile ( Vk.Layout           VkLayout.cppm          )
-precompile ( Vk.Memory           VkMemory.cppm          )
-precompile ( Vk.DescriptorPool   VkDescriptorPool.cppm  )
-
-set(sources ${sources} PARENT_SCOPE)
+add_library ( VkWrapperPipeline STATIC
+    VkColorAttachment.cppm
+    VkDynamicStates.cppm
+    VkMultisampling.cppm
+    VkVertexBuffer.cppm
+    VkColorBlender.cppm
+    VkRenderPass.cppm
+    VkRasterizer.cppm
+    VkAssembly.cppm
+    VkPipelineCache.cppm
+    PipelineFactory.cppm
+    drawData.cppm
+    VkViewport.cppm
+    VkLayout.cppm
+    VkMemory.cppm
+    VkDescriptorPool.cppm
+)

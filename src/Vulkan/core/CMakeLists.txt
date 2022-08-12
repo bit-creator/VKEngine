@@ -1,9 +1,9 @@
-include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
+include(${CMAKE_SCRIPTS_DIR}/settings.cmake)
 
-precompile ( Vk.PhysicalDevice  VkPhysDevice.cppm  )
-precompile ( Vk.LogicalDevice   VkLogicDevice.cppm )
-precompile ( Vk.QueuePool       VkQueuePool.cppm   )
-precompile ( Vk.Instance        VkInstance.cppm    )
-precompile ( Vk.Queue           VkQueue.cppm       )
-
-set(sources ${sources} PARENT_SCOPE)
+add_library ( VkWrapperCore STATIC
+    VkPhysDevice.cppm
+    VkLogicDevice.cppm
+    VkQueuePool.cppm
+    VkInstance.cppm
+    VkQueue.cppm
+)
