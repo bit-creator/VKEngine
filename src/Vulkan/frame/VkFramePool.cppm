@@ -30,6 +30,8 @@ import Vk.Semaphore;
 import Vk.CommandPool;
 import Vk.RenderPass;
 import Vk.DescriptorPool;
+import Vk.DepthBuffer;
+import Vk.PhysicalDevice;
 
 import <vector>;
 
@@ -37,18 +39,22 @@ export class FramePool: public DrawCmdPool {
 private:
     std::vector<Frame>                      _frames;
     DescriptorPool                          _descriptors;
+    DepthBuffer                             _depthBuffer;
 
 public:
-    FramePool(Swapchain swapchain, LogicalDevice device, const RenderPass& pass);
+    FramePool(Swapchain swapchain, LogicalDevice device,
+            PhysicalDevice phys, const RenderPass& pass);
 
     const Frame& operator [](int i);
 
     size_t size();
 };
 
-FramePool::FramePool( Swapchain swapchain, LogicalDevice device, const RenderPass& pass): 
+FramePool::FramePool( Swapchain swapchain, LogicalDevice device,
+            PhysicalDevice phys, const RenderPass& pass): 
    DrawCmdPool(device),
-   _descriptors(device) {
+   _descriptors(device),
+   _depthBuffer(device, phys, {_native, device}, swapchain.getExtent()) {
     std::vector<VkImage>                        images;
    
     VkGet<vkGetSwapchainImagesKHR>(images, device, swapchain);
@@ -56,7 +62,15 @@ FramePool::FramePool( Swapchain swapchain, LogicalDevice device, const RenderPas
     _frames.reserve(images.size());
    
     for(uint32_t i =0; i < images.size(); ++i) {
-        _frames.emplace_back(images[i], _descriptors.allocate(), _native, swapchain, device, pass);
+        _frames.emplace_back (
+            images[i],
+            _descriptors.allocate(),
+            _native,
+            _depthBuffer.view(),
+            swapchain,
+            device,
+            pass
+        );
     }
 }
 

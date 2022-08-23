@@ -29,8 +29,8 @@ export inline constexpr char                    name[]            ="VKEngine\0";
 export inline constexpr unsigned                windowHeight      =1080;
 export inline constexpr unsigned                windowWidth       =1920;
 export inline constexpr BuildType               buildType         =BuildType::Debug;
-export inline constexpr char                    shaderDirectory[] ="assets/shaders/";
-export inline constexpr char                    binaryDirectory[] ="assets/bin/";
+export inline constexpr char                    shaderDirectory[] ="/home/user/Code/C++/VKEngine/assets/shaders/";
+export inline constexpr char                    binaryDirectory[] ="/home/user/Code/C++/VKEngine/assets/bin/";
 export inline constexpr char                    preRegistredShader[] ="simple.glsl";
 
 // export inline constexpr char       validation[][]     ={

@@ -8,6 +8,8 @@
  * @copyright Copyright (c) 2021
  * 
  */
+
+// export module Main;
 import App.RenderDevice;
 import Scene;
 import Geometry;
@@ -31,7 +33,7 @@ struct SceneUpdater final: public Event {
         time += 0.001;
         float x = std::abs(std::sin(time));
         float y = std::abs(std::cos(time));
-        scene->_object->scale({x, y, 1});
+        // scene->_object->scale({1, 1, 1});
     }
 };
 

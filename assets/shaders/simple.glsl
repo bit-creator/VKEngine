@@ -39,7 +39,8 @@ PUSH_CONST() uTransform {
 
 void main() {
     gl_Position = transform.MVP * vec4(inPosition, 1.0);
-    ioTexCoord = inTexture;
+    ioTexCoord = vec2(gl_Position.z);
+    // ioTexCoord = inTexture;
 }
 #endif // VERTEX_SHADER
 
@@ -55,6 +56,7 @@ UNIFORM(ALBEDO) sampler2D uAlbedo;
 OUTPUT(OUT_COLOR) vec4 outColor;
 
 void main() {
-    outColor = texture(uAlbedo, ioTexCoord);
+    // outColor = texture(uAlbedo, ioTexCoord);
+    outColor = vec4(ioTexCoord.x);
 }
 #endif // FRAGMENT_SHADER

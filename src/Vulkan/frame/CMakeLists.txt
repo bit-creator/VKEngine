@@ -9,5 +9,6 @@ precompile ( Vk.Frame           VkFrame.cppm           )
 precompile ( Vk.Image           VkImage.cppm           )
 precompile ( Vk.Image.Sampler   VkSampler.cppm         )
 precompile ( Vk.Texture2D       Texture.cppm           )
+precompile ( Vk.DepthBuffer     DepthBuffer.cppm       )
 
 set(sources ${sources} PARENT_SCOPE)
