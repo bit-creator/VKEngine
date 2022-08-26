@@ -45,7 +45,8 @@ public:
     LogicalDevice                           _device;
 
 public:
-    Frame(VkImage img, VkDescriptorSet set, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, const RenderPass& pass);
+    Frame(VkImage img, VkDescriptorSet set, VkCommandPool pool, const ImageView& db,
+        Swapchain swapchain, LogicalDevice device, const RenderPass& pass);
 
     void bind() const;
     void unbind() const;
@@ -54,10 +55,11 @@ public:
     void draw(Geometry geom) const;
 };
 
-Frame::Frame(VkImage img, VkDescriptorSet set, VkCommandPool pool, Swapchain swapchain, LogicalDevice device, const RenderPass& pass):
+Frame::Frame(VkImage img, VkDescriptorSet set, VkCommandPool pool, const ImageView& db,
+            Swapchain swapchain, LogicalDevice device, const RenderPass& pass):
         Internal()
         , _view(img, swapchain.getFormat().format, device)
-        , _buffer(swapchain.getExtent(), pass, _view, device)
+        , _buffer(swapchain.getExtent(), pass, std::vector<VkImageView>{_view, db}, device)
         , _command(pool, device)
         , _set(set)
         , _available(device)

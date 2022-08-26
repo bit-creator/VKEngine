@@ -1,7 +1,7 @@
 export module Scene.Camera;
 
 import <memory>;
-import Scene.Entity;
+export import Scene.Entity;
 import Math.Matrix4f;
 import Math.Vector3f;
 import Math.Quaternion4f;
@@ -39,15 +39,15 @@ Camera::Camera(mth::Matrix4f proj)
 }
 
 mth::Matrix4f Camera::ViewProjection() {
-
+    return transformation().inverse() * projection;
 }
 
 mth::Matrix4f Camera::Projection() {
-
+    return projection;
 }
 
 mth::Matrix4f Camera::View() {
-    
+    return transformation().inverse();
 }
 
 // OrthoCamera::OrthoCamera(float left, float right, float bottom, float top, float near, float far)

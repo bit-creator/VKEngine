@@ -5,4 +5,5 @@ add_library ( Scene STATIC
     Entity.cppm
     Camera.cppm
     Object.cppm
+    CameraControl.cppm
 )

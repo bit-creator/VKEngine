@@ -147,7 +147,15 @@ private:
         multisampling.pSampleMask = nullptr;
         multisampling.alphaToCoverageEnable = VK_FALSE;
         multisampling.alphaToOneEnable = VK_FALSE;
-    	
+
+        VkPipelineDepthStencilStateCreateInfo depthStencil{};
+        depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        depthStencil.depthTestEnable = VK_TRUE;
+        depthStencil.depthWriteEnable = VK_TRUE;
+        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+        depthStencil.depthBoundsTestEnable = VK_FALSE;
+        depthStencil.stencilTestEnable = VK_FALSE;
+
         VkGraphicsPipelineCreateInfo pipelineCI{};
 		pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineCI.pNext = &libInfo;
@@ -157,7 +165,7 @@ private:
 		pipelineCI.layout = data.data.layout;
 		pipelineCI.renderPass = data.data.pass;
 		pipelineCI.pMultisampleState = &multisampling;
-		pipelineCI.pDepthStencilState = nullptr;
+		pipelineCI.pDepthStencilState = &depthStencil;
 
         _tree[data.info] = PipelineAbstrsct(_device);
 

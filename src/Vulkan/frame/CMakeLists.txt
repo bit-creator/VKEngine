@@ -4,6 +4,7 @@ add_library ( VkWrapperFrame STATIC
     VkCommandBuff.cppm
     cmdPool.cppm
     VkFramebuffer.cppm
+    DepthBuffer.cppm
     VkFramePool.cppm
     VkImageView.cppm
     VkFrame.cppm

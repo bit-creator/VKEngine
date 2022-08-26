@@ -27,6 +27,10 @@ public:
     void scale(mth::Vector3f scale);
     void translate(mth::Vector3f pos);
 
+    mth::Quaternion4f rotate() const;
+    mth::Vector3f position() const;
+    mth::Vector3f scale() const;
+
     mth::Matrix4f transformation();
 };
 
@@ -57,6 +61,19 @@ void Entity::translate(mth::Vector3f pos) {
     _position = pos;
     _dirtyTransform = true;
 }
+
+mth::Quaternion4f Entity::rotate() const {
+    return _rotate;
+}
+
+mth::Vector3f Entity::position() const {
+    return _position;
+}
+
+mth::Vector3f Entity::scale() const {
+    return _scale;
+}
+
 
 mth::Matrix4f Entity::transformation() {
     if(_dirtyTransform) _modelMat.make_model(_scale, _rotate, _position);

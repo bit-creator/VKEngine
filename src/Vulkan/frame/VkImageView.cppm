@@ -18,15 +18,18 @@ import Vulkan;
 import Vk.LogicalDevice;
 import Vk.Swapchain;
 
-export class ImageView:
-    public vk::NativeWrapper<VkImageView> {
-public:
-    ImageView(VkImage img, VkFormat format, LogicalDevice device);
+import <iostream>;
+
+export struct ImageView:
+        public vk::NativeWrapper<VkImageView> {
+    ImageView(VkImage img, VkFormat format, LogicalDevice device,
+            VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT);
 };
 
 
-ImageView::ImageView(VkImage img, VkFormat format, LogicalDevice device):
-    Internal([&](value_type img){ vkDestroyImageView(device, img, nullptr); }) {
+ImageView::ImageView(VkImage img, VkFormat format,
+                    LogicalDevice device, VkImageAspectFlags aspect):
+        Internal([&](value_type img){ vkDestroyImageView(device, img, nullptr); }) {
     VkImageViewCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     createInfo.image = img;
@@ -38,7 +41,7 @@ ImageView::ImageView(VkImage img, VkFormat format, LogicalDevice device):
     createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
     createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
-    createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    createInfo.subresourceRange.aspectMask = aspect;
     createInfo.subresourceRange.baseMipLevel = 0;
     createInfo.subresourceRange.levelCount = 1;
     createInfo.subresourceRange.baseArrayLayer = 0;

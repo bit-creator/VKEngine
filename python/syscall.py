@@ -8,7 +8,7 @@ class BuildType(Enum):
 compiler = 'clang++-14'
 standart = 20
 stdlib   = 'libc++'
-build    = BuildType.Debug
+build    = BuildType.Release
 
 flags    = [
     '-fmodules',

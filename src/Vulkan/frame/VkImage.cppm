@@ -15,14 +15,20 @@ import Vk.Checker;
 namespace fs = std::filesystem;
 
 export enum class ImageLayout {
-    Undefined   =VK_IMAGE_LAYOUT_UNDEFINED,
-    Destination =VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-    Read        =VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+    Undefined    = VK_IMAGE_LAYOUT_UNDEFINED,
+    General      = VK_IMAGE_LAYOUT_GENERAL,
+    Color        = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    DSOptimal    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+    DSRead       = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+    Read         = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    Source       = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+    Destination  = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+    Preinit      = VK_IMAGE_LAYOUT_PREINITIALIZED,
 };
 
 export class Image:
     public vk::NativeWrapper<VkImage> {
-private:
+protected:
     Memory          _mem;
     ImageLayout     _layout;
     CommandBuffer   _buff;
@@ -35,19 +41,32 @@ public:
     VkFormat format() { return _format; }
     VkImageLayout layout() { return (VkImageLayout)_layout; };
 
+protected:
+    /**
+     * @brief protected constructor for internal image objects
+     * 
+     */
+    Image(LogicalDevice device, CommandBuffer buff);
+    void switchLayout(ImageLayout layout);
+
 private:
     void load(fs::path path, LogicalDevice device, PhysicalDevice phys);
-    void switchLayout(ImageLayout layout);
 };
 
-Image::Image(fs::path path, LogicalDevice device, PhysicalDevice phys, CommandBuffer buff)
+Image::Image(LogicalDevice device, CommandBuffer buff)
     : Internal([&](value_type img){ vkDestroyImage(device, img, nullptr); })
     , _mem(device)
     , _layout(ImageLayout::Undefined)
     , _buff(buff) {
     _queue = device.queues.transfer;
+}
+
+Image::Image(fs::path path, LogicalDevice device,
+            PhysicalDevice phys, CommandBuffer buff):
+        Image(device, buff) {
     load(path, device, phys);
 }
+
 
 void Image::load(fs::path path, LogicalDevice device, PhysicalDevice phys) {
     int width, height, nrChannels;
@@ -148,14 +167,14 @@ void Image::switchLayout(ImageLayout layout) {
     VkPipelineStageFlags sourceStage;
     VkPipelineStageFlags destinationStage;
 
-    auto print_layout = [](ImageLayout l) {
-        if(l == ImageLayout::Undefined) std::cout << "ImageLayout::Undefined" << std::endl;
-        else if(l == ImageLayout::Destination) std::cout << "ImageLayout::Destination" << std::endl;
-        else if(l == ImageLayout::Read) std::cout << "ImageLayout::Read" << std::endl;
-        else std::cout << "STRANGE" << std::endl;
-    };
+    // auto print_layout = [](ImageLayout l) {
+    //     if(l == ImageLayout::Undefined) std::cout << "ImageLayout::Undefined" << std::endl;
+    //     else if(l == ImageLayout::Destination) std::cout << "ImageLayout::Destination" << std::endl;
+    //     else if(l == ImageLayout::Read) std::cout << "ImageLayout::Read" << std::endl;
+    //     else std::cout << "STRANGE" << std::endl;
+    // };
 
-    print_layout(_layout);
+    // print_layout(_layout);
     // print_layout(layout);
 
     if (_layout == ImageLayout::Undefined && layout == ImageLayout::Destination) {
@@ -170,6 +189,15 @@ void Image::switchLayout(ImageLayout layout) {
 
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    } else if (_layout == ImageLayout::Undefined && layout == ImageLayout::DSOptimal) {
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+    barrier.srcAccessMask = 0;
+    barrier.dstAccessMask = 
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+    sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     } else {
         throw std::invalid_argument("unsupported layout transition!");
     }

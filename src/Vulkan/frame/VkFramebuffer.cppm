@@ -18,25 +18,34 @@ import Vulkan;
 import Vk.LogicalDevice;
 import Vk.ImageView;
 import Vk.RenderPass;
+import <vector>;
+import <iostream>;
 
-export class Framebuffer:
-    public vk::NativeWrapper<VkFramebuffer> {
-public:
-    Framebuffer(VkExtent2D ext, const RenderPass& pass, const ImageView& view, LogicalDevice device);
+export struct Framebuffer:
+        public vk::NativeWrapper<VkFramebuffer> {
+    Framebuffer(VkExtent2D ext, const RenderPass& pass,
+            std::vector<VkImageView> views, LogicalDevice device);
 };
 
 
-Framebuffer::Framebuffer(VkExtent2D ext, const RenderPass& pass, const ImageView& view, LogicalDevice device)
-    : Internal([&](value_type fb){ vkDestroyFramebuffer(device, fb, nullptr); }) 
-    {
+Framebuffer::Framebuffer(VkExtent2D ext, const RenderPass& pass,
+            std::vector<VkImageView> views, LogicalDevice device)
+        : Internal([&](value_type fb){ vkDestroyFramebuffer(device, fb, nullptr); }) {
+
+    std::cout << views[0] << std::endl;
+    std::cout << views[1] << std::endl;
+
     VkFramebufferCreateInfo framebufferInfo{};
     framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     framebufferInfo.renderPass = pass;
-    framebufferInfo.attachmentCount = 1;
-    framebufferInfo.pAttachments = &(view.native());
+    framebufferInfo.attachmentCount = (uint32_t)views.size();
+    framebufferInfo.pAttachments = views.data();
     framebufferInfo.width = ext.width;
     framebufferInfo.height =ext.height;
     framebufferInfo.layers = 1;
+
+    // std::cout << "fb(_native1 == nullptr) = " << (views[0].native() == VK_NULL_HANDLE) << std::endl;
+    // std::cout << "fb(_native2 == nullptr) = " << (views[0].native() == VK_NULL_HANDLE) << std::endl;
 
     if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &_native) != VK_SUCCESS) {
         throw std::runtime_error("failed to create framebuffer!");

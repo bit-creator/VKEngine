@@ -50,7 +50,7 @@ function compile {
     python3 python/precompile.py
    
     cd .build
-        cmake --build . --target VKEngine
+        cmake --build . --target VKEngine --parallel8
     cd ..
 } 
 
