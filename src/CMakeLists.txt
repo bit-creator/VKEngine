@@ -21,7 +21,7 @@ add_compile_options(
     -std=c++${CMAKE_CXX_STANDARD}
     -stdlib=libc++
     -fmodules
-    -O1
+    -O3
     -Wall
     -Wextra
     -fmath-errno

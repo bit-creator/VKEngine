@@ -123,9 +123,13 @@ public:
 
     void addEvent(EventPtr ptr) { events.push_back(ptr); }
     void removeEvent(EventPtr ptr) { /*for feature work*/ }
+    auto& getEventList() { return events; }
 
 private:
     void render(const Frame& frame);
+    
+    static void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mode);
+    static void mouseCallBack(GLFWwindow* window, double x, double y);
 }; // RenderDevice
 
 RenderDevice::RenderDevice()
@@ -149,12 +153,23 @@ RenderDevice::RenderDevice()
 }
 
 RenderDevice& RenderDevice::device() {
+    std::cout << "fgh" << std::endl;
     static RenderDevice device;
     return device;
 }
 
+void keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mode);
+void mouseCallBack(GLFWwindow* window, double x, double y);
+
 void RenderDevice::execute(ScenePtr s) {
     scene = s;
+    addEvent(s->_ctrl);
+
+    glfwSetKeyCallback(wnd.native(), keyCallBack);
+    glfwSetCursorPos(wnd.native(), windowWidth/2, windowHeight/2);
+    glfwSetCursorPosCallback(wnd.native(), mouseCallBack);
+
+    // glfwSetMouseButtonCallback(_window, mouseClickCallBack);
 
     auto tex = RTexture2DRef (
                 new RTexture2D (
@@ -249,7 +264,7 @@ void RenderDevice::render(const Frame& frame) {
             material->_albedo.setUniform(logical, Uniform::Albedo, sampler, frame._set);
             mathon::Matrix4f model = object->transformation(); 
 
-            Transform transf{model};
+            Transform transf{model * scene->_camera->ViewProjection()};
 
             vkCmdBindDescriptorSets(frame._command, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &frame._set, 0, nullptr);
             vkCmdPushConstants(frame._command, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Transform), &transf);
@@ -261,3 +276,19 @@ void RenderDevice::render(const Frame& frame) {
     
     frame.unbind();
 };
+
+void RenderDevice::keyCallBack(GLFWwindow* window, int key, int scancode, int action, int mode) {
+    if (key == GLFW_KEY_Q || key == GLFW_KEY_ESCAPE) {
+        RenderDevice::device().~RenderDevice();
+	}
+
+	for(EventPtr listener : RenderDevice::device().getEventList())
+        if(listener) listener -> onKeyPressed(key, scancode, action, mode);  
+}
+
+void RenderDevice::mouseCallBack(GLFWwindow* window, double x, double y) {
+    for(EventPtr listener : RenderDevice::device().getEventList())
+        if(listener) listener -> onMouseMove(x - windowWidth/2, y - windowHeight/2);
+
+	glfwSetCursorPos(window, windowWidth/2, windowHeight/2);
+}

@@ -158,8 +158,9 @@ function compile {
     compile_module src/Vulkan/frame/Texture.cppm                    App.Texture2D
     compile_module src/Material/Material.cppm                       Material
     compile_module src/Scene/Object.cppm                            Scene.Object
-    compile_module src/Scene/Scene.cppm                             Scene
     compile_module src/Event.cppm                                   App.Event
+    compile_module src/Scene/CameraControl.cppm                     Scene.Camera.Control
+    compile_module src/Scene/Scene.cppm                             Scene
     compile_module src/RenderDevice.cppm                            App.RenderDevice
    
     
