@@ -1,9 +1,9 @@
-include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
+include(${CMAKE_SCRIPTS_DIR}/settings.cmake)
 
-precompile ( Scene          Scene.cppm  )
-precompile ( Scene.Entity   Entity.cppm )
-precompile ( Scene.Camera   Camera.cppm )
-precompile ( Scene.Camera.Control   CameraControl.cppm )
-precompile ( Scene.Object   Object.cppm )
-
-set(sources ${sources} PARENT_SCOPE)
+add_library ( Scene STATIC
+    Scene.cppm
+    Entity.cppm
+    Camera.cppm
+    Object.cppm
+    CameraControl.cppm
+)

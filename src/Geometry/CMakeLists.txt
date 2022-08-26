@@ -1,9 +1,9 @@
-include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
+include(${CMAKE_SCRIPTS_DIR}/settings.cmake)
 
-precompile ( Geometry            Geometry.cppm   )
-precompile ( Geometry.Quad       Quad.cppm       )
-precompile ( Vk.HostAllocator    Allocator.cppm  )
-precompile ( Geometry.Triangle   Triangle.cppm   )
-precompile ( Geometry.Attributes Attributes.cppm )
-
-set(sources ${sources} PARENT_SCOPE)
+add_library ( Geometry STATIC
+    Geometry.cppm
+    Quad.cppm
+    Allocator.cppm
+    Triangle.cppm
+    Attributes.cppm
+)

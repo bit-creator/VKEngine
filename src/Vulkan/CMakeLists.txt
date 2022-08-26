@@ -1,14 +1,24 @@
-include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
+include(${CMAKE_SCRIPTS_DIR}/settings.cmake)
 
 add_subdirectory(helpers)
 add_subdirectory(pipeline)
 add_subdirectory(frame)
 add_subdirectory(core)
 
-precompile ( Vk.WindowSurface   VkSurface.cppm         )
-precompile ( Vk.Swapchain       VkSwapchain.cppm       )
-precompile ( Vk.Semaphore       VkSemaphore.cppm       )
-precompile ( Vk.Shader          VkShader.cppm          )
-precompile ( Vk.Fence           VkFence.cppm           )
+add_library ( VkWrappersGeneral STATIC
+    VkSurface.cppm
+    VkSwapchain.cppm
+    VkSemaphore.cppm
+    VkShader.cppm
+    VkFence.cppm
+)
 
-set(sources ${sources} PARENT_SCOPE)
+add_library (VkWrappers INTERFACE)
+
+target_link_libraries( VkWrappers INTERFACE
+    VkWrapperCore
+    VkWrapperFrame
+    VkWrapperHelpers
+    VkWrapperPipeline
+    VkWrappersGeneral
+)

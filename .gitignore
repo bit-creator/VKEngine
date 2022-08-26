@@ -39,6 +39,7 @@ assets/textures/
 precompiled/
 3rdparty/latest
 assimp/build64/
+python/__pycache__/
 
 # ide
 .vscode
