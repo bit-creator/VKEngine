@@ -5,50 +5,31 @@ export import Math.Vector3;
 
 import <vector>;
 import <array>;
+import <memory>;
+
 import Vulkan;
 import Vk.VertexBuffer;
 import Vk.LogicalDevice;
 import Vk.PhysicalDevice;
+import Vk.CommandPool;
 import Vk.CommandBuffer;
 import Vk.HostAllocator;
 import Vk.Memory;
+import Vk.CommandPool;
 export import Geometry.Attributes;
 
-// export class Vertex {
-// public:
-//     Vertex( mathon::Vector2f pos,
-//             mathon::Vector3f col): position(pos), color(col) {}
-//     mathon::Vector2f        position;
-//     mathon::Vector3f        color;
-
-//     static VkVertexInputBindingDescription getBindingDescription() {
-//         VkVertexInputBindingDescription bindingDescription{};
-//         bindingDescription.binding = 0;
-//         bindingDescription.stride = sizeof(Vertex);
-//         bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-//         return bindingDescription;
-//     }
-
-//     static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-//         std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-//         attributeDescriptions[0].binding = 0;
-//         attributeDescriptions[0].location = 0;
-//         attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-//         attributeDescriptions[0].offset = offsetof(Vertex, position);
-//         attributeDescriptions[1].binding = 0;
-//         attributeDescriptions[1].location = 1;
-//         attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-//         attributeDescriptions[1].offset = offsetof(Vertex, color);
-//         return attributeDescriptions;
-//     }
-// };
+export namespace Vk::Geometry {
+    struct FastLoad {
+        static inline LogicalDevice   logical  = LogicalDevice::invalid();
+        static inline PhysicalDevice  physical = PhysicalDevice::invalid();
+        static inline TransferCmdPool transfer = TransferCmdPool::invalid();
+    };
+};
 
 export struct MemoryRegion {
     size_t offset;
     size_t size;
 };
-
-
 
 export struct Geometry {
     LocalBuffer                                               vbo;
@@ -56,12 +37,16 @@ export struct Geometry {
     std::array<MemoryRegion, 2>                               regions;
 
 public:
-    Geometry(LogicalDevice ld, PhysicalDevice pd);
+    Geometry();
 };
 
-Geometry::Geometry(LogicalDevice ld, PhysicalDevice pd)
-    : vbo(ld)
+export using GeomRef = std::shared_ptr<Geometry>;
+
+using namespace Vk::Geometry;
+
+Geometry::Geometry()
+    : vbo(FastLoad::logical)
     , vao() {
-    Alloc::HostAllocatorRequirement::logical = ld;
-    Alloc::HostAllocatorRequirement::physical = pd;
+    Alloc::HostAllocatorRequirement::logical  = FastLoad::logical;
+    Alloc::HostAllocatorRequirement::physical = FastLoad::physical;
 }

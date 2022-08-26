@@ -16,7 +16,7 @@ add_custom_command(TARGET ${module}
     -fcxx-exceptions
     -fmodules-cache-path=/home/user/Code/C++/VKEngine/.build/cache
     -fprebuilt-module-path=${PRECOMPILED_MODULES_DIR}
-    -fprebuilt-module-path=/home/user/Code/C++/Mathon/precompiled
+    -fprebuilt-module-path=Mathon/precompiled
     -c --precompile ${CMAKE_CURRENT_SOURCE_DIR}/${source}
     -o ${PRECOMPILED_MODULES_DIR}/${module}.pcm 
 )

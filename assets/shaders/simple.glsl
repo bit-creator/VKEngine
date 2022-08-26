@@ -1,24 +1,37 @@
 #version 450
 
-#define POSITION   0
-#define COLOR      5
-#define FRAG_COLOR 0
-#define OUT_COLOR  0
+/**
+ * Macro definitions
+ *
+ */
 
 #define INPUT(loc)   layout(location = loc) in
 #define OUTPUT(loc)  layout(location = loc) out
 #define PUSH_CONST() layout(push_constant)  uniform
+#define UNIFORM(loc) layout(binding = loc)  uniform
 
 #ifdef VERTEX_SHADER
-OUTPUT(FRAG_COLOR)
-#elif defined(FRAGMENT_SHADER) 
-INPUT(FRAG_COLOR) 
+#define VERTEX_OUT_FRAGMENT_IN(loc) OUTPUT(loc)
+#elif defined(FRAGMENT_SHADER)
+#define VERTEX_OUT_FRAGMENT_IN(loc) INPUT(loc)
 #endif
-vec3 fragColor;
 
-#ifdef VERTEX_SHADER 
+/**
+ * Shader common data
+ *
+ */
+
+VERTEX_OUT_FRAGMENT_IN(TEXTURE) vec2 ioTexCoord;
+
+
+/**
+ * Vertex shader
+ *
+ */
+
+#ifdef VERTEX_SHADER
 INPUT(POSITION) vec3 inPosition;
-INPUT(COLOR)    vec3 inColor;
+INPUT(TEXTURE)  vec2 inTexture;
 
 PUSH_CONST() uTransform {
     mat4 MVP;
@@ -26,16 +39,24 @@ PUSH_CONST() uTransform {
 
 void main() {
     gl_Position = transform.MVP * vec4(inPosition, 1.0);
-    fragColor = inColor;
+    // ioTexCoord = vec2(gl_Position.z);
+    ioTexCoord = inTexture;
 }
 #endif // VERTEX_SHADER
 
+
+/**
+ * Fragment shader 
+ *
+ */
+
 #ifdef FRAGMENT_SHADER
-#extension GL_ARB_separate_shader_objects : enable
+UNIFORM(ALBEDO) sampler2D uAlbedo;
 
 OUTPUT(OUT_COLOR) vec4 outColor;
 
 void main() {
-    outColor = vec4(fragColor, 1.0);
+    outColor = texture(uAlbedo, ioTexCoord);
+    // outColor = vec4(ioTexCoord.x);
 }
 #endif // FRAGMENT_SHADER

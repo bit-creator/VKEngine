@@ -16,7 +16,7 @@ export struct Triangle: public Geometry {
 };
 
 Triangle::Triangle(LogicalDevice ld, PhysicalDevice pd, CommandBuffer buff):
-    Geometry(ld, pd) {
+    Geometry() {
     struct Vertex {
         mathon::Vector2f        position;
         mathon::Vector3f        color;

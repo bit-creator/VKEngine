@@ -67,7 +67,7 @@ void Instance::setup() {
     appData.applicationVersion = VK_MAKE_VERSION(version.major, version.minor, version.path);
     appData.pEngineName        = "VKEngine";
     appData.engineVersion      = VK_MAKE_VERSION(version.major, version.minor, version.path);
-    appData.apiVersion         = VK_API_VERSION_1_0;
+    appData.apiVersion         = VK_API_VERSION_1_3;
 
     instanceData.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceData.pApplicationInfo        = &appData;
@@ -114,7 +114,7 @@ void Instance::checkLayerSupport(std::vector<const char*>& required) {
 
         // this extension doesnt work well with pipline libraries
         // "VK_LAYER_LUNARG_standard_validation",
-        "VK_LAYER_KHRONOS_validation",
+        // "VK_LAYER_KHRONOS_validation",
         
     };
 

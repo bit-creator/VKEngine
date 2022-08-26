@@ -47,7 +47,7 @@ public:
     bool isCompleted() const;
     bool isSupported() const;
 
-    void setupDescriptor(const VkDevice& device);
+    void setupDescriptor(VkDevice device);
 }; // Queue
 
 template < QueueType type >
@@ -121,6 +121,6 @@ uint32_t Queue::getIndex() const {
     return _index.value_or(npos);
 }
 
-void Queue::setupDescriptor(const VkDevice& device) {
+void Queue::setupDescriptor(VkDevice device) {
     if (isSupported()) vkGetDeviceQueue(device, _index.value(), 0, &_native);
 }

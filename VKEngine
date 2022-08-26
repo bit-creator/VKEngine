@@ -20,8 +20,7 @@ function compile_module {
     -std=c++20\
     -stdlib=libc++\
     -fmodules\
-    -O3\
-    -fPIC\
+    -O1\
     -Wall\
     -Wextra\
     -fmath-errno\
@@ -29,7 +28,7 @@ function compile_module {
     -ffast-math\
     -fcxx-exceptions\
     -fprebuilt-module-path=precompiled/\
-    -fprebuilt-module-path=/home/user/Code/C++/Mathon/precompiled/\
+    -fprebuilt-module-path=Mathon/precompiled/\
     -c --precompile\
     $1 -o precompiled/$2.pcm
 }
@@ -77,6 +76,12 @@ function build_mesa() {
     cd ..
 }
 
+function build_assimp() {
+    cd assimp
+    cmake -B build64
+    cmake --build build64 --parallel8
+}
+
 function compile {
     clear
 
@@ -94,13 +99,16 @@ function compile {
 #target 3rdparty
     cmake --build . --target Vulkan
     cmake --build . --target GLFW
+    cmake --build . --target Image
+    cmake --build . --target Importer
+    
     cd ..
     # cmake --build . --target Geometry.Triangle
     
 # first target
     compile_module src/Vulkan/pipeline/VkMultisampling.cppm         Vk.Multisampler
     compile_module src/Vulkan/pipeline/VkDynamicStates.cppm         Vk.DynamicState
-    compile_module src/Vulkan/pipeline/VkColorBlender.cppm          Vk.ColorBlender 
+    compile_module src/Vulkan/pipeline/VkColorBlender.cppm          Vk.ColorBlender
     compile_module src/Vulkan/pipeline/VkRasterizer.cppm            Vk.Rasterizer
     compile_module src/AppSettings.cppm                             App.Settings
     compile_module src/Vulkan/pipeline/VkAssembly.cppm              Vk.Assembly
@@ -118,9 +126,10 @@ function compile {
     compile_module src/Vulkan/frame/cmdPool.cppm                    Vk.CommandPool
     compile_module src/Vulkan/pipeline/VkMemory.cppm                Vk.Memory
     compile_module src/Vulkan/VkSemaphore.cppm                      Vk.Semaphore 
+    compile_module src/Vulkan/VkFence.cppm                          Vk.Fence 
+    compile_module src/Vulkan/pipeline/VkDescriptorPool.cppm        Vk.DescriptorPool
     compile_module src/Vulkan/pipeline/VkLayout.cppm                Vk.Layout
     compile_module src/Vulkan/VkShader.cppm                         Vk.Shader  
-    compile_module src/ShaderFactory.cppm                           App.ShaderFactory
     compile_module src/Vulkan/VkSwapchain.cppm                      Vk.Swapchain
     compile_module src/Vulkan/pipeline/VkViewport.cppm              Vk.Viewport
     compile_module src/Vulkan/pipeline/VkColorAttachment.cppm       Vk.ColorAttachment
@@ -132,20 +141,33 @@ function compile {
     compile_module src/Geometry/Allocator.cppm                      Vk.HostAllocator
     compile_module src/Vulkan/pipeline/drawData.cppm                App.DrawData
     compile_module src/Geometry/Attributes.cppm                     Geometry.Attributes
+    compile_module src/ShaderFactory.cppm                           App.ShaderFactory
     compile_module src/Geometry/Geometry.cppm                       Geometry
     compile_module src/Geometry/Quad.cppm                           Geometry.Quad
     compile_module src/Geometry/Triangle.cppm                       Geometry.Triangle
     compile_module src/Vulkan/pipeline/VkPipelineCache.cppm         Vk.PipelineCache
     compile_module src/Vulkan/pipeline/PipelineFactory.cppm         App.PipelineFactory
     compile_module src/Vulkan/frame/VkFrame.cppm                    Vk.Frame
+    compile_module src/Vulkan/frame/VkImage.cppm                    Vk.Image
+    compile_module src/Vulkan/frame/DepthBuffer.cppm                Vk.DepthBuffer
     compile_module src/Vulkan/frame/VkFramePool.cppm                Vk.FramePool
+    compile_module src/Scene/Entity.cppm                            Scene.Entity
+    compile_module src/Scene/Camera.cppm                            Scene.Camera
+    compile_module src/Vulkan/frame/VkSampler.cppm                  Vk.Image.Sampler
+    compile_module src/Resource.cppm                                App.Resource
+    compile_module src/Vulkan/frame/Texture.cppm                    App.Texture2D
+    compile_module src/Material/Material.cppm                       Material
+    compile_module src/Scene/Object.cppm                            Scene.Object
+    compile_module src/Event.cppm                                   App.Event
+    compile_module src/Scene/CameraControl.cppm                     Scene.Camera.Control
+    compile_module src/Scene/Scene.cppm                             Scene
     compile_module src/RenderDevice.cppm                            App.RenderDevice
    
     
     
 
     cd .build
-    cmake --build . -j7 --target VKEngine
+        cmake --build . -j8 --target VKEngine
     cd ..
 
 #     cd .build
@@ -205,6 +227,9 @@ function compile {
 function clean {
     rm -rf .build/
     rm -rf precompiled/
+    cd Mathon
+        ./Mathon -c
+    cd ..
 }
 
 function help {
@@ -235,6 +260,10 @@ fi
 
 if [[ "$1" == "--build_mesa" ]]; then
     build_mesa
+fi
+
+if [[ "$1" == "--build_assimp" ]]; then
+    build_assimp
 fi
 
 if [[ "$2" == "--run" || "$2" == "-r" || "$1" == "" ]]; then

@@ -1,6 +1,5 @@
 include(${CMAKE_SCRIPTS_DIR}/precompile.cmake)
 
-
 precompile ( Geometry            Geometry.cppm   )
 precompile ( Geometry.Quad       Quad.cppm       )
 precompile ( Vk.HostAllocator    Allocator.cppm  )

@@ -1,11 +1,15 @@
 export module Vk.CommandPool;
 
+import Vulkan;
 import Vk.LogicalDevice;
 
 export {
 struct CommandPool:
         public vk::NativeWrapper<VkCommandPool> {
     CommandPool(LogicalDevice device, QueueType type);
+    static CommandPool invalid() {return CommandPool{};}
+protected:
+    CommandPool(){};
 }; // CommandPool
 
 struct DrawCmdPool: public CommandPool {
@@ -14,6 +18,9 @@ struct DrawCmdPool: public CommandPool {
 
 struct TransferCmdPool: public CommandPool {
     TransferCmdPool(LogicalDevice device);
+    static TransferCmdPool invalid() {return TransferCmdPool{};}
+private:
+    TransferCmdPool(){};
 }; // TransferCmdPool
 }; // export
 

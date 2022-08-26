@@ -34,12 +34,15 @@
 # build
 .build/
 assets/bin/
+assets/textures/
 .cache/
 precompiled/
 3rdparty/latest
+assimp/build64/
 
 # ide
 .vscode
 
 # dont care about it
 VkGLFWModule.hpp
+rdc

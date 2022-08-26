@@ -38,13 +38,13 @@ public:
         VkMemoryPropertyFlags   flags
     );
 
-private:
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, PhysicalDevice pd);
+    void load(void* data, size_t size);
 }; // VertexBuffer
 
 struct StagingBuffer: public VertexBuffer {
     StagingBuffer(LogicalDevice ld);
     void allocate(LogicalDevice ld, PhysicalDevice pd, size_t size);
+    void allocateAndFill(LogicalDevice ld, PhysicalDevice pd, size_t size, void* data);
 }; // StagingBuffer
 
 struct LocalBuffer: public VertexBuffer {
@@ -78,22 +78,15 @@ void VertexBuffer::allocate(LogicalDevice ld, PhysicalDevice pd,
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = findMemoryType(typeFilter, properties, pd);
+    allocInfo.memoryTypeIndex = _mem.findMemoryType(typeFilter, properties, pd);
     
     VkCreate<vkAllocateMemory>(ld, &allocInfo, nullptr, &_mem.native());
     
     vkBindBufferMemory(ld, _native, _mem, 0);
 }
 
-uint32_t VertexBuffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, PhysicalDevice pd) {
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(pd, &memProperties);
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-            return i;
-        }
-    }
-    return 0;
+void VertexBuffer::load(void* data, size_t size) {
+    _mem.load(data, size);
 }
 
 StagingBuffer::StagingBuffer(LogicalDevice ld): VertexBuffer(ld) {  }
@@ -101,6 +94,11 @@ StagingBuffer::StagingBuffer(LogicalDevice ld): VertexBuffer(ld) {  }
 void StagingBuffer::allocate(LogicalDevice ld, PhysicalDevice pd, size_t size) {
     VertexBuffer::allocate(ld, pd, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+}
+
+void StagingBuffer::allocateAndFill(LogicalDevice ld, PhysicalDevice pd, size_t size, void* data) {
+    allocate(ld, pd, size);
+    _mem.load(data, size);
 }
 
 LocalBuffer::LocalBuffer(LogicalDevice ld): VertexBuffer(ld) {  }

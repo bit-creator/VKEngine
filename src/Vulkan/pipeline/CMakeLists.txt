@@ -14,5 +14,6 @@ precompile ( App.DrawData        drawData.cppm          )
 precompile ( Vk.Viewport         VkViewport.cppm        )
 precompile ( Vk.Layout           VkLayout.cppm          )
 precompile ( Vk.Memory           VkMemory.cppm          )
+precompile ( Vk.DescriptorPool   VkDescriptorPool.cppm  )
 
 set(sources ${sources} PARENT_SCOPE)

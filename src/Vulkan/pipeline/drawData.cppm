@@ -28,7 +28,8 @@ export namespace data {
     };
 
     struct InfoPR {
-        size_t          shaderIndex;
+        size_t              shaderIndex;
+        size_t              attributeHash;
         auto operator <=> (const InfoPR&) const =default;
     };
 
@@ -81,7 +82,7 @@ export namespace data {
         size_t              fragmentShader;
         auto operator <=> (const DrawInfo&) const =default;
         operator const InfoVI() const {return {attributeHash, topology}; }
-        operator const InfoPR() const {return {vertexShader}; }
+        operator const InfoPR() const {return {vertexShader, attributeHash}; }
         operator const InfoFS() const {return {fragmentShader}; }
         operator const InfoFO() const {return {}; }
     };
@@ -127,11 +128,12 @@ export template <  > struct std::hash<data::InfoVI> {
 export template <  > struct std::hash<data::InfoPR> {
 	size_t operator ()(const data::InfoPR& draw) const noexcept {
 		// same as boost::hash_combine()
-		// auto hasher = [](size_t& seed, size_t val) mutable -> void {
-		// 	seed ^= val + 0x9e3779b9 + (seed<<6) + (seed>>2);
-		// };
+		auto hasher = [](size_t& seed, size_t val) mutable -> void {
+			seed ^= val + 0x9e3779b9 + (seed<<6) + (seed>>2);
+		};
 
         size_t seed = draw.shaderIndex;
+        hasher(seed, (size_t)draw.attributeHash);
 
 		return seed;
 	}

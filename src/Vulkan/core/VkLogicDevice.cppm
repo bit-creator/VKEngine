@@ -11,11 +11,12 @@
 
 export module Vk.LogicalDevice;
 
-export import App.NativeWrapper;
+import App.NativeWrapper;
 
 import Vulkan;
 
 import <vector>;
+import <iostream>;
 
 import Vk.PhysicalDevice;
 export import Vk.QueuePool;
@@ -36,11 +37,11 @@ export struct LogicalDevice: public
     }
 
 private:
-    LogicalDevice(): Internal([](const value_type& l){ vkDestroyDevice(l, nullptr); }) {};
+    LogicalDevice(): Internal([&](value_type l){ vkDestroyDevice(l, nullptr); }) {};
 }; // LogicalDevice
 
 LogicalDevice::LogicalDevice(PhysicalDevice device, WindowSurface surf)
-    : Internal([](const value_type& l){ vkDestroyDevice(l, nullptr); })
+    : Internal([&](value_type l){ vkDestroyDevice(l, nullptr); })
     , queues(QueuePool(device, surf)) 
     {
     float queuePriority = 1.0f;
